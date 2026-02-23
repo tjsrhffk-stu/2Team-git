@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% block title %}음식점 목록 — LocalEats{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 40px 24px 32px;
+  }
+  .page-header-inner { max-width: 1200px; margin: 0 auto; }
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px; font-weight: 700; margin-bottom: 24px;
+  }
+
+  /* SEARCH BAR */
+  .search-bar {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .search-wrap {
+    position: relative; flex: 1; min-width: 240px;
+  }
+  .search-wrap input {
+    width: 100%; padding: 12px 16px 12px 44px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: 15px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); background: var(--surface); }
+  .search-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; }
+  .search-bar select {
+    padding: 12px 16px; background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: 14px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .search-bar select:focus { border-color: var(--accent); }
+  .search-bar button {
+    padding: 12px 24px; background: var(--accent); color: #fff;
+    border: none; border-radius: 12px; font-size: 14px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .search-bar button:hover { background: var(--accent-hover); }
+
+  /* FILTER CHIPS */
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    padding: 7px 16px; border-radius: 100px; font-size: 13px; font-weight: 500;
+    background: var(--bg); border: 1.5px solid var(--border); color: var(--text2);
+    text-decoration: none; transition: all 0.2s; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* RESULTS INFO */
+  .results-info {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 0 20px; flex-wrap: wrap; gap: 12px;
+  }
+  .results-count { font-size: 14px; color: var(--text2); }
+  .results-count strong { color: var(--text); }
+  .sort-select {
+    padding: 8px 14px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; font-size: 13px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
+  }
+
+  /* GRID */
+  .restaurants-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+  .restaurant-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); transition: all var(--transition);
+    text-decoration: none; color: inherit; display: block;
+    animation: fadeUp 0.4s ease both;
+  }
+  .restaurant-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--accent); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card-img {
+    height: 190px; background: var(--bg2); position: relative;
+    display: flex; align-items: center; justify-content: center; font-size: 60px;
+    overflow: hidden;
+  }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  .card-img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.25) 0%, transparent 50%);
+  }
+  .card-category-tag {
+    position: absolute; bottom: 12px; left: 12px;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+    color: #fff; font-size: 12px; font-weight: 600;
+    padding: 4px 10px; border-radius: 100px;
+  }
+  .fav-btn {
+    position: absolute; top: 12px; right: 12px;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,0.9); border: none; cursor: pointer;
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s; backdrop-filter: blur(4px);
+  }
+  .fav-btn:hover { transform: scale(1.15); }
+
+  .card-body { padding: 20px; }
+  .card-name { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .card-address { font-size: 13px; color: var(--text2); margin-bottom: 14px; display: flex; align-items: center; gap: 4px; }
+  .card-stars { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .stars { display: flex; gap: 2px; }
+  .stars .on { color: #F59E0B; font-size: 16px; }
+  .stars .off { color: var(--star-off); font-size: 16px; }
+  .rating-num { font-weight: 700; font-size: 15px; color: var(--text); }
+  .review-count { font-size: 13px; color: var(--text2); }
+  .card-footer {
+    border-top: 1px solid var(--border); padding-top: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card-phone { font-size: 13px; color: var(--text2); }
+  .card-link-btn {
+    font-size: 13px; font-weight: 600; color: var(--accent);
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    grid-column: 1 / -1; text-align: center; padding: 80px 24px;
+  }
+  .empty-icon { font-size: 64px; margin-bottom: 20px; }
+  .empty-title { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
+  .empty-desc { color: var(--text2); font-size: 15px; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 48px; }
+  .page-btn {
+    min-width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; font-size: 14px; font-weight: 500;
+    border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
+    text-decoration: none; transition: all 0.2s;
+  }
+  .page-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+  .page-btn.disabled { opacity: 0.3; pointer-events: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin: -40px -24px 0; padding: 40px 24px 32px; background: var(--surface); border-bottom: 1px solid var(--border);">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <h1 style="font-family:'Playfair Display',serif; font-size:36px; font-weight:700; margin-bottom:24px;">음식점 찾기</h1>
+    <form method="GET" id="searchForm">
+      <div class="search-bar">
+        <div class="search-wrap">
+          <span class="icon">🔍</span>
+          <input type="text" name="q" value="{{ request.GET.q }}" placeholder="음식점 이름 검색...">
+        </div>
+        <select name="sort" onchange="this.form.submit()">
+          <option value="" {% if not request.GET.sort %}selected{% endif %}>정렬 기준</option>
+          <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>별점 높은 순</option>
+          <option value="reviews" {% if request.GET.sort == 'reviews' %}selected{% endif %}>리뷰 많은 순</option>
+          <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>최신 등록 순</option>
+        </select>
+        <button type="submit">검색</button>
+      </div>
+      <div class="filter-row">
+        <a href="/restaurants/" class="chip {% if not request.GET.category %}active{% endif %}">🍽️ 전체</a>
+        <a href="?category=한식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '한식' %}active{% endif %}">🍚 한식</a>
+        <a href="?category=일식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '일식' %}active{% endif %}">🍣 일식</a>
+        <a href="?category=양식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '양식' %}active{% endif %}">🍝 양식</a>
+        <a href="?category=중식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '중식' %}active{% endif %}">🥟 중식</a>
+        <a href="?category=카페{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '카페' %}active{% endif %}">☕ 카페</a>
+        <a href="?category=분식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '분식' %}active{% endif %}">🥚 분식</a>
+        <a href="?category=디저트{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '디저트' %}active{% endif %}">🍰 디저트</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div style="max-width:1200px;margin:0 auto;padding:0 24px;">
+  <div class="results-info">
+    <span class="results-count">
+      <strong>{{ restaurants|length }}</strong>개의 음식점
+      {% if request.GET.q %} — "<strong>{{ request.GET.q }}</strong>" 검색 결과{% endif %}
+    </span>
+  </div>
+
+  <div class="restaurants-grid">
+    {% for restaurant in restaurants %}
+    <a href="/restaurants/{{ restaurant.pk }}/" class="restaurant-card" style="animation-delay: {{ forloop.counter0 }}0ms">
+      <div class="card-img">
+        {% if restaurant.image %}
+          <img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}">
+        {% else %}
+          🍽️
+        {% endif %}
+        <div class="card-img-overlay"></div>
+        <span class="card-category-tag">{{ restaurant.category|default:"기타" }}</span>
+        {% if user.is_authenticated %}
+        <button class="fav-btn" onclick="event.preventDefault(); toggleFav({{ restaurant.pk }}, this)" title="즐겨찾기">
+          {% if restaurant.pk in user_favorites %}❤️{% else %}🤍{% endif %}
+        </button>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="card-name">{{ restaurant.name }}</div>
+        <div class="card-address">📍 {{ restaurant.address|truncatechars:30 }}</div>
+        <div class="card-stars">
+          <div class="stars">
+            {% with avg=restaurant.avg_rating|default:0 %}
+            {% for i in "12345" %}
+              {% if forloop.counter <= avg %}
+                <span class="on">★</span>
+              {% else %}
+                <span class="off">★</span>
+              {% endif %}
+            {% endfor %}
+            {% endwith %}
+          </div>
+          <span class="rating-num">{{ restaurant.avg_rating|default:"—" }}</span>
+          <span class="review-count">({{ restaurant.review_count|default:0 }}개 리뷰)</span>
+        </div>
+        <div class="card-footer">
+          <span class="card-phone">{{ restaurant.phone|default:"전화번호 없음" }}</span>
+          <span class="card-link-btn">상세보기 →</span>
+        </div>
+      </div>
+    </a>
+    {% empty %}
+    <div class="empty-state">
+      <div class="empty-icon">🍽️</div>
+      <div class="empty-title">음식점을 찾을 수 없어요</div>
+      <div class="empty-desc">다른 검색어나 카테고리로 시도해보세요</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- PAGINATION -->
+  {% if restaurants.has_other_pages %}
+  <div class="pagination">
+    {% if restaurants.has_previous %}
+      <a href="?page={{ restaurants.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="page-btn">←</a>
+    {% else %}
+      <span class="page-btn disabled">←</span>
+    {% endif %}
+    {% for num in restaurants.paginator.page_range %}
+      {% if num == restaurants.number %}
+        <span class="page-btn active">{{ num }}</span>
+      {% elif num|add:"-2" <= restaurants.number and num|add:"2" >= restaurants.number %}
+        <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="page-btn">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if restaurants.has_next %}
+      <a href="?page={{ restaurants.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="page-btn">→</a>
+    {% else %}
+      <span class="page-btn disabled">→</span>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFav(restaurantId, btn) {
+  fetch(`/favorites/toggle/${restaurantId}/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
+  }).then(r => r.json()).then(data => {
+    btn.textContent = data.is_favorite ? '❤️' : '🤍';
+  }).catch(() => {});
+}
+function getCookie(name) {
+  return document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name + '='))?.split('=')[1] || '';
+}
+</script>
+{% endblock %}

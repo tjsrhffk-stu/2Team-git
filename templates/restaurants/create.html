@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% block title %}음식점 등록 — LocalEats{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-wrap { max-width: 720px; margin: 0 auto; animation: fadeUp 0.5s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .page-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; margin-bottom: 8px; }
+  .page-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 36px; }
+
+  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px; box-shadow: var(--shadow); }
+  .form-section-title {
+    font-size: 13px; font-weight: 700; color: var(--text2); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 20px; margin-top: 32px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .form-section-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+  .required { color: var(--accent); }
+
+  .input-wrap { position: relative; }
+  .input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
+  .form-input {
+    width: 100%; padding: 13px 16px 13px 42px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: 15px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s;
+  }
+  .form-input.no-icon { padding-left: 16px; }
+  .form-input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(212,82,26,0.08); }
+
+  .form-select {
+    width: 100%; padding: 13px 16px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: 15px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s; cursor: pointer;
+  }
+  .form-select:focus { border-color: var(--accent); }
+
+  .form-textarea {
+    width: 100%; padding: 14px 16px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: 15px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s;
+    resize: vertical; min-height: 100px; line-height: 1.6;
+  }
+  .form-textarea:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(212,82,26,0.08); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+  /* IMAGE UPLOAD */
+  .upload-area {
+    border: 2px dashed var(--border); border-radius: 14px;
+    padding: 36px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative;
+  }
+  .upload-area:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-icon { font-size: 40px; margin-bottom: 10px; }
+  .upload-text { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .upload-hint { font-size: 13px; color: var(--text2); }
+  .image-preview { display: none; margin-top: 16px; border-radius: 12px; overflow: hidden; position: relative; }
+  .image-preview img { width: 100%; max-height: 250px; object-fit: cover; }
+  .image-preview-remove {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
+    width: 32px; height: 32px; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* SUBMIT */
+  .form-submit { display: flex; gap: 12px; padding-top: 24px; border-top: 1px solid var(--border); margin-top: 32px; flex-wrap: wrap; }
+  .btn-submit {
+    padding: 15px 36px; background: var(--accent); color: #fff;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-submit:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,82,26,0.3); }
+  .btn-cancel {
+    padding: 15px 24px; background: var(--bg2); color: var(--text2);
+    border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; font-weight: 600;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-cancel:hover { border-color: var(--text2); color: var(--text); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <h1 class="page-title">음식점 등록 🏪</h1>
+  <p class="page-subtitle">새로운 맛집을 LocalEats에 등록해보세요. 많은 분들에게 소개될 거예요!</p>
+
+  <div class="form-card">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- 기본 정보 -->
+      <div class="form-section-title">📋 기본 정보</div>
+
+      <div class="form-group">
+        <label>음식점 이름 <span class="required">*</span></label>
+        <div class="input-wrap">
+          <span class="icon">🏪</span>
+          <input type="text" name="name" class="form-input" placeholder="음식점 이름을 입력하세요" required value="{{ form.name.value|default:'' }}">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>카테고리 <span class="required">*</span></label>
+          <select name="category" class="form-select" required>
+            <option value="">카테고리 선택</option>
+            {% for cat in categories %}
+              <option value="{{ cat.pk }}" {% if form.category.value == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+            {% empty %}
+              <option value="한식">한식</option>
+              <option value="일식">일식</option>
+              <option value="양식">양식</option>
+              <option value="중식">중식</option>
+              <option value="카페">카페</option>
+              <option value="분식">분식</option>
+              <option value="디저트">디저트</option>
+              <option value="패스트푸드">패스트푸드</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>전화번호</label>
+          <div class="input-wrap">
+            <span class="icon">📞</span>
+            <input type="tel" name="phone" class="form-input" placeholder="010-0000-0000" value="{{ form.phone.value|default:'' }}">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>소개 <span style="color:var(--text2);font-weight:400">(선택)</span></label>
+        <textarea name="description" class="form-textarea" placeholder="음식점을 간단히 소개해주세요...">{{ form.description.value|default:'' }}</textarea>
+      </div>
+
+      <!-- 위치 정보 -->
+      <div class="form-section-title">📍 위치 정보</div>
+
+      <div class="form-group">
+        <label>주소 <span class="required">*</span></label>
+        <div class="input-wrap">
+          <span class="icon">📍</span>
+          <input type="text" name="address" class="form-input" placeholder="도로명 주소를 입력하세요" required value="{{ form.address.value|default:'' }}">
+        </div>
+      </div>
+
+      <!-- 운영 정보 -->
+      <div class="form-section-title">🕐 운영 정보</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>영업시간</label>
+          <div class="input-wrap">
+            <span class="icon">🕐</span>
+            <input type="text" name="hours" class="form-input" placeholder="예: 11:00 - 21:00" value="{{ form.hours.value|default:'' }}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>휴무일</label>
+          <div class="input-wrap">
+            <span class="icon">📅</span>
+            <input type="text" name="closed_days" class="form-input" placeholder="예: 매주 월요일" value="{{ form.closed_days.value|default:'' }}">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>웹사이트</label>
+        <div class="input-wrap">
+          <span class="icon">🌐</span>
+          <input type="url" name="website" class="form-input" placeholder="https://..." value="{{ form.website.value|default:'' }}">
+        </div>
+      </div>
+
+      <!-- 사진 -->
+      <div class="form-section-title">📷 대표 사진</div>
+      <div class="upload-area" id="uploadArea">
+        <input type="file" name="image" accept="image/*" id="imageInput">
+        <div class="upload-icon">🖼️</div>
+        <div class="upload-text">클릭하거나 이미지를 드래그하세요</div>
+        <div class="upload-hint">JPG, PNG · 최대 10MB</div>
+      </div>
+      <div class="image-preview" id="imagePreview">
+        <img id="previewImg" src="" alt="미리보기">
+        <button type="button" class="image-preview-remove" onclick="removeImage()">✕</button>
+      </div>
+
+      <div class="form-submit">
+        <button type="submit" class="btn-submit">🏪 음식점 등록하기</button>
+        <a href="/restaurants/" class="btn-cancel">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('imageInput').addEventListener('change', function(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('previewImg').src = ev.target.result;
+    document.getElementById('imagePreview').style.display = 'block';
+    document.getElementById('uploadArea').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+function removeImage() {
+  document.getElementById('imageInput').value = '';
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('uploadArea').style.display = 'block';
+}
+const ua = document.getElementById('uploadArea');
+ua.addEventListener('dragover', e => { e.preventDefault(); ua.style.borderColor = 'var(--accent)'; });
+ua.addEventListener('dragleave', () => { ua.style.borderColor = ''; });
+ua.addEventListener('drop', e => {
+  e.preventDefault(); ua.style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (file?.type.startsWith('image/')) {
+    const dt = new DataTransfer(); dt.items.add(file);
+    document.getElementById('imageInput').files = dt.files;
+    document.getElementById('imageInput').dispatchEvent(new Event('change'));
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}회원가입 완료 — LocalEats{% endblock %}
+{% block content %}
+<div style="max-width:480px;margin:80px auto;text-align:center;padding:0 24px">
+  <div style="font-size:72px;margin-bottom:24px">📧</div>
+  <h1 style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;margin-bottom:12px">이메일을 확인해주세요!</h1>
+  <p style="color:var(--text2);font-size:16px;line-height:1.7;margin-bottom:32px">
+    <strong>{{ email }}</strong>로 인증 메일을 보냈어요.<br>
+    메일함을 확인하고 링크를 클릭해주세요!
+  </p>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;font-size:14px;color:var(--text2);margin-bottom:28px">
+    ⏰ 인증 링크는 <strong>24시간</strong> 후에 만료돼요<br>
+    📁 스팸 메일함도 확인해보세요
+  </div>
+  <a href="/users/login/" style="background:var(--accent);color:#fff;padding:13px 28px;border-radius:12px;text-decoration:none;font-weight:600;font-size:15px">로그인 페이지로 →</a>
+</div>
+{% endblock %}

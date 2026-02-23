@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% block title %}마이페이지 — LocalEats{% endblock %}
+
+{% block extra_css %}
+<style>
+  .mypage-wrap { max-width: 900px; margin: 0 auto; }
+
+  /* PROFILE HEADER */
+  .profile-header {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px; margin-bottom: 28px;
+    display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+    box-shadow: var(--shadow); animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .avatar {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #E8A080);
+    color: #fff; font-size: 36px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; box-shadow: 0 4px 16px rgba(212,82,26,0.3);
+  }
+  .profile-info { flex: 1; }
+  .profile-name { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .profile-email { font-size: 14px; color: var(--text2); margin-bottom: 14px; }
+  .profile-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 22px; font-weight: 700; color: var(--accent); display: block; }
+  .stat-label { font-size: 12px; color: var(--text2); }
+  .profile-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-edit {
+    padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600;
+    border: 1.5px solid var(--border); background: var(--bg); color: var(--text);
+    text-decoration: none; transition: all 0.2s; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-edit:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 2px solid var(--border); }
+  .tab {
+    padding: 12px 20px; font-size: 14px; font-weight: 600; color: var(--text2);
+    cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif;
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* REVIEW CARDS */
+  .review-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; margin-bottom: 16px;
+    transition: box-shadow var(--transition); animation: fadeUp 0.4s ease both;
+  }
+  .review-card:hover { box-shadow: var(--shadow); }
+  .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+  .restaurant-link {
+    font-size: 16px; font-weight: 700; color: var(--text); text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .restaurant-link:hover { color: var(--accent); }
+  .review-date { font-size: 13px; color: var(--text2); }
+  .stars { display: flex; gap: 2px; margin-bottom: 10px; }
+  .stars .on { color: #F59E0B; }
+  .stars .off { color: var(--star-off); }
+  .review-text { font-size: 15px; line-height: 1.7; color: var(--text); margin-bottom: 14px; }
+  .review-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 14px; }
+  .review-actions { display: flex; gap: 8px; }
+  .btn-sm {
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text2);
+    text-decoration: none; transition: all 0.2s; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm.danger { border-color: #FECACA; color: #EF4444; background: #FFF5F5; }
+  .btn-sm.danger:hover { background: #FEE2E2; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 60px 24px; color: var(--text2); }
+  .empty-icon { font-size: 52px; margin-bottom: 16px; }
+
+  /* TAB CONTENT */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mypage-wrap">
+
+  <!-- PROFILE -->
+  <div class="profile-header">
+    <div class="avatar">{{ user.username|first|upper }}</div>
+    <div class="profile-info">
+      <div class="profile-name">{{ user.username }}</div>
+      <div class="profile-email">{{ user.email|default:"이메일 미등록" }}</div>
+      <div class="profile-stats">
+        <div class="stat"><span class="stat-num">{{ reviews|length }}</span><div class="stat-label">작성한 리뷰</div></div>
+        <div class="stat"><span class="stat-num">{{ favorite_count|default:0 }}</span><div class="stat-label">즐겨찾기</div></div>
+        <div class="stat"><span class="stat-num">{{ user.date_joined|date:"Y" }}</span><div class="stat-label">가입년도</div></div>
+      </div>
+    </div>
+    <div class="profile-actions">
+      <a href="/users/edit/" class="btn-edit">✏️ 프로필 수정</a>
+      <a href="/users/logout/" class="btn-edit">🚪 로그아웃</a>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('reviews', this)">✍️ 내 리뷰 ({{ reviews|length }})</button>
+    <button class="tab" onclick="showTab('favorites', this)">❤️ 즐겨찾기 ({{ favorite_count|default:0 }})</button>
+  </div>
+
+  <!-- 내 리뷰 -->
+  <div class="tab-content active" id="tab-reviews">
+    {% for review in reviews %}
+    <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
+      <div class="review-header">
+        <a href="/restaurants/{{ review.restaurant.pk }}/" class="restaurant-link">
+          🍽️ {{ review.restaurant.name }}
+        </a>
+        <span class="review-date">{{ review.created_at|date:"Y.m.d" }}</span>
+      </div>
+      <div class="stars">
+        {% for i in "12345" %}
+          {% if forloop.counter <= review.rating %}<span class="on">★</span>{% else %}<span class="off">★</span>{% endif %}
+        {% endfor %}
+      </div>
+      {% if review.image %}<img src="{{ review.image.url }}" class="review-img">{% endif %}
+      <p class="review-text">{{ review.content }}</p>
+      <div class="review-actions">
+        <a href="/reviews/{{ review.pk }}/edit/" class="btn-sm">✏️ 수정</a>
+        <button class="btn-sm danger" onclick="deleteReview({{ review.pk }})">🗑️ 삭제</button>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty">
+      <div class="empty-icon">✍️</div>
+      <p style="font-size:18px;font-weight:600;margin-bottom:8px;">아직 작성한 리뷰가 없어요</p>
+      <p style="margin-bottom:20px;">방문한 음식점의 리뷰를 남겨보세요!</p>
+      <a href="/restaurants/" style="background:var(--accent);color:#fff;padding:12px 24px;border-radius:12px;text-decoration:none;font-weight:600;">음식점 보러 가기</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- 즐겨찾기 -->
+  <div class="tab-content" id="tab-favorites">
+    {% for fav in favorites %}
+    <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
+      <div class="review-header">
+        <a href="/restaurants/{{ fav.restaurant.pk }}/" class="restaurant-link">
+          🍽️ {{ fav.restaurant.name }}
+        </a>
+        <span class="review-date">{{ fav.restaurant.category }}</span>
+      </div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:12px;">📍 {{ fav.restaurant.address }}</div>
+      <div class="review-actions">
+        <a href="/restaurants/{{ fav.restaurant.pk }}/" class="btn-sm">상세보기 →</a>
+        <button class="btn-sm danger" onclick="removeFav({{ fav.restaurant.pk }}, this)">❤️ 즐겨찾기 취소</button>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty">
+      <div class="empty-icon">❤️</div>
+      <p style="font-size:18px;font-weight:600;margin-bottom:8px;">즐겨찾기한 음식점이 없어요</p>
+      <p style="margin-bottom:20px;">마음에 드는 음식점을 즐겨찾기해보세요!</p>
+      <a href="/restaurants/" style="background:var(--accent);color:#fff;padding:12px 24px;border-radius:12px;text-decoration:none;font-weight:600;">음식점 둘러보기</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+function deleteReview(id) {
+  if (!confirm('정말 삭제하시겠어요?')) return;
+  fetch(`/reviews/${id}/delete/`, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } })
+    .then(() => location.reload());
+}
+function removeFav(id, btn) {
+  fetch(`/favorites/toggle/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } })
+    .then(() => btn.closest('.review-card').remove());
+}
+function getCookie(name) {
+  return document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name + '='))?.split('=')[1] || '';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block title %}회원가입 — LocalEats{% endblock %}
+
+{% block extra_css %}
+<style>
+  .auth-wrap {
+    min-height: calc(100vh - 200px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 24px;
+  }
+  .auth-card {
+    width: 100%; max-width: 480px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 24px; padding: 48px 40px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.5s ease;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  .auth-logo { text-align: center; margin-bottom: 28px; }
+  .auth-logo-text { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--accent); }
+  .auth-logo-text span { color: var(--text); }
+  .auth-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .auth-subtitle { font-size: 14px; color: var(--text2); text-align: center; margin-bottom: 32px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
+  .input-wrap { position: relative; }
+  .input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
+  .input-wrap input {
+    width: 100%; padding: 13px 16px 13px 42px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: 15px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s;
+  }
+  .input-wrap input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(212,82,26,0.08); }
+  .input-wrap input.error { border-color: #EF4444; }
+  .field-error { font-size: 12px; color: #EF4444; margin-top: 5px; display: flex; align-items: center; gap: 4px; }
+  .field-hint { font-size: 12px; color: var(--text2); margin-top: 5px; }
+
+  /* 비밀번호 강도 */
+  .pw-strength { margin-top: 8px; }
+  .pw-strength-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; margin-bottom: 4px; }
+  .pw-strength-fill { height: 100%; border-radius: 2px; transition: all 0.3s; width: 0; }
+  .pw-strength-text { font-size: 12px; color: var(--text2); }
+
+  .toggle-pw {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text2); padding: 4px;
+  }
+
+  .terms {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin: 20px 0; padding: 16px; background: var(--bg); border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .terms input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; margin-top: 1px; flex-shrink: 0; }
+  .terms label { font-size: 13px; color: var(--text2); line-height: 1.5; cursor: pointer; }
+  .terms a { color: var(--accent); text-decoration: none; }
+
+  .btn-signup {
+    width: 100%; padding: 15px; background: var(--accent); color: #fff;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-signup:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,82,26,0.3); }
+
+  .auth-footer { text-align: center; margin-top: 24px; font-size: 14px; color: var(--text2); }
+  .auth-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-text">Local<span>Eats</span></div>
+    </div>
+    <h1 class="auth-title">함께 맛집을 탐험해요! 🍽️</h1>
+    <p class="auth-subtitle">무료로 가입하고 솔직한 리뷰를 남겨보세요</p>
+
+    <form method="POST" id="signupForm">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="id_username">아이디</label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text" name="username" id="id_username" placeholder="영문/숫자 4~20자" autocomplete="username" required>
+        </div>
+        {% if form.username.errors %}<div class="field-error">⚠️ {{ form.username.errors|join:", " }}</div>{% endif %}
+        <div class="field-hint">영문, 숫자, _, @ 만 사용 가능해요</div>
+      </div>
+
+      <div class="form-group">
+        <label for="id_email">이메일 <span class="required">*</span></label>
+        <div class="input-wrap">
+          <span class="icon">📧</span>
+          <input type="email" name="email" id="id_email" placeholder="example@email.com" autocomplete="email" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="id_password1">비밀번호</label>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password" name="password1" id="id_password1" placeholder="8자 이상 입력" autocomplete="new-password" required>
+          <button type="button" class="toggle-pw" onclick="togglePw('id_password1', this)">👁️</button>
+        </div>
+        <div class="pw-strength" id="pwStrength" style="display:none">
+          <div class="pw-strength-bar"><div class="pw-strength-fill" id="pwFill"></div></div>
+          <div class="pw-strength-text" id="pwText"></div>
+        </div>
+        {% if form.password1.errors %}<div class="field-error">⚠️ {{ form.password1.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_password2">비밀번호 확인</label>
+        <div class="input-wrap">
+          <span class="icon">🔐</span>
+          <input type="password" name="password2" id="id_password2" placeholder="비밀번호를 한 번 더 입력" autocomplete="new-password" required>
+          <button type="button" class="toggle-pw" onclick="togglePw('id_password2', this)">👁️</button>
+        </div>
+        <div id="pwMatch" style="font-size:12px;margin-top:5px;display:none"></div>
+        {% if form.password2.errors %}<div class="field-error">⚠️ {{ form.password2.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="terms">
+        <input type="checkbox" id="agreeTerms" required>
+        <label for="agreeTerms">
+          <a href="#">이용약관</a> 및 <a href="#">개인정보 처리방침</a>에 동의합니다. 서비스 이용을 위해 필수로 동의해야 해요.
+        </label>
+      </div>
+
+      <button type="submit" class="btn-signup">🎉 회원가입 하기</button>
+    </form>
+
+    <div class="auth-footer">
+      이미 계정이 있으신가요? <a href="/users/login/">로그인</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+  btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+}
+
+// 비밀번호 강도
+document.getElementById('id_password1').addEventListener('input', function() {
+  const val = this.value;
+  const strength = document.getElementById('pwStrength');
+  const fill = document.getElementById('pwFill');
+  const text = document.getElementById('pwText');
+  if (!val) { strength.style.display = 'none'; return; }
+  strength.style.display = 'block';
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    { w: '25%', color: '#EF4444', label: '너무 짧아요' },
+    { w: '50%', color: '#F59E0B', label: '보통이에요' },
+    { w: '75%', color: '#3B82F6', label: '좋아요!' },
+    { w: '100%', color: '#10B981', label: '매우 안전해요 🔒' },
+  ];
+  const l = levels[Math.max(0, score - 1)];
+  fill.style.width = l.w; fill.style.background = l.color;
+  text.textContent = l.label; text.style.color = l.color;
+});
+
+// 비밀번호 일치 확인
+document.getElementById('id_password2').addEventListener('input', function() {
+  const pw1 = document.getElementById('id_password1').value;
+  const match = document.getElementById('pwMatch');
+  match.style.display = 'block';
+  if (this.value === pw1) {
+    match.textContent = '✅ 비밀번호가 일치해요'; match.style.color = '#10B981';
+  } else {
+    match.textContent = '❌ 비밀번호가 다릅니다'; match.style.color = '#EF4444';
+  }
+});
+</script>
+{% endblock %}

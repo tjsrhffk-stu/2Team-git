@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}즐겨찾기 — LocalEats{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header { margin-bottom: 32px; }
+  .page-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; margin-bottom: 8px; }
+  .page-subtitle { font-size: 15px; color: var(--text2); }
+
+  .favorites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+
+  .fav-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); transition: all var(--transition);
+    animation: fadeUp 0.4s ease both;
+  }
+  .fav-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--accent); }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .card-img {
+    height: 180px; background: var(--bg2); position: relative;
+    display: flex; align-items: center; justify-content: center; font-size: 56px; overflow: hidden;
+  }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  .card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.25), transparent 50%); }
+  .card-category { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 100px; }
+  .fav-remove-btn {
+    position: absolute; top: 12px; right: 12px;
+    width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.9);
+    border: none; cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s; backdrop-filter: blur(4px);
+  }
+  .fav-remove-btn:hover { transform: scale(1.15); }
+
+  .card-body { padding: 20px; }
+  .card-name { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .card-address { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
+  .card-stars { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+  .stars { display: flex; gap: 2px; }
+  .stars .on { color: #F59E0B; font-size: 15px; }
+  .stars .off { color: var(--star-off); font-size: 15px; }
+  .rating-num { font-weight: 700; font-size: 14px; }
+  .review-count { font-size: 13px; color: var(--text2); }
+
+  .card-footer { border-top: 1px solid var(--border); padding-top: 14px; display: flex; gap: 8px; }
+  .btn-detail {
+    flex: 1; padding: 10px; background: var(--accent); color: #fff;
+    border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+    text-decoration: none; text-align: center; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-detail:hover { background: var(--accent-hover); }
+  .btn-review {
+    padding: 10px 16px; background: var(--bg); color: var(--text2);
+    border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; font-weight: 600;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-review:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 80px 24px; }
+  .empty-icon { font-size: 64px; margin-bottom: 20px; }
+  .empty-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+  .empty-desc { color: var(--text2); font-size: 15px; margin-bottom: 28px; }
+  .btn-explore {
+    display: inline-block; padding: 14px 32px;
+    background: var(--accent); color: #fff; border-radius: 14px;
+    font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.2s;
+  }
+  .btn-explore:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+  /* COUNT BADGE */
+  .count-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-light); color: var(--accent);
+    font-size: 13px; font-weight: 600; padding: 6px 14px;
+    border-radius: 100px; margin-bottom: 24px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">즐겨찾기 ❤️</h1>
+  <p class="page-subtitle">내가 저장한 맛집 목록이에요</p>
+</div>
+
+{% if favorites %}
+<div class="count-badge">❤️ {{ favorites|length }}개의 맛집을 저장했어요</div>
+<div class="favorites-grid">
+  {% for fav in favorites %}
+  <div class="fav-card" id="fav-{{ fav.restaurant.pk }}" style="animation-delay: {{ forloop.counter0 }}0ms">
+    <div class="card-img">
+      {% if fav.restaurant.image %}
+        <img src="{{ fav.restaurant.image.url }}" alt="{{ fav.restaurant.name }}">
+      {% else %}
+        🍽️
+      {% endif %}
+      <div class="card-img-overlay"></div>
+      <span class="card-category">{{ fav.restaurant.category|default:"기타" }}</span>
+      <button class="fav-remove-btn" onclick="removeFav({{ fav.restaurant.pk }})" title="즐겨찾기 취소">❤️</button>
+    </div>
+    <div class="card-body">
+      <div class="card-name">{{ fav.restaurant.name }}</div>
+      <div class="card-address">📍 {{ fav.restaurant.address|truncatechars:30 }}</div>
+      <div class="card-stars">
+        <div class="stars">
+          {% with avg=fav.restaurant.avg_rating|default:0 %}
+          {% for i in "12345" %}
+            {% if forloop.counter <= avg %}<span class="on">★</span>{% else %}<span class="off">★</span>{% endif %}
+          {% endfor %}
+          {% endwith %}
+        </div>
+        <span class="rating-num">{{ fav.restaurant.avg_rating|default:"—" }}</span>
+        <span class="review-count">({{ fav.restaurant.review_count|default:0 }}개)</span>
+      </div>
+      <div class="card-footer">
+        <a href="/restaurants/{{ fav.restaurant.pk }}/" class="btn-detail">상세보기</a>
+        <a href="/reviews/create/{{ fav.restaurant.pk }}/" class="btn-review">✍️ 리뷰</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty">
+  <div class="empty-icon">💔</div>
+  <div class="empty-title">아직 즐겨찾기한 음식점이 없어요</div>
+  <p class="empty-desc">음식점 페이지에서 ❤️ 버튼을 눌러 저장해보세요!</p>
+  <a href="/restaurants/" class="btn-explore">🗺️ 음식점 둘러보기</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function removeFav(restaurantId) {
+  if (!confirm('즐겨찾기에서 제거할까요?')) return;
+  fetch(`/favorites/toggle/${restaurantId}/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+  }).then(r => r.json()).then(data => {
+    const card = document.getElementById(`fav-${restaurantId}`);
+    card.style.transition = 'all 0.3s';
+    card.style.opacity = '0'; card.style.transform = 'scale(0.9)';
+    setTimeout(() => { card.remove(); updateCount(); }, 300);
+  });
+}
+function updateCount() {
+  const remaining = document.querySelectorAll('.fav-card').length;
+  const badge = document.querySelector('.count-badge');
+  if (badge) badge.textContent = `❤️ ${remaining}개의 맛집을 저장했어요`;
+  if (remaining === 0) location.reload();
+}
+function getCookie(name) {
+  return document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name + '='))?.split('=')[1] || '';
+}
+</script>
+{% endblock %}
