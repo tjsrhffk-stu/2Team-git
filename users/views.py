@@ -143,10 +143,18 @@ def mypage_view(request):
     except Exception:
         pass
 
+    # 예전 마이페이지 UI(+@) 호환용: 예약/방문 섹션에서 사용할 키(지금은 빈 리스트)
+    reservations = []
+    visits = []
+
     return render(request, 'users/mypage.html', {
+        'me': request.user,
         'reviews': reviews,
+        'review_count': reviews.count(),
         'favorites': favorites,
         'favorite_count': favorite_count,
+        'reservations': reservations,
+        'visits': visits,
     })
 
 
