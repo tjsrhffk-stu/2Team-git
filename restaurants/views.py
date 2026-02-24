@@ -142,3 +142,13 @@ def restaurant_create(request):
         "categories": categories,
         "form": {},
     })
+
+def restaurant_map(request):
+    # 모든 음식점 정보를 가져옵니다.
+    # (필요하다면 .filter(category='한식') 등으로 필터링 가능)
+    restaurants = Restaurant.objects.all()
+    
+    context = {
+        'restaurants': restaurants,
+    }
+    return render(request, 'Maps_Api.html', context)

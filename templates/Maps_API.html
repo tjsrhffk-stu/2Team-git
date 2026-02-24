@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>맛집 상세 지도</title>
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=3z7t86u9wa&amp;submodules=geocoding"></script>
+    <style>
+        #map { width: 100%; height: 80vh; border-radius: 10px; }
+        /* 인포윈도우 스타일 정의 */
+        .info-window { padding: 10px; min-width: 150px; font-family: 'Malgun Gothic', sans-serif; }
+        .info-window h4 { margin: 0 0 5px 0; color: #007bff; }
+        .info-window p { margin: 0; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+    // 1. 지도 초기화
+    var map = new naver.maps.Map('map', {
+        center: new naver.maps.LatLng(37.5665, 126.9780), // 초기 중심점
+        zoom: 13
+    });
+
+    // 마커들을 담을 범위(Bounds) 객체 생성 (마커 위치에 맞춰 지도 자동 이동용)
+    var bounds = new naver.maps.LatLngBounds();
+
+    // 2. Django DB 데이터를 JavaScript 마커로 변환
+    {% for res in restaurants %}
+        {% if res.lat and res.lng %}
+        
+        (function() {
+            // 해당 맛집의 좌표 객체 생성
+            var position = new naver.maps.LatLng({{ res.lat }}, {{ res.lng }});
+            
+            // 마커 생성
+            var marker = new naver.maps.Marker({
+                position: position,
+                map: map,
+                title: "{{ res.name }}",
+                animation: naver.maps.Animation.DROP
+            });
+
+            // 3. 인포윈도우(말풍선) 내용 구성
+            var contentString = [
+                '<div class="info-window">',
+                '   <h4>{{ res.name }}</h4>',
+                '   <p>{{ res.address }}</p>',
+                '   <p style="margin-top:5px; font-weight:bold;">클릭 시 상세페이지로 이동</p>',
+                '</div>'
+            ].join('');
+
+            var infowindow = new naver.maps.InfoWindow({
+                content: contentString,
+                borderWidth: 1,
+                anchorSize: new naver.maps.Size(10, 10)
+            });
+
+            // 마커 마우스 오버 시 정보창 표시
+            naver.maps.Event.addListener(marker, "mouseover", function() {
+                infowindow.open(map, marker);
+            });
+
+            // 마커 마우스 아웃 시 정보창 닫기
+            naver.maps.Event.addListener(marker, "mouseout", function() {
+                infowindow.close();
+            });
+
+            // 4. 핀 클릭 시 상세 페이지로 이동
+            naver.maps.Event.addListener(marker, "click", function() {
+                window.location.href = "/restaurants/{{ res.id }}/";
+            });
+
+            // 지도 범위를 확장하여 모든 마커가 보이도록 함
+            bounds.extend(position);
+        })();
+
+        {% endif %}
+    {% endfor %}
+
+    // 5. 모든 마커가 보일 수 있도록 지도 위치/줌 자동 조절
+    if (!bounds.isEmpty()) {
+        map.fitBounds(bounds);
+    }
+</script>
+</body>
+</html>
