@@ -5,7 +5,7 @@ from django.contrib import messages
 from .models import Restaurant, Category
 from django.http import HttpResponseForbidden
 
-# 1. 음식점 목록 (즐겨찾기 상태 로직 포함)
+# 1. 음식점 목록
 def restaurant_list(request):
     q = request.GET.get("q", "").strip()
     category_id = request.GET.get("category", "").strip()
@@ -35,7 +35,7 @@ def restaurant_list(request):
     else: 
         qs = qs.order_by("-id")
 
-    # [즐겨찾기 최적화] 로그인한 사용자가 즐겨찾기한 식당 ID 목록 추출
+    # [즐겨찾기 최적화]
     user_favorites = []
     if request.user.is_authenticated:
         try:
@@ -55,18 +55,18 @@ def restaurant_list(request):
     return render(request, "restaurants/list.html", context)
 
 
-# 2. 음식점 상세
-def restaurant_detail(request, restaurant_id):
+# 2. 음식점 상세 (인자 이름을 pk로 수정하여 에러 해결)
+def restaurant_detail(request, pk):
     restaurant = get_object_or_404(
         Restaurant.objects.annotate(
             avg_rating=Avg("reviews__rating"), 
             review_count=Count("reviews")
         ), 
-        pk=restaurant_id
+        pk=pk
     )
     
-    # 조회수 증가 (Update 문으로 원자성 유지)
-    Restaurant.objects.filter(pk=restaurant_id).update(view_count=restaurant.view_count + 1)
+    # 조회수 증가
+    Restaurant.objects.filter(pk=pk).update(view_count=restaurant.view_count + 1)
     
     # 리뷰 정렬 로직
     sort = request.GET.get('sort', 'rating_high')
@@ -76,7 +76,7 @@ def restaurant_detail(request, restaurant_id):
         reviews = reviews_qs.order_by("-created_at")
     elif sort == 'rating_low':
         reviews = reviews_qs.order_by("rating", "-created_at")
-    else: # rating_high (기본값)
+    else: # rating_high
         reviews = reviews_qs.order_by("-rating", "-created_at")
 
     # 별점 분포 계산
@@ -110,12 +110,10 @@ def restaurant_detail(request, restaurant_id):
 # 3. 음식점 등록
 @login_required
 def restaurant_create(request):
-    # [권한 체크] 사장님 프로필 확인
-    if not hasattr(request.user, "owner_profile"):
+    if not hasattr(request.user, "owner_profile") and not request.user.is_staff:
         messages.error(request, "사장님 계정만 식당 등록이 가능합니다.")
         return redirect("/restaurants/")
 
-    # [카테고리 초기화] 데이터가 없을 시 기본 카테고리 생성
     if not Category.objects.exists():
         default_categories = ['한식', '중식', '일식', '양식', '카페', '패스트푸드', '기타']
         for cat_name in default_categories:
