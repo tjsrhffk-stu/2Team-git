@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Restaurant, Category
+from django.http import HttpResponseForbidden
 
 
 # 음식점 목록
@@ -95,6 +96,10 @@ def restaurant_detail(request, pk):
 # 음식점 등록
 @login_required
 def restaurant_create(request):
+    # ✅ 사장만 식당 등록 가능 (owner_profile(오너프로필) 없으면 일반유저)
+    if not hasattr(request.user, "owner_profile"):
+        return HttpResponseForbidden("사장 계정만 식당 등록이 가능합니다.")
+
     categories = Category.objects.all()
 
     if request.method == "POST":
@@ -124,6 +129,9 @@ def restaurant_create(request):
             hours=hours,
             website=website,
         )
+
+        # ✅ 등록한 사장 저장 (owner(오너))
+        restaurant.owner = request.user
 
         if category_id:
             try:

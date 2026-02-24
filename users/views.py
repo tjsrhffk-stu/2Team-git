@@ -1,14 +1,21 @@
+import re
 import uuid
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
-from django.utils import timezone
 from datetime import timedelta
+
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from .models import OwnerProfile, Profile
+
+# ✅ 이메일 인증(verification, 베리피케이션) 아직 OFF면 False
+#   - 나중에 True로 바꾸면 signup_done.html + 인증 링크 발송 흐름으로 다시 쓸 수 있음
+ENABLE_EMAIL_VERIFY = False
 
 
 # -------------------------------------------------------
@@ -34,70 +41,219 @@ def login_view(request):
     return render(request, 'users/login.html')
 
 
+def _render_signup(request, pane: str = 'normal', **ctx):
+    """
+    signup.html(일반/사업자 탭) 다시 렌더링 헬퍼
+    """
+    ctx.setdefault('open_pane', pane)
+    ctx.setdefault('auto_open', 1)
+    return render(request, 'users/signup.html', ctx)
+
+
 # -------------------------------------------------------
-# 회원가입 + 이메일 인증 발송
+# ✅ 일반 회원가입
 # -------------------------------------------------------
 def signup_view(request):
     if request.user.is_authenticated:
         return redirect('/')
 
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        email    = request.POST.get('email', '').strip()
+        username  = request.POST.get('username', '').strip()
+        email     = request.POST.get('email', '').strip()
         password1 = request.POST.get('password1', '')
         password2 = request.POST.get('password2', '')
 
+        # 유효성 검사
         if not username or not email:
             messages.error(request, '아이디와 이메일을 입력해주세요.')
-            return render(request, 'users/signup.html', {'username': username, 'email': email})
+            return _render_signup(request, 'normal', username=username, email=email)
 
         if password1 != password2:
             messages.error(request, '비밀번호가 일치하지 않아요.')
-            return render(request, 'users/signup.html', {'username': username, 'email': email})
+            return _render_signup(request, 'normal', username=username, email=email)
 
         if len(password1) < 8:
             messages.error(request, '비밀번호는 8자 이상이어야 해요.')
-            return render(request, 'users/signup.html', {'username': username, 'email': email})
+            return _render_signup(request, 'normal', username=username, email=email)
 
         if User.objects.filter(username=username).exists():
             messages.error(request, '이미 존재하는 아이디예요.')
-            return render(request, 'users/signup.html', {'username': username, 'email': email})
+            return _render_signup(request, 'normal', username=username, email=email)
 
         if User.objects.filter(email=email).exists():
             messages.error(request, '이미 사용 중인 이메일이에요.')
-            return render(request, 'users/signup.html', {'username': username, 'email': email})
+            return _render_signup(request, 'normal', username=username, email=email)
 
+        # 계정 생성
         user = User.objects.create_user(username=username, email=email, password=password1)
-
-        # 이메일 인증 토큰 생성 + 저장
-        token = uuid.uuid4().hex
-        user.profile.email_token = token
-        user.profile.email_token_created_at = timezone.now()
-        user.is_active = False
+        user.is_active = True
         user.save()
 
-        # 이메일 발송
-        verify_url = f"{settings.SITE_URL}/users/verify-email/{token}/"
-        subject = "[LocalEats] 이메일 인증을 완료해주세요"
-        html_content = f"""
-        <p>안녕하세요 {username}님!</p>
-        <p>아래 링크를 눌러 이메일 인증을 완료해주세요:</p>
-        <a href="{verify_url}">{verify_url}</a>
-        <p>(24시간 이내에 인증해야 합니다)</p>
-        """
+        # Profile 보장
+        profile, _ = Profile.objects.get_or_create(user=user)
 
-        email_message = EmailMultiAlternatives(
-            subject=subject,
-            body="이메일 인증을 완료해주세요.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[email],
-        )
-        email_message.attach_alternative(html_content, "text/html")
-        email_message.send()
+        # 이메일 인증 ON일 때만 토큰/메일 발송
+        if ENABLE_EMAIL_VERIFY:
+            token = uuid.uuid4().hex
+            profile.email_token = token
+            profile.email_token_created_at = timezone.now()
+            profile.save()
 
-        return render(request, 'users/signup_done.html', {'email': email})
+            # 인증 전에는 비활성화
+            user.is_active = False
+            user.save()
 
-    return render(request, 'users/signup.html')
+            verify_url = f"{settings.SITE_URL}/users/verify-email/{token}/"
+            subject = "[LocalEats] 이메일 인증을 완료해주세요"
+            html_content = f"""
+            <p>안녕하세요 {username}님!</p>
+            <p>아래 링크를 눌러 이메일 인증을 완료해주세요:</p>
+            <a href="{verify_url}">{verify_url}</a>
+            <p>(24시간 이내에 인증해야 합니다)</p>
+            """
+
+            email_message = EmailMultiAlternatives(
+                subject=subject,
+                body="이메일 인증을 완료해주세요.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            email_message.attach_alternative(html_content, "text/html")
+            email_message.send()
+
+            return render(request, 'users/signup_done.html', {'email': email})
+
+        # 이메일 인증 OFF: 바로 가입 완료
+        messages.success(request, '회원가입이 완료됐어요! 이제 로그인해주세요 ✅')
+        return redirect('/users/login/')
+
+    # GET
+    return render(request, 'users/signup.html', {'open_pane': 'normal', 'auto_open': 0})
+
+
+# -------------------------------------------------------
+# ✅ 사장(사업자) 회원가입 (사업자등록번호 포함)
+#   - restaurants 쪽 권한 체크가 is_staff 기반이면, 여기서 is_staff=True로 맞춤
+# -------------------------------------------------------
+def signup_owner_view(request):
+    if request.user.is_authenticated:
+        return redirect('/')
+
+    if request.method == 'POST':
+        username  = request.POST.get('username', '').strip()
+        email     = request.POST.get('email', '').strip()
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+
+        business_number_raw = request.POST.get('business_number', '').strip()
+        business_number = re.sub(r'[^0-9]', '', business_number_raw)  # 하이픈/공백 제거
+
+        # 유효성 검사
+        if not username or not email:
+            messages.error(request, '아이디와 이메일을 입력해주세요.')
+            return _render_signup(
+                request, 'owner',
+                o_username=username, o_email=email, o_business_number=business_number_raw
+            )
+
+        if not business_number:
+            messages.error(request, '사업자등록번호를 입력해주세요.')
+            return _render_signup(
+                request, 'owner',
+                o_username=username, o_email=email, o_business_number=business_number_raw
+            )
+
+        # 보통 10자리(국내 사업자등록번호) 기준
+        if len(business_number) != 10:
+            messages.error(request, '사업자등록번호는 숫자 10자리로 입력해주세요.')
+            return _render_signup(
+                request, 'owner',
+                o_username=username, o_email=email, o_business_number=business_number_raw
+            )
+
+        if password1 != password2:
+            messages.error(request, '비밀번호가 일치하지 않아요.')
+            return _render_signup(
+                request, 'owner',
+                o_username=username, o_email=email, o_business_number=business_number_raw
+            )
+
+        if len(password1) < 8:
+            messages.error(request, '비밀번호는 8자 이상이어야 해요.')
+            return _render_signup(
+                request, 'owner',
+                o_username=username, o_email=email, o_business_number=business_number_raw
+            )
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, '이미 존재하는 아이디예요.')
+            return _render_signup(
+                request, 'owner',
+                o_username=username, o_email=email, o_business_number=business_number_raw
+            )
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, '이미 사용 중인 이메일이에요.')
+            return _render_signup(
+                request, 'owner',
+                o_username=username, o_email=email, o_business_number=business_number_raw
+            )
+
+        if OwnerProfile.objects.filter(business_number=business_number).exists():
+            messages.error(request, '이미 등록된 사업자등록번호예요.')
+            return _render_signup(
+                request, 'owner',
+                o_username=username, o_email=email, o_business_number=business_number_raw
+            )
+
+        # 계정 생성
+        user = User.objects.create_user(username=username, email=email, password=password1)
+        user.is_staff = True          # ✅ 핵심: 사업자 권한(스태프) ON
+        user.is_active = True
+        user.save()
+
+        # Profile 보장
+        profile, _ = Profile.objects.get_or_create(user=user)
+
+        # ✅ 사장 프로필 생성(사업자등록번호 저장)
+        OwnerProfile.objects.create(user=user, business_number=business_number)
+
+        # 이메일 인증 ON일 때만 토큰/메일 발송
+        if ENABLE_EMAIL_VERIFY:
+            token = uuid.uuid4().hex
+            profile.email_token = token
+            profile.email_token_created_at = timezone.now()
+            profile.save()
+
+            user.is_active = False
+            user.save()
+
+            verify_url = f"{settings.SITE_URL}/users/verify-email/{token}/"
+            subject = "[LocalEats] 이메일 인증을 완료해주세요"
+            html_content = f"""
+            <p>안녕하세요 {username}님!</p>
+            <p>아래 링크를 눌러 이메일 인증을 완료해주세요:</p>
+            <a href="{verify_url}">{verify_url}</a>
+            <p>(24시간 이내에 인증해야 합니다)</p>
+            """
+
+            email_message = EmailMultiAlternatives(
+                subject=subject,
+                body="이메일 인증을 완료해주세요.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            email_message.attach_alternative(html_content, "text/html")
+            email_message.send()
+
+            return render(request, 'users/signup_done.html', {'email': email})
+
+        # 이메일 인증 OFF: 바로 가입 완료
+        messages.success(request, '사업자 회원가입이 완료됐어요! 이제 로그인해주세요 ✅')
+        return redirect('/users/login/')
+
+    # GET: 사업자 탭 열어둔 상태로 보여주기
+    return render(request, 'users/signup.html', {'open_pane': 'owner', 'auto_open': 1})
 
 
 # -------------------------------------------------------
@@ -205,9 +361,10 @@ def forgot_password(request):
             return render(request, 'users/forgot_password.html', {'email': email})
 
         token = uuid.uuid4().hex
-        user.profile.reset_token = token
-        user.profile.reset_token_created_at = timezone.now()
-        user.profile.save()
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.reset_token = token
+        profile.reset_token_created_at = timezone.now()
+        profile.save()
 
         reset_url = f"{settings.SITE_URL}/users/reset-password/{token}/"
         subject = "[LocalEats] 비밀번호 재설정 안내"
