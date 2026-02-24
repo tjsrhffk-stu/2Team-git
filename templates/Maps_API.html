@@ -1,88 +1,212 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>맛집 상세 지도</title>
-    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=3z7t86u9wa&amp;submodules=geocoding"></script>
-    <style>
-        #map { width: 100%; height: 80vh; border-radius: 10px; }
-        /* 인포윈도우 스타일 정의 */
-        .info-window { padding: 10px; min-width: 150px; font-family: 'Malgun Gothic', sans-serif; }
-        .info-window h4 { margin: 0 0 5px 0; color: #007bff; }
-        .info-window p { margin: 0; font-size: 12px; color: #666; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}LocalEats — 맛집 지도{% endblock %}
 
-<div id="map"></div>
+{% block extra_css %}
+<style>
+    /* 1. 레이아웃 보정: 부모 컨테이너들의 높이를 확보합니다. */
+    html, body { 
+        height: 100%; 
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+    
+    main { 
+        padding: 0 !important; 
+        max-width: none !important; 
+        width: 100vw;
+        height: calc(100vh - 70px); /* 헤더 높이가 70px이라고 가정 */
+        display: flex !important;
+    }
+
+    .map-container { 
+        display: flex; 
+        width: 100%; 
+        height: 100%; 
+        align-items: stretch; /* 자식 요소들이 세로로 꽉 차게 함 */
+    }
+
+/* 4. 사이드바와 지도가 각각 독립적으로 바닥까지 닿게 설정 */
+    .map-sidebar {
+        width: 320px; 
+        height: 100%; 
+        background: var(--surface);
+        border-right: 1px solid var(--border); 
+        display: flex; 
+        flex-direction: column; 
+        z-index: 10;
+    }
+
+    #map { 
+        flex: 1; 
+        height: 100% !important; /* 중요: 지도가 부모 높이를 꽉 채움 */
+    }
+    
+    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); background: var(--text); color: #fff; }
+    .sidebar-header h2 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 15px; }
+    .sidebar-header em { color: var(--accent); font-style: normal; }
+
+    /* 검색창 스타일 */
+    .sidebar-search .search-input-wrap { position: relative; }
+    .sidebar-search input {
+        width: 100%; padding: 12px 14px 12px 40px;
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 10px; color: #F0EDE8; font-size: 14px; outline: none;
+    }
+    .sidebar-search .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
+
+    /* 맛집 리스트 */
+    .res-list-item {
+        padding: 20px; border-bottom: 1px solid var(--border);
+        transition: all 0.2s; cursor: pointer; text-decoration: none; color: inherit;
+    }
+    .res-list-item:hover { background: var(--accent-light); }
+    .res-list-item .res-name { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .res-list-item .res-meta { font-size: 13px; color: var(--text2); }
+
+    /* 3. 지도 영역 - 높이가 0이 되지 않도록 강제 설정 */
+    #map { 
+        flex: 1; 
+        height: 100%; 
+        min-height: 500px; 
+        background: #f8f9fa; /* 로딩 전 배경 */
+    }
+
+    /* 인포윈도우 스타일 */
+    .custom-iw {
+        padding: 15px; border-radius: 12px; border: 1px solid #ddd;
+        background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        font-family: 'DM Sans', sans-serif; min-width: 200px;
+    }
+    .iw-title { font-weight: 700; color: var(--accent); margin-bottom: 5px; display: block; }
+    .iw-addr { font-size: 12px; color: #666; }
+    .iw-link { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--text); text-decoration: underline; }
+
+    @media (max-width: 768px) {
+        .map-container { flex-direction: column; }
+        .map-sidebar { width: 100%; height: 35%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="map-container">
+    <div class="map-sidebar">
+        <div class="sidebar-header">
+            <h2>LocalEats <em>Map</em></h2>
+            <div class="sidebar-search">
+                <form method="GET" action="{% url 'restaurant_map' %}"> 
+                    <div class="search-input-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" name="q" placeholder="지도에서 맛집 검색..." value="{{ request.GET.q }}">
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="res-list">
+            {% for res in restaurants %}
+            <div class="res-list-item" onclick="panToMarker({{ res.lat }}, {{ res.lng }}, '{{ res.id }}')">
+                <div class="res-name">{{ res.name }}</div>
+                <div class="res-meta">{{ res.category }} · {{ res.address|truncatechars:25 }}</div>
+                <div style="margin-top: 8px; color: var(--accent); font-size: 12px; font-weight: 600;">
+                    ★ {{ res.avg_rating|default:"0.0" }}
+                </div>
+            </div>
+            {% empty %}
+            <div style="padding: 40px; text-align: center; color: var(--text2);">등록된 맛집이 없습니다.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="map"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=3z7t86u9wa&submodules=geocoding"></script>
 
 <script>
-    // 1. 지도 초기화
-    var map = new naver.maps.Map('map', {
-        center: new naver.maps.LatLng(37.5665, 126.9780), // 초기 중심점
-        zoom: 13
-    });
+    var map;
+    var markers = {};
+    var infoWindows = {};
 
-    // 마커들을 담을 범위(Bounds) 객체 생성 (마커 위치에 맞춰 지도 자동 이동용)
-    var bounds = new naver.maps.LatLngBounds();
+    // 1. 페이지 로드 후 실행
+    window.onload = function() {
+        var mapOptions = {
+            center: new naver.maps.LatLng(37.5665, 126.9780),
+            zoom: 13,
+            zoomControl: true,
+            zoomControlOptions: { position: naver.maps.Position.RIGHT_TOP }
+        };
 
-    // 2. Django DB 데이터를 JavaScript 마커로 변환
-    {% for res in restaurants %}
+        map = new naver.maps.Map('map', mapOptions);
+        var bounds = new naver.maps.LatLngBounds();
+
+        // 2. 마커 생성 로직
+        {% for res in restaurants %}
         {% if res.lat and res.lng %}
-        
         (function() {
-            // 해당 맛집의 좌표 객체 생성
-            var position = new naver.maps.LatLng({{ res.lat }}, {{ res.lng }});
+            var pos = new naver.maps.LatLng({{ res.lat }}, {{ res.lng }});
             
-            // 마커 생성
             var marker = new naver.maps.Marker({
-                position: position,
+                position: pos,
                 map: map,
-                title: "{{ res.name }}",
-                animation: naver.maps.Animation.DROP
+                icon: {
+                    content: '<div style="background:var(--accent); width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow:0 0 5px rgba(0,0,0,0.3);"></div>',
+                    anchor: new naver.maps.Point(7, 7)
+                }
             });
 
-            // 3. 인포윈도우(말풍선) 내용 구성
-            var contentString = [
-                '<div class="info-window">',
-                '   <h4>{{ res.name }}</h4>',
-                '   <p>{{ res.address }}</p>',
-                '   <p style="margin-top:5px; font-weight:bold;">클릭 시 상세페이지로 이동</p>',
+            var iwContent = [
+                '<div class="custom-iw">',
+                '   <span class="iw-title">{{ res.name }}</span>',
+                '   <span class="iw-addr">{{ res.address }}</span><br>',
+                '   <a href="/restaurants/{{ res.id }}/" class="iw-link">상세보기 →</a>',
                 '</div>'
             ].join('');
 
             var infowindow = new naver.maps.InfoWindow({
-                content: contentString,
-                borderWidth: 1,
-                anchorSize: new naver.maps.Size(10, 10)
+                content: iwContent,
+                backgroundColor: "transparent",
+                borderWidth: 0,
+                disableAnchor: true,
+                pixelOffset: new naver.maps.Point(0, -10)
             });
 
-            // 마커 마우스 오버 시 정보창 표시
-            naver.maps.Event.addListener(marker, "mouseover", function() {
-                infowindow.open(map, marker);
-            });
+            markers['{{ res.id }}'] = marker;
+            infoWindows['{{ res.id }}'] = infowindow;
 
-            // 마커 마우스 아웃 시 정보창 닫기
-            naver.maps.Event.addListener(marker, "mouseout", function() {
-                infowindow.close();
-            });
-
-            // 4. 핀 클릭 시 상세 페이지로 이동
             naver.maps.Event.addListener(marker, "click", function() {
-                window.location.href = "/restaurants/{{ res.id }}/";
+                if (infowindow.getMap()) {
+                    infowindow.close();
+                } else {
+                    infowindow.open(map, marker);
+                }
             });
 
-            // 지도 범위를 확장하여 모든 마커가 보이도록 함
-            bounds.extend(position);
+            bounds.extend(pos);
         })();
-
         {% endif %}
-    {% endfor %}
+        {% endfor %}
 
-    // 5. 모든 마커가 보일 수 있도록 지도 위치/줌 자동 조절
-    if (!bounds.isEmpty()) {
-        map.fitBounds(bounds);
+        // 3. 모든 마커가 보이도록 범위 조정
+        if (!bounds.isEmpty()) {
+            map.fitBounds(bounds);
+        }
+
+        // 4. 지도가 깨져 보일 때를 대비한 리사이즈 강제 호출
+        window.dispatchEvent(new Event('resize'));
+    };
+
+    // 사이드바 클릭 시 이동 함수
+    function panToMarker(lat, lng, id) {
+        var pos = new naver.maps.LatLng(lat, lng);
+        map.panTo(pos);
+        map.setZoom(16);
+        
+        for (var key in infoWindows) { infoWindows[key].close(); }
+        if(infoWindows[id]) infoWindows[id].open(map, markers[id]);
     }
 </script>
-</body>
-</html>
+{% endblock %}
