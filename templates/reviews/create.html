@@ -140,6 +140,7 @@
 
   <div class="restaurant-badge">🍽️ &nbsp;{{ restaurant.name }}</div>
 
+  
   <div class="form-card">
     <form method="POST" enctype="multipart/form-data" id="reviewForm">
       {% csrf_token %}
@@ -203,6 +204,36 @@
       </div>
     </form>
   </div>
+  
+  
+  <div class="form-card" style="margin-top: 30px; border-top: 2px solid var(--accent);">
+    <h3 style="font-family: 'Playfair Display', serif; margin-bottom: 20px;">🍴 이 음식점의 다른 리뷰들</h3>
+    
+    <div class="filter-bar" style="margin-bottom: 20px; display: flex; gap: 8px; border: none; position: static;">
+        <a href="?sort=rating_high" class="chip {% if current_sort == 'rating_high' %}active{% endif %}">⭐ 별점 높은순</a>
+        <a href="?sort=latest" class="chip {% if current_sort == 'latest' %}active{% endif %}">🕐 최신순</a>
+        <a href="?sort=rating_low" class="chip {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+    </div>
+
+    <div class="existing-reviews" style="display: flex; flex-direction: column; gap: 16px;">
+        {% for rev in existing_reviews %}
+            <div class="rev-item" style="padding: 20px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <strong style="font-size: 15px;">👤 {{ rev.author.username }}</strong>
+                    <div style="color: #F59E0B;">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= rev.rating %}★{% else %}<span style="color:var(--border);">★</span>{% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <p style="font-size: 14px; line-height: 1.6; color: var(--text); margin: 0;">{{ rev.content }}</p>
+                <div style="margin-top: 10px; font-size: 12px; color: var(--text2);">{{ rev.created_at|date:"Y.m.d" }}</div>
+            </div>
+        {% empty %}
+            <p style="text-align: center; color: var(--text2); padding: 40px 0;">아직 작성된 리뷰가 없습니다. 첫 리뷰를 남겨보세요!</p>
+        {% endfor %}
+      </div>
+    </div>  
 
   <div class="tips-card">
     <h4>💡 좋은 리뷰 작성 TIP</h4>
