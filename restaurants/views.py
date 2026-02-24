@@ -43,20 +43,22 @@ def restaurant_list(request):
     }
     return render(request, "restaurants/list.html", context)
 
-# 2. 음식점 상세 (리뷰 정렬 및 소수점 처리 반영)
-def restaurant_detail(request, pk):
+
+# 2. 음식점 상세 (병합 완료)
+def restaurant_detail(request, restaurant_id):
+    # 상세 정보 및 집계 데이터 가져오기
     restaurant = get_object_or_404(
         Restaurant.objects.annotate(
             avg_rating=Avg("reviews__rating"), 
             review_count=Count("reviews")
         ), 
-        pk=pk
+        pk=restaurant_id
     )
     
-    # 조회수 증가
-    Restaurant.objects.filter(pk=pk).update(view_count=restaurant.view_count + 1)
+    # 조회수 증가 (F 객체를 사용하는 것이 더 안전하지만, 기존 로직 유지)
+    Restaurant.objects.filter(pk=restaurant_id).update(view_count=restaurant.view_count + 1)
     
-    # --- [리뷰 정렬 로직 추가] ---
+    # 리뷰 정렬 로직
     sort = request.GET.get('sort', 'rating_high')  # 기본값: 별점 높은 순
     reviews_qs = restaurant.reviews.select_related("author")
 
@@ -66,7 +68,6 @@ def restaurant_detail(request, pk):
         reviews = reviews_qs.order_by("rating", "-created_at")
     else:  # rating_high
         reviews = reviews_qs.order_by("-rating", "-created_at")
-    # ---------------------------
 
     # 별점 분포 계산
     rating_distribution = []
@@ -76,19 +77,20 @@ def restaurant_detail(request, pk):
         pct = (count / total * 100) if total > 0 else 0
         rating_distribution.append((star, count, round(pct)))
 
+    # 즐겨찾기 여부 확인
     is_favorite = False
     if request.user.is_authenticated:
         try:
             from favorites.models import Favorite
             is_favorite = Favorite.objects.filter(user=request.user, restaurant=restaurant).exists()
-        except: 
+        except (ImportError, Exception): 
             pass
 
     context = {
         "restaurant": restaurant, 
         "reviews": reviews, 
-        # 소수점 1자리(혹은 2자리) 반올림 처리
-        "avg_rating": round(restaurant.avg_rating, 1) if restaurant.avg_rating else None, 
+        # 소수점 1자리 반올림 처리
+        "avg_rating": round(restaurant.avg_rating, 1) if restaurant.avg_rating else 0, 
         "rating_distribution": rating_distribution, 
         "is_favorite": is_favorite,
         "current_sort": sort,
@@ -103,9 +105,7 @@ def restaurant_create(request):
         messages.error(request, "권한이 없습니다.")
         return redirect("/restaurants/")
 
-    # -------------------------------------------------------------
-    # [해결 핵심] DB에 카테고리가 한 개도 없다면 자동으로 만들어줍니다!
-    # -------------------------------------------------------------
+    # 카테고리 자동 생성 로직
     if not Category.objects.exists():
         default_categories = ['한식', '중식', '일식', '양식', '카페', '패스트푸드', '기타']
         for cat_name in default_categories:
@@ -122,7 +122,6 @@ def restaurant_create(request):
             messages.error(request, "필수 항목을 입력해주세요.")
             return render(request, "restaurants/create.html", {"categories": categories, "form_data": request.POST})
 
-        # 조원 코드의 필드명(owner, thumbnail 등) 유지
         restaurant = Restaurant(
             owner=request.user, 
             name=name, 
@@ -132,7 +131,7 @@ def restaurant_create(request):
             hours=request.POST.get("hours", "").strip(),
             closed_days=request.POST.get("closed_days", "").strip(),
             website=request.POST.get("website", "").strip(),
-            thumbnail=request.FILES.get("thumbnail") # image 대신 thumbnail 사용 확인
+            thumbnail=request.FILES.get("thumbnail")
         )
 
         if category_pk and category_pk.isdigit():
@@ -140,13 +139,12 @@ def restaurant_create(request):
         else:
             try:
                 restaurant.category = Category.objects.get(name=category_pk)
-            except:
+            except Category.DoesNotExist:
                 pass
         
         restaurant.save()
         messages.success(request, f'"{name}" 등록 성공! 🎉')
 
-        # 리다이렉트 안전 장치
         try: 
             return redirect(f"/restaurants/{restaurant.pk}/")
         except: 
