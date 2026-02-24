@@ -5,78 +5,30 @@
 
 {% block extra_css %}
 <style>
-  /* --- 메인 브랜치의 세련된 UI 스타일 적용 --- */
-  .page-header {
-    background: var(--surface, #fff); 
-    border-bottom: 1px solid var(--border, #eee);
-    padding: 40px 24px 32px;
-  }
+  /* --- 기존 UI 스타일 유지 --- */
+  .page-header { background: var(--surface, #fff); border-bottom: 1px solid var(--border, #eee); padding: 40px 24px 32px; }
   .page-header-inner { max-width: 1200px; margin: 0 auto; }
-  .page-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 36px; font-weight: 700; margin-bottom: 24px; color: #1a1a1a;
-  }
+  .page-title { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; margin-bottom: 24px; color: #1a1a1a; }
 
   /* SEARCH BAR */
-  .search-bar {
-    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-  .search-wrap {
-    position: relative; flex: 1; min-width: 240px;
-  }
-  .search-wrap input {
-    width: 100%; padding: 12px 16px 12px 44px;
-    background: var(--bg, #f8f9fa); border: 1.5px solid var(--border, #eee);
-    border-radius: 12px; font-size: 15px; color: var(--text, #1a1a1a);
-    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s;
-  }
+  .search-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .search-wrap { position: relative; flex: 1; min-width: 240px; }
+  .search-wrap input { width: 100%; padding: 12px 16px 12px 44px; background: var(--bg, #f8f9fa); border: 1.5px solid var(--border, #eee); border-radius: 12px; font-size: 15px; color: var(--text, #1a1a1a); font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s; }
   .search-wrap input:focus { border-color: var(--accent, #007bff); background: var(--surface, #fff); }
   .search-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; }
-  .search-bar select {
-    padding: 12px 16px; background: var(--bg, #f8f9fa); border: 1.5px solid var(--border, #eee);
-    border-radius: 12px; font-size: 14px; color: var(--text, #1a1a1a);
-    font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .search-bar button {
-    padding: 12px 24px; background: var(--accent, #1a1a1a); color: #fff;
-    border: none; border-radius: 12px; font-size: 14px; font-weight: 600;
-    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
-    white-space: nowrap;
-  }
+  .search-bar select { padding: 12px 16px; background: var(--bg, #f8f9fa); border: 1.5px solid var(--border, #eee); border-radius: 12px; font-size: 14px; color: var(--text, #1a1a1a); outline: none; cursor: pointer; transition: all 0.2s; }
+  .search-bar button { padding: 12px 24px; background: var(--accent, #1a1a1a); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
   .search-bar button:hover { opacity: 0.8; }
 
   /* FILTER CHIPS */
   .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .chip {
-    padding: 7px 16px; border-radius: 100px; font-size: 13px; font-weight: 600;
-    background: var(--bg, #fff); border: 1.5px solid var(--border, #eee); color: #666;
-    text-decoration: none; transition: all 0.2s; cursor: pointer;
-  }
+  .chip { padding: 7px 16px; border-radius: 100px; font-size: 13px; font-weight: 600; background: var(--bg, #fff); border: 1.5px solid var(--border, #eee); color: #666; text-decoration: none; transition: all 0.2s; cursor: pointer; }
   .chip:hover { border-color: #1a1a1a; color: #1a1a1a; }
   .chip.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 
-  /* 관리자 등록 버튼 */
-  .btn-create-admin {
-    padding: 10px 20px; background: var(--accent, #1a1a1a); color: #fff !important;
-    border-radius: 12px; font-size: 14px; font-weight: 700;
-    text-decoration: none; transition: all 0.2s; display: inline-flex;
-    align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif;
-  }
-  .btn-create-admin:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-
   /* RESULTS & GRID */
-  .restaurants-grid { 
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-    gap: 24px; max-width: 1200px; margin: 40px auto; padding: 0 20px; 
-  }
-  .restaurant-card {
-    background: var(--surface, #fff); border: 1.5px solid var(--border, #eee);
-    border-radius: 20px; overflow: hidden;
-    transition: all 0.3s; text-decoration: none; color: inherit; display: block;
-    animation: fadeUp 0.4s ease both;
-  }
+  .restaurants-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+  .restaurant-card { background: var(--surface, #fff); border: 1.5px solid var(--border, #eee); border-radius: 20px; overflow: hidden; transition: all 0.3s; text-decoration: none; color: inherit; display: block; animation: fadeUp 0.4s ease both; }
   .restaurant-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: var(--accent, #1a1a1a); }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -84,8 +36,11 @@
   .card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
   .card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.25) 0%, transparent 50%); }
   .card-category-tag { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 100px; }
-  .fav-btn { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; backdrop-filter: blur(4px); }
   
+  /* 즐겨찾기 버튼 스타일 */
+  .fav-btn { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; backdrop-filter: blur(4px); z-index: 10; }
+  .fav-btn:hover { transform: scale(1.1); background: #fff; }
+
   .card-body { padding: 20px; display: flex; flex-direction: column; }
   .card-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
   .card-address { font-size: 13px; color: #868e96; margin-bottom: 14px; display: flex; align-items: center; gap: 4px; }
@@ -93,28 +48,16 @@
   .rating-num { font-weight: 700; font-size: 15px; color: #fab005; }
   .review-count { font-size: 13px; color: #adb5bd; }
   .card-footer { border-top: 1px solid #f1f3f5; padding-top: 14px; display: flex; justify-content: space-between; align-items: center; }
-  .card-views { font-size: 13px; color: #adb5bd; }
-  .card-link-btn { font-size: 13px; font-weight: 700; color: #1a1a1a; display: flex; align-items: center; gap: 4px; }
-
-  /* PAGINATION */
-  .pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 40px 0 80px; }
-  .page-btn { min-width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 14px; font-weight: 600; border: 1.5px solid #eee; background: #fff; color: #1a1a1a; text-decoration: none; transition: all 0.2s; }
-  .page-btn.active { background: #1a1a1a; border-color: #1a1a1a; color: #fff; }
-  .page-btn.disabled { opacity: 0.3; pointer-events: none; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div class="page-header-inner">
-    
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
       <h1 class="page-title" style="margin:0;">Explore Local Flavors</h1>
-      
       {% if user.is_authenticated and user.is_staff %}
-        <a href="{% url 'restaurants:create' %}" class="btn-create-admin">
-          🏪 음식점 등록하기
-        </a>
+        <a href="{% url 'restaurants:create' %}" class="btn-create-admin">🏪 음식점 등록하기</a>
       {% endif %}
     </div>
 
@@ -124,13 +67,11 @@
           <span class="icon">🔍</span>
           <input type="text" name="q" value="{{ q|default:'' }}" placeholder="식당 이름이나 메뉴를 검색해보세요">
         </div>
-        
         <select name="sort" onchange="this.form.submit()">
           <option value="latest" {% if sort == 'latest' %}selected{% endif %}>최신순</option>
           <option value="rating" {% if sort == 'rating' %}selected{% endif %}>평점순</option>
           <option value="views" {% if sort == 'views' %}selected{% endif %}>인기순</option>
         </select>
-        
         <button type="submit">검색하기</button>
       </div>
 
@@ -169,15 +110,13 @@
       <div class="card-body">
         <div class="card-name">{{ restaurant.name }}</div>
         <div class="card-address">📍 {{ restaurant.address|truncatechars:30 }}</div>
-        
         <div class="card-stars">
           <span class="rating-num">★ {{ restaurant.avg_rating|floatformat:1|default:"0.0" }}</span>
           <span class="review-count">({{ restaurant.review_count|default:0 }})</span>
         </div>
-        
         <div class="card-footer">
-          <span class="card-views">조회수 {{ restaurant.view_count|default:0 }}</span>
-          <span class="card-link-btn">상세보기 →</span>
+          <span class="card-views" style="font-size: 13px; color: #adb5bd;">조회수 {{ restaurant.view_count|default:0 }}</span>
+          <span class="card-link-btn" style="font-size: 13px; font-weight: 700; color: #1a1a1a;">상세보기 →</span>
         </div>
       </div>
     </a>
@@ -188,21 +127,32 @@
   {% endfor %}
 </div>
 
-{% if is_paginated or page_obj %}
-<div class="pagination">
-  {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&sort={{ sort }}" class="page-btn">←</a>
-  {% else %}
-    <span class="page-btn disabled">←</span>
-  {% endif %}
-  
-  <span class="page-btn active">{{ page_obj.number }}</span>
-  
-  {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&sort={{ sort }}" class="page-btn">→</a>
-  {% else %}
-    <span class="page-btn disabled">→</span>
-  {% endif %}
-</div>
-{% endif %}
+<script>
+function toggleFav(restaurantId, btn) {
+    fetch(`/favorites/toggle/${restaurantId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.status === 403) {
+            alert('로그인이 필요한 서비스입니다.');
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.is_favorite) {
+            btn.innerHTML = '❤️';
+        } else {
+            btn.innerHTML = '🤍';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+</script>
 {% endblock %}
