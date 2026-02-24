@@ -1,250 +1,131 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}음식점 목록 — LocalEats{% endblock %}
 
 {% block extra_css %}
 <style>
-  /*  */
-  main { padding-top: 0 !important; }
+    /*  */
+    main { padding-top: 0 !important; background-color: #f8f9fa; }
+    
+    /* 헤더 및 검색창 레이아웃 */
+    .page-header { background: #fff; border-bottom: 1px solid #e9ecef; padding: 60px 0 40px; margin-bottom: 40px; }
+    .header-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .page-title { font-size: 36px; font-weight: 800; color: #1a1a1a; margin-bottom: 30px; }
+    
+    .search-flex { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; }
+    .input-group { position: relative; flex: 1; min-width: 300px; }
+    .input-group input { width: 100%; padding: 15px 20px 15px 50px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; transition: 0.3s; }
+    .input-group input:focus { border-color: #007bff; outline: none; box-shadow: 0 0 0 4px rgba(0,123,255,0.1); }
+    .search-icon { position: absolute; left: 18px; top: 18px; color: #adb5bd; }
+    
+    .sort-select { padding: 0 20px; height: 56px; border: 2px solid #eee; border-radius: 12px; font-weight: 600; background: #fff; cursor: pointer; }
+    .btn-search { padding: 0 35px; height: 56px; background: #1a1a1a; color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
-  .page-header {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 40px 24px 32px;
-  }
-  .page-header-inner { max-width: 1200px; margin: 0 auto; }
-  .page-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 36px; font-weight: 700; margin-bottom: 24px;
-  }
+    /* 카테고리 필터 칩 */
+    .category-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cat-chip { padding: 10px 22px; border-radius: 50px; background: #fff; border: 1.5px solid #eee; color: #666; text-decoration: none; font-weight: 600; transition: 0.2s; }
+    .cat-chip:hover { border-color: #1a1a1a; color: #1a1a1a; }
+    .cat-chip.active { background: #1a1a1a; border-color: #1a1a1a; color: #fff; }
 
-  /* SEARCH BAR */
-  .search-bar {
-    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-  .search-wrap {
-    position: relative; flex: 1; min-width: 240px;
-  }
-  .search-wrap input {
-    width: 100%; padding: 12px 16px 12px 44px;
-    background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 12px; font-size: 15px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s;
-  }
-  .search-wrap input:focus { border-color: var(--accent); background: var(--surface); }
-  .search-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; }
-  .search-bar select {
-    padding: 12px 16px; background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 12px; font-size: 14px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .search-bar select:focus { border-color: var(--accent); }
-  .search-bar button {
-    padding: 12px 24px; background: var(--accent); color: #fff;
-    border: none; border-radius: 12px; font-size: 14px; font-weight: 600;
-    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .search-bar button:hover { background: var(--accent-hover); }
-
-  /* FILTER CHIPS */
-  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .chip {
-    padding: 7px 16px; border-radius: 100px; font-size: 13px; font-weight: 500;
-    background: var(--bg); border: 1.5px solid var(--border); color: var(--text2);
-    text-decoration: none; transition: all 0.2s; cursor: pointer;
-  }
-  .chip:hover { border-color: var(--accent); color: var(--accent); }
-  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-  /* RESULTS INFO */
-  .results-info {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 24px 0 20px; flex-wrap: wrap; gap: 12px;
-  }
-  .results-count { font-size: 14px; color: var(--text2); }
-  .results-count strong { color: var(--text); }
-
-  /* GRID */
-  .restaurants-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-  .restaurant-card {
-    background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-    box-shadow: var(--shadow); transition: all var(--transition);
-    text-decoration: none; color: inherit; display: block;
-    animation: fadeUp 0.4s ease both;
-  }
-  .restaurant-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--accent); }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-
-  .card-img {
-    height: 190px; background: var(--bg2); position: relative;
-    display: flex; align-items: center; justify-content: center; font-size: 60px;
-    overflow: hidden;
-  }
-  .card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-  .card-img-overlay {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.25) 0%, transparent 50%);
-  }
-  .card-category-tag {
-    position: absolute; bottom: 12px; left: 12px;
-    background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
-    color: #fff; font-size: 12px; font-weight: 600;
-    padding: 4px 10px; border-radius: 100px;
-  }
-  .fav-btn {
-    position: absolute; top: 12px; right: 12px;
-    width: 34px; height: 34px; border-radius: 50%;
-    background: rgba(255,255,255,0.9); border: none; cursor: pointer;
-    font-size: 16px; display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s; backdrop-filter: blur(4px);
-    z-index: 10;
-  }
-  .fav-btn:hover { transform: scale(1.15); }
-
-  .card-body { padding: 20px; }
-  .card-name { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
-  .card-address { font-size: 13px; color: var(--text2); margin-bottom: 14px; display: flex; align-items: center; gap: 4px; }
-  .card-stars { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-  .stars { display: flex; gap: 2px; }
-  .stars .on { color: #F59E0B; font-size: 16px; }
-  .stars .off { color: var(--star-off); font-size: 16px; }
-  .rating-num { font-weight: 700; font-size: 15px; color: var(--text); }
-  .review-count { font-size: 13px; color: var(--text2); }
-  .card-footer {
-    border-top: 1px solid var(--border); padding-top: 14px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .card-phone { font-size: 13px; color: var(--text2); }
-  .card-link-btn {
-    font-size: 13px; font-weight: 600; color: var(--accent);
-    display: flex; align-items: center; gap: 4px;
-  }
-
-  .empty-state {
-    grid-column: 1 / -1; text-align: center; padding: 80px 24px;
-  }
-  .empty-icon { font-size: 64px; margin-bottom: 20px; }
-  .empty-title { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
-  .empty-desc { color: var(--text2); font-size: 15px; }
+    /* 음식점 그리드 */
+    .restaurant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto 80px; padding: 0 20px; }
+    .res-card { background: #fff; border: 1px solid #eee; border-radius: 20px; overflow: hidden; text-decoration: none; color: inherit; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
+    .res-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+    
+    .res-img-wrap { position: relative; height: 220px; background: #f1f3f5; }
+    .res-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .category-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.9); padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; color: #1a1a1a; }
+    
+    .res-body { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+    .res-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #1a1a1a; }
+    .res-addr { font-size: 14px; color: #868e96; margin-bottom: 20px; display: flex; align-items: center; gap: 5px; }
+    
+    .res-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid #f1f3f5; display: flex; justify-content: space-between; align-items: center; }
+    .rating-star { color: #fab005; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+    .review-count { font-size: 13px; color: #adb5bd; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div style="margin: -40px -24px 0; padding: 40px 24px 32px; background: var(--surface); border-bottom: 1px solid var(--border);">
-  <div style="max-width: 1200px; margin: 0 auto;">
-    <h1 style="font-family:'Playfair Display',serif; font-size:36px; font-weight:700; margin-bottom:24px;">음식점 찾기</h1>
-    <form method="GET" id="searchForm">
-      <div class="search-bar">
-        <div class="search-wrap">
-          <span class="icon">🔍</span>
-          <input type="text" name="q" value="{{ q }}" placeholder="음식점 이름 검색...">
-        </div>
-        <select name="sort" onchange="this.form.submit()">
-          <option value="latest" {% if sort == 'latest' %}selected{% endif %}>최신 등록 순</option>
-          <option value="rating" {% if sort == 'rating' %}selected{% endif %}>별점 높은 순</option>
-          <option value="reviews" {% if sort == 'reviews' %}selected{% endif %}>리뷰 많은 순</option>
-          <option value="views" {% if sort == 'views' %}selected{% endif %}>조회수 높은 순</option>
-        </select>
-        <button type="submit">검색</button>
-      </div>
+{% csrf_token %}
 
-      <div class="filter-row">
-        <a href="?q={{ q }}&sort={{ sort }}" class="chip {% if not category_id %}active{% endif %}">🍽️ 전체</a>
-        {% for cat in categories %}
-        <a href="?category={{ cat.id }}&q={{ q }}&sort={{ sort }}" 
-           class="chip {% if category_id == cat.id|stringformat:'s' %}active{% endif %}">
-           {{ cat.name }}
-        </a>
-        {% endfor %}
-      </div>
-    </form>
-  </div>
-</div>
-
-<div style="max-width:1200px;margin:0 auto;padding:0 24px;">
-  <div class="results-info">
-    <span class="results-count">
-      <strong>{{ restaurants|length }}</strong>개의 음식점
-      {% if q %} — "<strong>{{ q }}</strong>" 검색 결과{% endif %}
-    </span>
-  </div>
-
-  <div class="restaurants-grid">
-    {% for restaurant in restaurants %}
-    <a href="{% url 'restaurants:detail' restaurant.pk %}" class="restaurant-card" style="animation-delay: {{ forloop.counter0 }}0ms">
-      <div class="card-img">
-        {% if restaurant.thumbnail %}
-          <img src="{{ restaurant.thumbnail.url }}" alt="{{ restaurant.name }}">
-        {% else %}
-          🍽️
-        {% endif %}
-        <div class="card-img-overlay"></div>
-        <span class="card-category-tag">{{ restaurant.category.name|default:"기타" }}</span>
+<div class="page-header">
+    <div class="header-container">
+        <h1 class="page-title">Explore Local Flavors</h1>
         
-        {% if user.is_authenticated %}
-        <button class="fav-btn" onclick="event.preventDefault(); toggleFav({{ restaurant.pk }}, this)" title="즐겨찾기">
-          {% if restaurant.pk in user_favorites %}❤️{% else %}🤍{% endif %}
-        </button>
-        {% endif %}
-      </div>
+        <form method="GET" action="{% url 'restaurants:list' %}" id="searchForm">
+            <div class="search-flex">
+                <div class="input-group">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" name="q" value="{{ q|default:'' }}" placeholder="식당 이름이나 메뉴를 검색해보세요">
+                </div>
+                
+                <select name="sort" class="sort-select" onchange="this.form.submit()">
+                    <option value="latest" {% if sort == 'latest' %}selected{% endif %}>최신순</option>
+                    <option value="rating" {% if sort == 'rating' %}selected{% endif %}>평점순</option>
+                    <option value="views" {% if sort == 'views' %}selected{% endif %}>인기순</option>
+                </select>
+                
+                <button type="submit" class="btn-search">검색하기</button>
+            </div>
 
-      <div class="card-body">
-        <div class="card-name">{{ restaurant.name }}</div>
-        <div class="card-address">📍 {{ restaurant.address|truncatechars:30 }}</div>
-        <div class="card-stars">
-          <div class="stars">
-            {% with avg=restaurant.avg_rating|default:0|floatformat:0 %}
-            {% for i in "12345" %}
-              {% if forloop.counter <= avg|add:0 %}<span class="on">★</span>{% else %}<span class="off">★</span>{% endif %}
-            {% endfor %}
-            {% endwith %}
-          </div>
-          <span class="rating-num">{{ restaurant.avg_rating|floatformat:1|default:"0.0" }}</span>
-          <span class="review-count">({{ restaurant.review_count|default:0 }}개 리뷰)</span>
-        </div>
-        <div class="card-footer">
-          <span class="card-phone">{{ restaurant.phone|default:"전화번호 없음" }}</span>
-          <span class="card-link-btn">상세보기 →</span>
-        </div>
-      </div>
-    </a>
-    {% empty %}
-    <div class="empty-state">
-      <div class="empty-icon">🍽️</div>
-      <div class="empty-title">음식점을 찾을 수 없어요</div>
-      <div class="empty-desc">다른 검색어나 카테고리로 시도해보세요</div>
+            <div class="category-row">
+                <a href="{% url 'restaurants:list' %}" class="cat-chip {% if not category_id %}active{% endif %}">전체보기</a>
+                {% for cat in categories %}
+                    <a href="?category={{ cat.id }}&q={{ q|urlencode }}&sort={{ sort }}" 
+                       class="cat-chip {% if category_id|slugify == cat.id|slugify %}active{% endif %}">
+                        {{ cat.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </form>
     </div>
-    {% endfor %}
-  </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-function toggleFav(restaurantId, btn) {
-  fetch(`/favorites/toggle/${restaurantId}/`, {
-    method: 'POST',
-    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
-  }).then(r => r.json()).then(data => {
-    btn.textContent = data.is_favorite ? '❤️' : '🤍';
-  }).catch(() => {});
-}
+<div class="restaurant-grid">
+    {% for restaurant in restaurants %}
+        <a href="{% url 'restaurants:detail' restaurant.pk %}" class="res-card">
+            <div class="res-img-wrap">
+                {% if restaurant.thumbnail %}
+                    <img src="{{ restaurant.thumbnail.url }}" alt="{{ restaurant.name }}">
+                {% else %}
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#dee2e6; font-size:40px;">🍽️</div>
+                {% endif %}
+                <span class="category-badge">{{ restaurant.category.name|default:"기타" }}</span>
+            </div>
+            
+            <div class="res-body">
+                <h3 class="res-name">{{ restaurant.name }}</h3>
+                <div class="res-addr">📍 {{ restaurant.address|truncatechars:30 }}</div>
+                
+                <div class="res-footer">
+                    <div class="rating-star">
+                        ★ {{ restaurant.avg_rating|floatformat:1|default:"0.0" }}
+                        <span class="review-count">({{ restaurant.review_count|default:0 }})</span>
+                    </div>
+                    <div style="font-size: 13px; color: #adb5bd;">
+                        조회수 {{ restaurant.view_count|default:0 }}
+                    </div>
+                </div>
+            </div>
+        </a>
+    {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 100px 0;">
+            <p style="font-size: 20px; color: #adb5bd;">검색 결과가 없습니다. 다른 검색어를 입력해보세요.</p>
+        </div>
+    {% endfor %}
+</div>
 
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-</script>
+{% if is_paginated %}
+<div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 80px;">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&sort={{ sort }}" class="cat-chip">이전</a>
+    {% endif %}
+    <span class="cat-chip active">{{ page_obj.number }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&sort={{ sort }}" class="cat-chip">다음</a>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}
