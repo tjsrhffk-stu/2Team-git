@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Restaurant, Category
 
-# 1. 음식점 목록
+# 1. 음식점 목록 (즐겨찾기 상태 로직 추가)
 def restaurant_list(request):
     q = request.GET.get("q", "").strip()
     category_id = request.GET.get("category", "").strip()
@@ -34,12 +34,24 @@ def restaurant_list(request):
     else: 
         qs = qs.order_by("-id")
 
+    # --- [추가] 로그인한 사용자의 즐겨찾기 목록 가져오기 ---
+    user_favorites = []
+    if request.user.is_authenticated:
+        try:
+            from favorites.models import Favorite
+            # 현재 사용자가 즐겨찾기한 식당들의 ID만 리스트로 추출
+            user_favorites = Favorite.objects.filter(user=request.user).values_list('restaurant_id', flat=True)
+        except (ImportError, Exception):
+            pass
+    # --------------------------------------------------
+
     context = {
         "restaurants": qs, 
         "q": q, 
         "categories": Category.objects.all(), 
         "category_id": category_id, 
-        "sort": sort
+        "sort": sort,
+        "user_favorites": user_favorites, # 템플릿으로 전달
     }
     return render(request, "restaurants/list.html", context)
 
@@ -55,18 +67,18 @@ def restaurant_detail(request, restaurant_id):
         pk=restaurant_id
     )
     
-    # 조회수 증가 (F 객체를 사용하는 것이 더 안전하지만, 기존 로직 유지)
+    # 조회수 증가 (업데이트 로직)
     Restaurant.objects.filter(pk=restaurant_id).update(view_count=restaurant.view_count + 1)
     
     # 리뷰 정렬 로직
-    sort = request.GET.get('sort', 'rating_high')  # 기본값: 별점 높은 순
+    sort = request.GET.get('sort', 'rating_high')
     reviews_qs = restaurant.reviews.select_related("author")
 
     if sort == 'latest':
         reviews = reviews_qs.order_by("-created_at")
     elif sort == 'rating_low':
         reviews = reviews_qs.order_by("rating", "-created_at")
-    else:  # rating_high
+    else:
         reviews = reviews_qs.order_by("-rating", "-created_at")
 
     # 별점 분포 계산
@@ -89,7 +101,6 @@ def restaurant_detail(request, restaurant_id):
     context = {
         "restaurant": restaurant, 
         "reviews": reviews, 
-        # 소수점 1자리 반올림 처리
         "avg_rating": round(restaurant.avg_rating, 1) if restaurant.avg_rating else 0, 
         "rating_distribution": rating_distribution, 
         "is_favorite": is_favorite,
@@ -105,7 +116,6 @@ def restaurant_create(request):
         messages.error(request, "권한이 없습니다.")
         return redirect("/restaurants/")
 
-    # 카테고리 자동 생성 로직
     if not Category.objects.exists():
         default_categories = ['한식', '중식', '일식', '양식', '카페', '패스트푸드', '기타']
         for cat_name in default_categories:
