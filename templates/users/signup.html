@@ -3,140 +3,279 @@
 
 {% block extra_css %}
 <style>
-  .auth-wrap {
-    min-height: calc(100vh - 200px);
-    display: flex; align-items: center; justify-content: center;
-    padding: 40px 24px;
+  .auth-wrap { min-height: calc(100vh - 200px); display:flex; align-items:center; justify-content:center; padding:40px 24px; }
+  .auth-card { width:100%; max-width:480px; background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:48px 40px; box-shadow:var(--shadow); animation:fadeUp .5s ease; }
+  @keyframes fadeUp { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+
+  .auth-logo { text-align:center; margin-bottom:28px; }
+  .auth-logo-text { font-family:'Playfair Display', serif; font-size:26px; font-weight:700; color:var(--accent); }
+  .auth-logo-text span { color:var(--text); }
+  .auth-title { font-size:22px; font-weight:700; text-align:center; margin-bottom:6px; word-break:keep-all; }
+  .auth-subtitle { font-size:14px; color:var(--text2); text-align:center; margin-bottom:22px; word-break:keep-all; }
+
+  .msg { margin:0 0 14px 0; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:var(--bg); font-size:14px; }
+  .msg.error{ border-color: rgba(239,68,68,0.35); }
+  .msg.success{ border-color: rgba(16,185,129,0.35); }
+
+  /* ✅ 선택 카드 */
+  .choice-grid { display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin: 18px 0 18px 0; }
+  .choice-card {
+    border:1px solid var(--border);
+    background:var(--bg);
+    border-radius:18px;
+    padding:18px 16px;
+    transition:.2s;
+
+    /* ✅ 버튼 위치/카드 높이 통일 */
+    display:flex;
+    flex-direction:column;
+    min-height: 190px; /* 필요하면 180~220 사이로 조절 */
   }
-  .auth-card {
-    width: 100%; max-width: 480px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 24px; padding: 48px 40px;
-    box-shadow: var(--shadow);
-    animation: fadeUp 0.5s ease;
-  }
-  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .choice-card h3 { margin:0 0 6px 0; font-size:16px; word-break:keep-all; }
+  .choice-card p {
+    margin:0 0 14px 0;
+    font-size:13px;
+    color:var(--text2);
+    line-height:1.4;
+    word-break:keep-all;
 
-  .auth-logo { text-align: center; margin-bottom: 28px; }
-  .auth-logo-text { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--accent); }
-  .auth-logo-text span { color: var(--text); }
-  .auth-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 6px; }
-  .auth-subtitle { font-size: 14px; color: var(--text2); text-align: center; margin-bottom: 32px; }
-
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
-  .input-wrap { position: relative; }
-  .input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
-  .input-wrap input {
-    width: 100%; padding: 13px 16px 13px 42px;
-    background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 12px; font-size: 15px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s;
-  }
-  .input-wrap input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(212,82,26,0.08); }
-  .input-wrap input.error { border-color: #EF4444; }
-  .field-error { font-size: 12px; color: #EF4444; margin-top: 5px; display: flex; align-items: center; gap: 4px; }
-  .field-hint { font-size: 12px; color: var(--text2); margin-top: 5px; }
-
-  /* 비밀번호 강도 */
-  .pw-strength { margin-top: 8px; }
-  .pw-strength-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; margin-bottom: 4px; }
-  .pw-strength-fill { height: 100%; border-radius: 2px; transition: all 0.3s; width: 0; }
-  .pw-strength-text { font-size: 12px; color: var(--text2); }
-
-  .toggle-pw {
-    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text2); padding: 4px;
+    /* ✅ 문장 줄바꿈 차이로 버튼 흔들림 방지 */
+    min-height: 36px;
   }
 
-  .terms {
-    display: flex; align-items: flex-start; gap: 10px;
-    margin: 20px 0; padding: 16px; background: var(--bg); border-radius: 12px;
-    border: 1px solid var(--border);
-  }
-  .terms input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; margin-top: 1px; flex-shrink: 0; }
-  .terms label { font-size: 13px; color: var(--text2); line-height: 1.5; cursor: pointer; }
-  .terms a { color: var(--accent); text-decoration: none; }
+  /* ✅ 버튼 규격 완전 동일 */
+  .choice-btn{
+    width:100%;
+    height:48px;                /* ✅ 높이 고정 */
+    padding:0 14px;             /* ✅ 세로패딩 제거 */
+    border-radius:12px;
+    border:1.5px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    font-weight:800;
+    cursor:pointer;
+    transition:.2s;
 
-  .btn-signup {
-    width: 100%; padding: 15px; background: var(--accent); color: #fff;
-    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
-    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+    margin-top:auto;            /* ✅ 카드 아래로 붙임 */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
   }
-  .btn-signup:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,82,26,0.3); }
+  .choice-btn.primary{
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent);
+  }
+  .choice-btn:hover { transform:translateY(-1px); }
 
-  .auth-footer { text-align: center; margin-top: 24px; font-size: 14px; color: var(--text2); }
-  .auth-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  /* ✅ 화살표는 CSS로 동일하게 */
+  .choice-btn::after{
+    content: ">";
+    font-weight:900;
+    line-height:1;
+  }
+
+  /* ✅ 폼 영역 */
+  .pane { display:none; margin-top:14px; }
+  .pane.active { display:block; }
+  .pane-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0 12px 0; }
+  .pane-head .mini { font-size:12px; color:var(--text2); word-break:keep-all; }
+  .link-back { font-size:12px; color:var(--accent); text-decoration:none; font-weight:800; cursor:pointer; }
+
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:13px; font-weight:600; color:var(--text2); margin-bottom:7px; word-break:keep-all; }
+  .required { color:#ef4444; font-weight:900; margin-left:3px; }
+
+  .input-wrap { position:relative; }
+  .input-wrap .icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none; }
+  .input-wrap input { width:100%; padding:13px 16px 13px 42px; background:var(--bg); border:1.5px solid var(--border); border-radius:12px; font-size:15px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; transition:.2s; }
+  .input-wrap input:focus { border-color:var(--accent); background:var(--surface); box-shadow:0 0 0 3px rgba(212,82,26,0.08); }
+
+  .toggle-pw { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; color:var(--text2); padding:4px; }
+
+  .terms { display:flex; align-items:flex-start; gap:10px; margin:18px 0; padding:16px; background:var(--bg); border-radius:12px; border:1px solid var(--border); }
+  .terms input[type="checkbox"] { accent-color:var(--accent); width:16px; height:16px; margin-top:1px; flex-shrink:0; }
+  .terms label { font-size:13px; color:var(--text2); line-height:1.5; cursor:pointer; word-break:keep-all; }
+
+  .btn-signup { width:100%; padding:15px; background:var(--accent); color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:900; font-family:'DM Sans',sans-serif; cursor:pointer; transition:.2s; }
+  .btn-signup:hover { background:var(--accent-hover); transform:translateY(-1px); box-shadow:0 6px 20px rgba(212,82,26,0.3); }
+
+  .auth-footer { text-align:center; margin-top:22px; font-size:14px; color:var(--text2); word-break:keep-all; }
+  .auth-footer a { color:var(--accent); text-decoration:none; font-weight:800; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="auth-wrap">
   <div class="auth-card">
+
     <div class="auth-logo">
       <div class="auth-logo-text">Local<span>Eats</span></div>
     </div>
-    <h1 class="auth-title">함께 맛집을 탐험해요! 🍽️</h1>
-    <p class="auth-subtitle">무료로 가입하고 솔직한 리뷰를 남겨보세요</p>
 
-    <form method="POST" id="signupForm">
-      {% csrf_token %}
+    <div class="auth-title">함께 맛집을 탐험해요! 🍽️</div>
+    <div class="auth-subtitle">어떤 회원가입을 할지 선택하세요</div>
 
-      <div class="form-group">
-        <label for="id_username">아이디</label>
-        <div class="input-wrap">
-          <span class="icon">👤</span>
-          <input type="text" name="username" id="id_username" placeholder="영문/숫자 4~20자" autocomplete="username" required>
-        </div>
-        {% if form.username.errors %}<div class="field-error">⚠️ {{ form.username.errors|join:", " }}</div>{% endif %}
-        <div class="field-hint">영문, 숫자, _, @ 만 사용 가능해요</div>
+    {% if messages %}
+      <div id="msgWrap">
+        {% for message in messages %}
+          <div class="msg {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- ✅ 선택카드 -->
+    <div class="choice-grid" id="signupChoice">
+      <div class="choice-card">
+        <h3>일반 회원가입</h3>
+        <p>맛집 탐색, 리뷰, 즐겨찾기 이용</p>
+        <button type="button" class="choice-btn" onclick="showPane('normal')">일반 회원가입</button>
       </div>
 
-      <div class="form-group">
-        <label for="id_email">이메일 <span class="required">*</span></label>
-        <div class="input-wrap">
-          <span class="icon">📧</span>
-          <input type="email" name="email" id="id_email" placeholder="example@email.com" autocomplete="email" required>
+      <div class="choice-card">
+        <h3>사업자 회원가입</h3>
+        <p>식당 등록/관리 (사장 계정)</p>
+        <button type="button" class="choice-btn primary" onclick="showPane('owner')">사업자 회원가입</button>
+      </div>
+    </div>
+
+    <!-- ✅ 폼 영역 -->
+    <div id="signupPanes"
+         data-open-pane="{{ open_pane|default:'normal' }}"
+         data-auto-open="{{ auto_open|default:0 }}"
+         style="display:none;">
+
+      <!-- 일반 -->
+      <div id="pane-normal" class="pane">
+        <div class="pane-head">
+          <div class="mini">일반 회원가입 폼</div>
+          <a class="link-back" onclick="backToChoice()">← 다시 선택</a>
         </div>
+
+        <form method="POST" action="{% url 'users:signup' %}">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label for="id_username">아이디 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">👤</span>
+              <input type="text" name="username" id="id_username" placeholder="영문/숫자 4~20자" value="{{ username|default:'' }}" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_email">이메일 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">✉️</span>
+              <input type="email" name="email" id="id_email" placeholder="example@email.com" value="{{ email|default:'' }}" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_password1">비밀번호 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">🔒</span>
+              <input type="password" name="password1" id="id_password1" placeholder="8자 이상" autocomplete="new-password" required>
+              <button type="button" class="toggle-pw" onclick="togglePw('id_password1', this)">👁️</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_password2">비밀번호 확인 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">🔒</span>
+              <input type="password" name="password2" id="id_password2" placeholder="비밀번호를 한 번 더 입력" autocomplete="new-password" required>
+              <button type="button" class="toggle-pw" onclick="togglePw('id_password2', this)">👁️</button>
+            </div>
+            <div id="pwMatch" style="font-size:12px;margin-top:5px;display:none"></div>
+          </div>
+
+          <div class="terms">
+            <input type="checkbox" id="terms1" required>
+            <label for="terms1">이용약관 및 개인정보 처리방침에 동의합니다. (필수)</label>
+          </div>
+
+          <button type="submit" class="btn-signup">일반 회원가입</button>
+
+          <div class="auth-footer">
+            이미 계정이 있나요? <a href="/users/login/">로그인</a>
+          </div>
+        </form>
       </div>
 
-      <div class="form-group">
-        <label for="id_password1">비밀번호</label>
-        <div class="input-wrap">
-          <span class="icon">🔒</span>
-          <input type="password" name="password1" id="id_password1" placeholder="8자 이상 입력" autocomplete="new-password" required>
-          <button type="button" class="toggle-pw" onclick="togglePw('id_password1', this)">👁️</button>
+      <!-- 사업자 -->
+      <div id="pane-owner" class="pane">
+        <div class="pane-head">
+          <div class="mini">사업자(사장) 회원가입 폼</div>
+          <a class="link-back" onclick="backToChoice()">← 다시 선택</a>
         </div>
-        <div class="pw-strength" id="pwStrength" style="display:none">
-          <div class="pw-strength-bar"><div class="pw-strength-fill" id="pwFill"></div></div>
-          <div class="pw-strength-text" id="pwText"></div>
-        </div>
-        {% if form.password1.errors %}<div class="field-error">⚠️ {{ form.password1.errors|join:", " }}</div>{% endif %}
+
+        <form method="POST" action="{% url 'users:signup_owner' %}">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label for="id_o_username">아이디 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">👤</span>
+              <input type="text" name="username" id="id_o_username" placeholder="영문/숫자 4~20자" value="{{ o_username|default:'' }}" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_o_email">이메일 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">✉️</span>
+              <input type="email" name="email" id="id_o_email" placeholder="example@email.com" value="{{ o_email|default:'' }}" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_o_business_number">사업자등록번호 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">🏷️</span>
+              <input type="text"
+                     name="business_number"
+                     id="id_o_business_number"
+                     placeholder="숫자 10자리 (예: 1234567890)"
+                     inputmode="numeric"
+                     value="{{ o_business_number|default:'' }}"
+                     required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_o_password1">비밀번호 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">🔒</span>
+              <input type="password" name="password1" id="id_o_password1" placeholder="8자 이상" autocomplete="new-password" required>
+              <button type="button" class="toggle-pw" onclick="togglePw('id_o_password1', this)">👁️</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_o_password2">비밀번호 확인 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">🔒</span>
+              <input type="password" name="password2" id="id_o_password2" placeholder="비밀번호를 한 번 더 입력" autocomplete="new-password" required>
+              <button type="button" class="toggle-pw" onclick="togglePw('id_o_password2', this)">👁️</button>
+            </div>
+            <div id="pwMatchOwner" style="font-size:12px;margin-top:5px;display:none"></div>
+          </div>
+
+          <div class="terms">
+            <input type="checkbox" id="terms2" required>
+            <label for="terms2">이용약관 및 개인정보 처리방침에 동의합니다. (필수)</label>
+          </div>
+
+          <button type="submit" class="btn-signup">사업자 회원가입</button>
+
+          <div class="auth-footer">
+            이미 계정이 있나요? <a href="/users/login/">로그인</a>
+          </div>
+        </form>
       </div>
 
-      <div class="form-group">
-        <label for="id_password2">비밀번호 확인</label>
-        <div class="input-wrap">
-          <span class="icon">🔐</span>
-          <input type="password" name="password2" id="id_password2" placeholder="비밀번호를 한 번 더 입력" autocomplete="new-password" required>
-          <button type="button" class="toggle-pw" onclick="togglePw('id_password2', this)">👁️</button>
-        </div>
-        <div id="pwMatch" style="font-size:12px;margin-top:5px;display:none"></div>
-        {% if form.password2.errors %}<div class="field-error">⚠️ {{ form.password2.errors|join:", " }}</div>{% endif %}
-      </div>
-
-      <div class="terms">
-        <input type="checkbox" id="agreeTerms" required>
-        <label for="agreeTerms">
-          <a href="#">이용약관</a> 및 <a href="#">개인정보 처리방침</a>에 동의합니다. 서비스 이용을 위해 필수로 동의해야 해요.
-        </label>
-      </div>
-
-      <button type="submit" class="btn-signup">🎉 회원가입 하기</button>
-    </form>
-
-    <div class="auth-footer">
-      이미 계정이 있으신가요? <a href="/users/login/">로그인</a>
     </div>
   </div>
 </div>
@@ -146,43 +285,92 @@
 <script>
 function togglePw(id, btn) {
   const input = document.getElementById(id);
+  if (!input) return;
   input.type = input.type === 'password' ? 'text' : 'password';
   btn.textContent = input.type === 'password' ? '👁️' : '🙈';
 }
 
-// 비밀번호 강도
-document.getElementById('id_password1').addEventListener('input', function() {
-  const val = this.value;
-  const strength = document.getElementById('pwStrength');
-  const fill = document.getElementById('pwFill');
-  const text = document.getElementById('pwText');
-  if (!val) { strength.style.display = 'none'; return; }
-  strength.style.display = 'block';
-  let score = 0;
-  if (val.length >= 8) score++;
-  if (/[A-Z]/.test(val)) score++;
-  if (/[0-9]/.test(val)) score++;
-  if (/[^A-Za-z0-9]/.test(val)) score++;
-  const levels = [
-    { w: '25%', color: '#EF4444', label: '너무 짧아요' },
-    { w: '50%', color: '#F59E0B', label: '보통이에요' },
-    { w: '75%', color: '#3B82F6', label: '좋아요!' },
-    { w: '100%', color: '#10B981', label: '매우 안전해요 🔒' },
-  ];
-  const l = levels[Math.max(0, score - 1)];
-  fill.style.width = l.w; fill.style.background = l.color;
-  text.textContent = l.label; text.style.color = l.color;
-});
+function showPane(type) {
+  const panes  = document.getElementById('signupPanes');
+  const choice = document.getElementById('signupChoice');
 
-// 비밀번호 일치 확인
-document.getElementById('id_password2').addEventListener('input', function() {
-  const pw1 = document.getElementById('id_password1').value;
-  const match = document.getElementById('pwMatch');
-  match.style.display = 'block';
-  if (this.value === pw1) {
-    match.textContent = '✅ 비밀번호가 일치해요'; match.style.color = '#10B981';
+  if (choice) choice.style.display = 'none';
+  if (panes)  panes.style.display  = 'block';
+
+  const normal = document.getElementById('pane-normal');
+  const owner  = document.getElementById('pane-owner');
+
+  if (normal) normal.classList.remove('active');
+  if (owner)  owner.classList.remove('active');
+
+  if (type === 'owner') {
+    if (owner) owner.classList.add('active');
   } else {
-    match.textContent = '❌ 비밀번호가 다릅니다'; match.style.color = '#EF4444';
+    if (normal) normal.classList.add('active');
+  }
+}
+
+function backToChoice() {
+  const panes  = document.getElementById('signupPanes');
+  const choice = document.getElementById('signupChoice');
+
+  if (panes)  panes.style.display  = 'none';
+  if (choice) choice.style.display = 'grid';
+
+  const normal = document.getElementById('pane-normal');
+  const owner  = document.getElementById('pane-owner');
+  if (normal) normal.classList.remove('active');
+  if (owner)  owner.classList.remove('active');
+}
+
+function bindPwMatch(pw1Id, pw2Id, matchId) {
+  const pw1 = document.getElementById(pw1Id);
+  const pw2 = document.getElementById(pw2Id);
+  const match = document.getElementById(matchId);
+  if (!pw1 || !pw2 || !match) return;
+
+  function update() {
+    const a = pw1.value || '';
+    const b = pw2.value || '';
+
+    if (!a && !b) { match.style.display = 'none'; return; }
+    if (!b) { match.style.display = 'none'; return; }
+
+    match.style.display = 'block';
+
+    if (!a) {
+      match.textContent = '⚠️ 비밀번호를 먼저 입력하세요';
+      match.style.color = '#F59E0B';
+      return;
+    }
+
+    if (a === b) {
+      match.textContent = '✅ 비밀번호가 일치해요';
+      match.style.color = '#10B981';
+    } else {
+      match.textContent = '❌ 비밀번호가 다릅니다';
+      match.style.color = '#EF4444';
+    }
+  }
+
+  pw1.addEventListener('input', update);
+  pw2.addEventListener('input', update);
+  update();
+}
+
+bindPwMatch('id_password1', 'id_password2', 'pwMatch');
+bindPwMatch('id_o_password1', 'id_o_password2', 'pwMatchOwner');
+
+document.addEventListener('DOMContentLoaded', () => {
+  const panes = document.getElementById('signupPanes');
+  if (!panes) return;
+
+  const serverOpenPane = panes.dataset.openPane || 'normal';
+  const serverAutoOpen = (panes.dataset.autoOpen === '1');
+  const hasMsg = !!document.getElementById('msgWrap');
+
+  if (serverAutoOpen || hasMsg) {
+    showPane(serverOpenPane);
   }
 });
 </script>
