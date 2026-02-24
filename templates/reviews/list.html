@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% block title %}리뷰 전체 목록 — LocalEats{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Header ─────────────────────────────────── */
+  .page-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 24px 32px;
+  }
+  .page-header-inner { max-width: 1200px; margin: 0 auto; }
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px; font-weight: 700; margin-bottom: 8px;
+  }
+  .page-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 24px; }
+
+  .stats-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .stat-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg2, var(--surface2)); border: 1px solid var(--border);
+    border-radius: 100px; padding: 7px 16px;
+    font-size: 13px; font-weight: 600; color: var(--text2);
+  }
+  .stat-badge strong { color: var(--accent); }
+  .btn-write {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 20px; background: var(--accent); color: #fff;
+    border-radius: 100px; font-size: 13px; font-weight: 700;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-write:hover { background: var(--accent-hover, #C0551F); transform: translateY(-1px); }
+
+  /* ── Filter Bar ──────────────────────────────── */
+  .filter-bar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 24px; position: sticky; top: 64px; z-index: 50;
+    backdrop-filter: blur(12px);
+  }
+  .filter-bar-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .filter-label { font-size: 13px; font-weight: 600; color: var(--text2); margin-right: 4px; }
+  .chip {
+    padding: 7px 16px; border-radius: 100px; font-size: 13px; font-weight: 500;
+    background: var(--bg); border: 1.5px solid var(--border); color: var(--text2);
+    text-decoration: none; transition: all 0.2s;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ── Body ────────────────────────────────────── */
+  .reviews-body { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── Review Card ─────────────────────────────── */
+  .reviews-list { display: flex; flex-direction: column; gap: 16px; }
+
+  .review-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius, 14px); overflow: hidden;
+    box-shadow: var(--shadow); transition: all var(--trans, 0.22s);
+    animation: fadeUp 0.4s ease both;
+    display: grid; grid-template-columns: 1fr 200px;
+  }
+  .review-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg, 0 8px 40px rgba(0,0,0,.1));
+    border-color: var(--accent);
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .card-content { padding: 24px 28px; }
+
+  .card-restaurant {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; text-decoration: none;
+  }
+  .restaurant-thumb {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--surface2, #F2EFE9); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; overflow: hidden; flex-shrink: 0;
+  }
+  .restaurant-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .restaurant-name {
+    font-size: 15px; font-weight: 700; color: var(--text);
+    transition: color 0.2s; line-height: 1.2;
+  }
+  .card-restaurant:hover .restaurant-name { color: var(--accent); }
+  .restaurant-category { font-size: 12px; color: var(--text2); }
+
+  .rating-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .stars { display: flex; gap: 2px; }
+  .stars .on  { color: #F59E0B; font-size: 16px; }
+  .stars .off { color: var(--border); font-size: 16px; }
+  .rating-tag {
+    background: var(--accent); color: #fff;
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 100px;
+  }
+
+  .review-text {
+    font-size: 15px; line-height: 1.75; color: var(--text);
+    margin-bottom: 16px;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+
+  .author-row {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .author-info { display: flex; align-items: center; gap: 10px; }
+  .author-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .author-name { font-size: 14px; font-weight: 600; }
+  .review-date { font-size: 12px; color: var(--text2); }
+
+  .action-btns { display: flex; gap: 6px; }
+  .action-btn {
+    padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text2);
+    text-decoration: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .action-btn.delete { border-color: #FECACA; color: #EF4444; background: #FFF5F5; }
+  .action-btn.delete:hover { background: #FEE2E2; }
+  [data-theme="dark"] .action-btn.delete { background: rgba(127,29,29,0.15); }
+
+  /* photo -> image 변경 */
+  .card-image {
+    background: var(--surface2, #F2EFE9); position: relative;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; overflow: hidden; border-left: 1px solid var(--border);
+    min-height: 160px;
+  }
+  .card-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .card-image .no-image { opacity: 0.25; }
+
+  /* ── Empty ───────────────────────────────────── */
+  .empty-state { text-align: center; padding: 100px 24px; animation: fadeUp 0.5s ease; }
+  .empty-icon { font-size: 64px; margin-bottom: 20px; }
+  .empty-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; margin-bottom: 10px;
+  }
+  .empty-desc { color: var(--text2); font-size: 15px; margin-bottom: 28px; line-height: 1.7; }
+  .btn-explore {
+    display: inline-block; padding: 14px 32px;
+    background: var(--accent); color: #fff; border-radius: 14px;
+    font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.2s;
+  }
+  .btn-explore:hover { opacity: 0.9; transform: translateY(-2px); }
+
+  @media (max-width: 640px) {
+    .review-card { grid-template-columns: 1fr; }
+    .card-image { min-height: 160px; border-left: none; border-top: 1px solid var(--border); order: -1; }
+    .card-content { padding: 20px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <h1 class="page-title">✍️ 전체 리뷰</h1>
+    <p class="page-subtitle">LocalEats 회원들의 솔직한 맛집 후기를 확인해보세요</p>
+    <div class="stats-row">
+      <div class="stat-badge">📝 총 <strong>{{ reviews|length }}</strong>개의 리뷰</div>
+      {% if user.is_authenticated %}
+        <a href="{% url 'restaurants:list' %}" class="btn-write">✍️ 리뷰 작성하러 가기</a>
+      {% else %}
+        <a href="{% url 'users:login' %}" class="btn-write">🔑 로그인하고 리뷰 쓰기</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-bar-inner">
+    <span class="filter-label">정렬 :</span>
+    <a href="?sort=latest"      class="chip {% if not request.GET.sort or request.GET.sort == 'latest' %}active{% endif %}">🕐 최신순</a>
+    <a href="?sort=rating_high" class="chip {% if request.GET.sort == 'rating_high' %}active{% endif %}">⭐ 별점 높은순</a>
+    <a href="?sort=rating_low"  class="chip {% if request.GET.sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+  </div>
+</div>
+
+<div class="reviews-body">
+  {% if reviews %}
+  <div class="reviews-list">
+    {% for review in reviews %}
+    <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
+
+      <div class="card-content">
+        <a href="{% url 'restaurants:detail' pk=review.restaurant.pk %}" class="card-restaurant">
+          <div class="restaurant-thumb">
+            {% if review.restaurant.thumbnail %}
+              <img src="{{ review.restaurant.thumbnail.url }}" alt="{{ review.restaurant.name }}">
+            {% else %}
+              🍽️
+            {% endif %}
+          </div>
+          <div>
+            <div class="restaurant-name">{{ review.restaurant.name }}</div>
+            <div class="restaurant-category">{{ review.restaurant.category|default:"기타" }}</div>
+          </div>
+        </a>
+
+        <div class="rating-row">
+          <div class="stars">
+            {% for i in "12345" %}
+              {% if forloop.counter <= review.rating %}<span class="on">★</span>
+              {% else %}<span class="off">★</span>{% endif %}
+            {% endfor %}
+          </div>
+          <span class="rating-tag">{{ review.rating }}점</span>
+        </div>
+
+        <p class="review-text">{{ review.content }}</p>
+
+        <div class="author-row">
+          <div class="author-info">
+            <div class="author-avatar">{{ review.author.username|first|upper }}</div>
+            <div>
+              <div class="author-name">{{ review.author.username }}</div>
+              <div class="review-date">{{ review.created_at|date:"Y년 m월 d일" }}</div>
+            </div>
+          </div>
+          {% if user == review.author %}
+          <div class="action-btns">
+            <a href="{% url 'reviews:edit' review_id=review.pk %}" class="action-btn">✏️ 수정</a>
+            <button class="action-btn delete" onclick="deleteReview({{ review.pk }})">🗑️ 삭제</button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card-image">
+        {% if review.image %}
+          <img src="{{ review.image.url }}" alt="리뷰 이미지">
+        {% else %}
+          <span class="no-image">📷</span>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">💬</div>
+    <h2 class="empty-title">아직 리뷰가 없어요</h2>
+    <p class="empty-desc">맛집을 방문하고 첫 번째 리뷰를 남겨보세요!<br>솔직한 후기가 다른 분들에게 큰 도움이 됩니다.</p>
+    <a href="{% url 'restaurants:list' %}" class="btn-explore">🗺️ 음식점 둘러보기</a>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteReview(id) {
+  if (!confirm('정말 삭제하시겠어요?')) return;
+  fetch(`/reviews/${id}/delete/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+  }).then(() => location.reload());
+}
+function getCookie(name) {
+  return document.cookie.split(';')
+    .map(c => c.trim())
+    .find(c => c.startsWith(name + '='))?.split('=')[1] || '';
+}
+</script>
+{% endblock %}

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}리뷰 작성 — LocalEats{% endblock %}
+{% block title %}{% if edit_mode %}리뷰 수정{% else %}리뷰 작성{% endif %} — LocalEats{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -7,23 +7,30 @@
     max-width: 720px; margin: 0 auto;
     animation: fadeUp 0.5s ease;
   }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
-  .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text2); margin-bottom: 28px;
+  }
   .breadcrumb a { color: var(--text2); text-decoration: none; }
   .breadcrumb a:hover { color: var(--accent); }
   .breadcrumb span { color: var(--border); }
 
-  .page-title { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; margin-bottom: 8px; }
-  .page-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 40px; }
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px; font-weight: 700; margin-bottom: 8px;
+  }
+  .page-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 32px; }
+
   .restaurant-badge {
     display: inline-flex; align-items: center; gap: 8px;
-    background: var(--accent-light); border: 1px solid rgba(212,82,26,0.2);
+    background: var(--accent-light, rgba(212,82,26,0.08));
+    border: 1px solid rgba(212,82,26,0.2);
     color: var(--accent); font-size: 14px; font-weight: 600;
-    padding: 8px 16px; border-radius: 100px; margin-bottom: 36px;
+    padding: 8px 18px; border-radius: 100px; margin-bottom: 32px;
   }
 
-  /* FORM CARD */
   .form-card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 20px; padding: 36px; box-shadow: var(--shadow);
@@ -31,108 +38,104 @@
 
   .form-section { margin-bottom: 32px; }
   .form-label {
-    display: block; font-size: 14px; font-weight: 700;
-    color: var(--text); margin-bottom: 10px;
     display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px;
   }
-  .form-label .required { color: var(--accent); }
+  .required { color: var(--accent); }
 
-  /* STAR PICKER */
-  .star-picker { display: flex; gap: 8px; align-items: center; flex-direction: row-reverse; justify-content: flex-end; }
+  .star-picker-wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .star-picker { display: flex; gap: 6px; flex-direction: row-reverse; }
   .star-picker input { display: none; }
   .star-picker label {
-    font-size: 40px; cursor: pointer; color: var(--star-off);
-    transition: all 0.15s; filter: grayscale(1);
-    user-select: none;
+    font-size: 40px; cursor: pointer;
+    color: var(--border); filter: grayscale(1);
+    transition: all 0.15s; user-select: none;
   }
   .star-picker label:hover,
   .star-picker label:hover ~ label,
   .star-picker input:checked ~ label {
-    color: #F59E0B !important; filter: grayscale(0) !important;
-    transform: scale(1.1);
+    color: #F59E0B !important; filter: grayscale(0) !important; transform: scale(1.1);
   }
-  .star-display {
-    margin-left: 14px; font-size: 15px; font-weight: 600; color: var(--text2);
-    min-width: 80px;
-  }
+  .star-display { font-size: 15px; font-weight: 600; color: var(--text2); min-width: 120px; }
 
-  /* TEXT AREA */
   .form-textarea {
-    width: 100%; padding: 16px; border: 1.5px solid var(--border);
+    width: 100%; padding: 16px;
+    background: var(--bg); border: 1.5px solid var(--border);
     border-radius: 14px; font-size: 15px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; background: var(--bg);
-    resize: vertical; min-height: 160px; outline: none; line-height: 1.6;
-    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif; resize: vertical; min-height: 160px;
+    outline: none; line-height: 1.6; transition: all 0.2s;
   }
-  .form-textarea:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(212,82,26,0.08); }
+  .form-textarea:focus {
+    border-color: var(--accent); background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(212,82,26,0.08);
+  }
   .char-count { font-size: 12px; color: var(--text2); text-align: right; margin-top: 6px; }
   .char-count.warn { color: #F59E0B; }
   .char-count.over { color: #EF4444; }
 
-  /* IMAGE UPLOAD */
   .upload-area {
     border: 2px dashed var(--border); border-radius: 14px;
     padding: 32px; text-align: center; cursor: pointer;
     transition: all 0.2s; position: relative; overflow: hidden;
   }
-  .upload-area:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-area:hover { border-color: var(--accent); background: var(--accent-light, rgba(212,82,26,0.05)); }
   .upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-  .upload-icon { font-size: 40px; margin-bottom: 12px; }
-  .upload-text { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .upload-icon { font-size: 36px; margin-bottom: 10px; }
+  .upload-text { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
   .upload-hint { font-size: 13px; color: var(--text2); }
-  .image-preview {
-    display: none; margin-top: 16px; position: relative; border-radius: 12px; overflow: hidden;
-  }
+
+  .image-preview { display: none; margin-top: 16px; position: relative; border-radius: 12px; overflow: hidden; }
   .image-preview img { width: 100%; max-height: 280px; object-fit: cover; border-radius: 12px; }
   .image-preview-remove {
     position: absolute; top: 10px; right: 10px;
-    background: rgba(0,0,0,0.6); color: #fff;
-    border: none; border-radius: 50%; width: 32px; height: 32px;
-    cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
+    width: 32px; height: 32px; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
   }
 
-  /* SUBMIT */
   .form-submit {
-    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
-    padding-top: 24px; border-top: 1px solid var(--border);
+    display: flex; gap: 12px; align-items: center;
+    padding-top: 24px; border-top: 1px solid var(--border); flex-wrap: wrap;
   }
   .btn-submit {
     padding: 15px 36px; background: var(--accent); color: #fff;
     border: none; border-radius: 14px; font-size: 16px; font-weight: 700;
-    font-family: 'DM Sans', sans-serif; cursor: pointer;
-    display: flex; align-items: center; gap: 10px; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
   }
-  .btn-submit:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,82,26,0.3); }
+  .btn-submit:hover { background: var(--accent-hover, #C0551F); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,82,26,0.3); }
   .btn-submit:disabled { opacity: 0.5; pointer-events: none; }
   .btn-cancel {
-    padding: 15px 24px; background: var(--bg2); color: var(--text2);
-    border: 1.5px solid var(--border); border-radius: 14px; font-size: 15px; font-weight: 600;
-    font-family: 'DM Sans', sans-serif; cursor: pointer; text-decoration: none;
-    transition: all 0.2s;
+    padding: 15px 24px; background: var(--bg); color: var(--text2);
+    border: 1.5px solid var(--border); border-radius: 14px;
+    font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    text-decoration: none; transition: all 0.2s;
   }
   .btn-cancel:hover { border-color: var(--text2); color: var(--text); }
 
-  /* TIPS */
   .tips-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 16px; padding: 24px; margin-top: 24px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px; margin-top: 24px;
   }
-  .tips-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text2); letter-spacing: 0.5px; }
-  .tip { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .tips-card h4 { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 14px; letter-spacing: 0.5px; }
+  .tip { display: flex; gap: 10px; margin-bottom: 8px; font-size: 13px; color: var(--text2); line-height: 1.5; }
   .tip:last-child { margin-bottom: 0; }
+
+  .field-error { font-size: 12px; color: #EF4444; margin-top: 6px; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-wrap">
+
   <div class="breadcrumb">
     <a href="/">홈</a><span>›</span>
-    <a href="/restaurants/">음식점</a><span>›</span>
-    <a href="/restaurants/{{ restaurant.pk }}/">{{ restaurant.name }}</a><span>›</span>
-    <span>리뷰 작성</span>
+    <a href="{% url 'restaurants:list' %}">음식점</a><span>›</span>
+    <a href="{% url 'restaurants:detail' pk=restaurant.pk %}">{{ restaurant.name }}</a><span>›</span>
+    <span>{% if edit_mode %}리뷰 수정{% else %}리뷰 작성{% endif %}</span>
   </div>
 
-  <h1 class="page-title">리뷰 작성</h1>
+  <h1 class="page-title">{% if edit_mode %}리뷰 수정 ✏️{% else %}리뷰 작성 ✍️{% endif %}</h1>
   <p class="page-subtitle">솔직한 경험을 나눠주세요. 다른 분들에게 큰 도움이 됩니다.</p>
 
   <div class="restaurant-badge">🍽️ &nbsp;{{ restaurant.name }}</div>
@@ -141,42 +144,39 @@
     <form method="POST" enctype="multipart/form-data" id="reviewForm">
       {% csrf_token %}
 
-      <!-- STAR RATING -->
       <div class="form-section">
-        <label class="form-label">⭐ 별점 <span class="required">*</span></label>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div class="form-label">⭐ 별점 <span class="required">*</span></div>
+        <div class="star-picker-wrap">
           <div class="star-picker" id="starPicker">
             {% for i in "54321" %}
-            <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" {% if form.rating.value == i %}checked{% endif %} required>
+            <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}"
+              {% if form.rating.value == i %}checked{% endif %} required>
             <label for="star{{ i }}" title="{{ i }}점">★</label>
             {% endfor %}
           </div>
           <div class="star-display" id="starDisplay">클릭해서 선택</div>
         </div>
         {% if form.rating.errors %}
-          <div style="color:#EF4444;font-size:13px;margin-top:8px;">{{ form.rating.errors }}</div>
+          <div class="field-error">{{ form.rating.errors }}</div>
         {% endif %}
       </div>
 
-      <!-- CONTENT -->
       <div class="form-section">
-        <label class="form-label" for="id_content">💬 리뷰 내용 <span class="required">*</span></label>
+        <div class="form-label">💬 리뷰 내용 <span class="required">*</span></div>
         <textarea
           id="id_content" name="content"
           class="form-textarea"
           placeholder="음식 맛, 서비스, 분위기, 가격대 등 솔직한 경험을 알려주세요..."
-          maxlength="1000"
-          required
+          maxlength="1000" required
         >{{ form.content.value|default:"" }}</textarea>
         <div class="char-count" id="charCount">0 / 1000</div>
         {% if form.content.errors %}
-          <div style="color:#EF4444;font-size:13px;margin-top:4px;">{{ form.content.errors }}</div>
+          <div class="field-error">{{ form.content.errors }}</div>
         {% endif %}
       </div>
 
-      <!-- IMAGE UPLOAD -->
       <div class="form-section">
-        <label class="form-label">📷 사진 첨부 <span style="color:var(--text2);font-weight:400;font-size:13px;">(선택)</span></label>
+        <div class="form-label">📷 사진 첨부 <span style="color:var(--text2);font-weight:400;font-size:13px;">(선택)</span></div>
         <div class="upload-area" id="uploadArea">
           <input type="file" name="image" accept="image/*" id="imageInput">
           <div class="upload-icon">🖼️</div>
@@ -187,19 +187,23 @@
           <img id="previewImg" src="" alt="미리보기">
           <button type="button" class="image-preview-remove" onclick="removeImage()">✕</button>
         </div>
+        {% if edit_mode and review.image %}
+        <div style="margin-top:10px;font-size:13px;color:var(--text2);">
+          현재 사진: <a href="{{ review.image.url }}" target="_blank" style="color:var(--accent);">보기</a>
+          (새 파일 선택 시 교체됩니다)
+        </div>
+        {% endif %}
       </div>
 
-      <!-- SUBMIT -->
       <div class="form-submit">
         <button type="submit" class="btn-submit" id="submitBtn">
-          <span>✅</span> 리뷰 등록하기
+          {% if edit_mode %}✅ 수정 완료{% else %}✅ 리뷰 등록하기{% endif %}
         </button>
-        <a href="/restaurants/{{ restaurant.pk }}/" class="btn-cancel">취소</a>
+        <a href="{% url 'restaurants:detail' pk=restaurant.pk %}" class="btn-cancel">취소</a>
       </div>
     </form>
   </div>
 
-  <!-- TIPS -->
   <div class="tips-card">
     <h4>💡 좋은 리뷰 작성 TIP</h4>
     <div class="tip">⭐<span>음식 맛, 서비스, 분위기를 구체적으로 작성하면 더 도움이 돼요</span></div>
@@ -207,27 +211,34 @@
     <div class="tip">🚫<span>욕설, 비방, 허위 내용은 삭제될 수 있어요</span></div>
     <div class="tip">🙏<span>솔직하고 공정한 리뷰가 가장 좋아요</span></div>
   </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  const starLabels = { '5': '최고예요! 강추 🔥', '4': '좋아요 👍', '3': '보통이에요 😊', '2': '아쉬워요 😕', '1': '별로예요 😞' };
-  
+  const starLabels = {
+    '5': '최고예요! 강추 🔥', '4': '좋아요 👍',
+    '3': '보통이에요 😊', '2': '아쉬워요 😕', '1': '별로예요 😞'
+  };
   document.querySelectorAll('.star-picker input').forEach(input => {
     input.addEventListener('change', () => {
       document.getElementById('starDisplay').textContent = starLabels[input.value] || '';
     });
-    if (input.checked) document.getElementById('starDisplay').textContent = starLabels[input.value] || '';
+    if (input.checked) {
+      document.getElementById('starDisplay').textContent = starLabels[input.value] || '';
+    }
   });
 
   const textarea = document.getElementById('id_content');
   const charCount = document.getElementById('charCount');
-  textarea.addEventListener('input', () => {
+  function updateCount() {
     const len = textarea.value.length;
     charCount.textContent = `${len} / 1000`;
     charCount.className = 'char-count' + (len > 900 ? ' warn' : '') + (len >= 1000 ? ' over' : '');
-  });
+  }
+  textarea.addEventListener('input', updateCount);
+  updateCount();
 
   const imageInput = document.getElementById('imageInput');
   imageInput.addEventListener('change', e => {
@@ -243,12 +254,11 @@
   });
 
   function removeImage() {
-    document.getElementById('imageInput').value = '';
+    imageInput.value = '';
     document.getElementById('imagePreview').style.display = 'none';
     document.getElementById('uploadArea').style.display = 'block';
   }
 
-  // Drag & drop
   const uploadArea = document.getElementById('uploadArea');
   uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--accent)'; });
   uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
@@ -261,9 +271,11 @@
     }
   });
 
-  document.getElementById('reviewForm').addEventListener('submit', function(e) {
+  document.getElementById('reviewForm').addEventListener('submit', function() {
     const btn = document.getElementById('submitBtn');
-    btn.disabled = true; btn.textContent = '등록 중...';
+    btn.disabled = true;
+    btn.textContent = '처리 중...';
   });
 </script>
 {% endblock %}
+
