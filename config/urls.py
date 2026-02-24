@@ -18,10 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from restaurants import views as restaurant_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("core.urls")),
+    # 이 줄을 추가하면 127.0.0.1:8000/map/ 으로 바로 접속 가능합니다.
+    path("map/", restaurant_views.restaurant_map, name='restaurant_map'),
     path("restaurants/", include("restaurants.urls")),
     path("reviews/", include("reviews.urls")),
     path("favorites/", include("favorites.urls")),
