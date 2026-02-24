@@ -10,6 +10,18 @@ from .models import Review
 @login_required
 def create_review(request, restaurant_id):
     restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
+    
+    # 1. 정렬 기준 가져오기 (기본값을 'rating_high'로 설정)
+    sort = request.GET.get('sort', 'rating_high') 
+    existing_reviews = Review.objects.filter(restaurant=restaurant)
+
+    # 2. 정렬 로직
+    if sort == 'latest':
+        existing_reviews = existing_reviews.order_by('-created_at')
+    elif sort == 'rating_low':
+        existing_reviews = existing_reviews.order_by('rating', '-created_at')
+    else:  # rating_high (기본값)
+        existing_reviews = existing_reviews.order_by('-rating', '-created_at')
 
     if request.method == "POST":
         form = ReviewForm(request.POST, request.FILES)
@@ -18,7 +30,6 @@ def create_review(request, restaurant_id):
             review.restaurant = restaurant
             review.author = request.user
             review.save()
-            messages.success(request, "리뷰가 등록되었어요! 😊")
             return redirect("restaurants:detail", pk=restaurant.id)
     else:
         form = ReviewForm()
@@ -26,6 +37,8 @@ def create_review(request, restaurant_id):
     return render(request, "reviews/create.html", {
         "form": form,
         "restaurant": restaurant,
+        "existing_reviews": existing_reviews, # HTML로 전달
+        "current_sort": sort  # 현재 어떤 정렬인지 HTML이 알게 함
     })
 
 
@@ -75,7 +88,14 @@ def delete_review(request, review_id):
 
 # 리뷰 전체 목록
 def review_list(request):
-    reviews = Review.objects.all().select_related(
-        "author", "restaurant"
-    ).order_by("-id")
+    sort = request.GET.get('sort', 'latest')
+    reviews = Review.objects.all().select_related("author", "restaurant")
+
+    if sort == 'rating_high':
+        reviews = reviews.order_by('-rating', '-id')
+    elif sort == 'rating_low':
+        reviews = reviews.order_by('rating', '-id')
+    else:
+        reviews = reviews.order_by('-id')
+
     return render(request, "reviews/list.html", {"reviews": reviews})
