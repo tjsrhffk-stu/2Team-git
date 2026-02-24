@@ -260,6 +260,12 @@
 <!-- REVIEWS -->
 <div class="reviews-section">
   <h2 class="section-title">리뷰 {{ reviews|length }}개</h2>
+  
+      <div class="filter-bar" style="margin-bottom: 20px; display: flex; gap: 8px; border: none; position: static;">
+        <a href="?sort=rating_high" class="chip {% if current_sort == 'rating_high' %}active{% endif %}">⭐ 별점 높은순</a>
+        <a href="?sort=latest" class="chip {% if current_sort == 'latest' %}active{% endif %}">🕐 최신순</a>
+        <a href="?sort=rating_low" class="chip {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+    </div>
 
   {% for review in reviews %}
   <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
@@ -329,4 +335,6 @@ window.addEventListener('load', () => {
   });
 });
 </script>
+
+
 {% endblock %}

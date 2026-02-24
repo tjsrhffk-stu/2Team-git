@@ -217,7 +217,7 @@
             {% endfor %}
             {% endwith %}
           </div>
-          <span class="rating-num">{{ restaurant.avg_rating|default:"—" }}</span>
+          <span class="rating-num">{{ restaurant.avg_rating|floatformat:1|default:"—" }}</span>
           <span class="review-count">({{ restaurant.review_count|default:0 }}개 리뷰)</span>
         </div>
         <div class="card-footer">
