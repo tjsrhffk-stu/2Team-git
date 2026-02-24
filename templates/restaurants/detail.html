@@ -75,7 +75,6 @@
   .info-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 18px; }
   .info-row { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
   .info-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-  .info-content {}
   .info-label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; }
   .info-value { font-size: 14px; color: var(--text); font-weight: 500; }
   .map-placeholder {
@@ -86,7 +85,7 @@
     color: var(--text2); font-size: 14px; text-align: center;
   }
 
-  /* RESTAURANT IMAGE */
+  /* RESTAURANT IMAGE - 'thumbnail' 필드 반영 */
   .restaurant-img {
     width: 100%; max-height: 300px; border-radius: 16px;
     overflow: hidden; margin-bottom: 24px; background: var(--bg2);
@@ -100,6 +99,15 @@
     font-family: 'Playfair Display', serif;
     font-size: 28px; font-weight: 700; margin-bottom: 28px;
   }
+
+  /* FILTER CHIPS */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 24px; }
+  .chip {
+    padding: 7px 16px; border-radius: 100px; font-size: 13px; font-weight: 500;
+    background: var(--bg); border: 1.5px solid var(--border); color: var(--text2);
+    text-decoration: none; transition: all 0.2s;
+  }
+  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
   .review-card {
     background: var(--surface); border: 1px solid var(--border);
@@ -132,7 +140,6 @@
   }
   .review-action-btn:hover { border-color: var(--accent); color: var(--accent); }
   .review-action-btn.delete { border-color: #FECACA; color: #EF4444; background: #FFF5F5; }
-  [data-theme="dark"] .review-action-btn.delete { background: #7F1D1D20; }
 
   .no-reviews { text-align: center; padding: 60px 24px; color: var(--text2); }
   .no-reviews .icon { font-size: 48px; margin-bottom: 16px; }
@@ -145,7 +152,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- HERO -->
 <div class="detail-hero">
   <div class="detail-hero-inner">
     <div>
@@ -155,31 +161,30 @@
         <span>{{ restaurant.name }}</span>
       </div>
 
-      {% if restaurant.image %}
-      <div class="restaurant-img"><img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}"></div>
+      {% if restaurant.thumbnail %}
+      <div class="restaurant-img"><img src="{{ restaurant.thumbnail.url }}" alt="{{ restaurant.name }}"></div>
       {% else %}
       <div class="restaurant-img" style="height:200px;">🍽️</div>
       {% endif %}
 
       <h1 class="restaurant-name">{{ restaurant.name }}</h1>
       <div class="meta-row">
-        <span class="meta-tag">🍜 {{ restaurant.category|default:"기타" }}</span>
+        <span class="meta-tag">🍜 {{ restaurant.category.name|default:restaurant.category|default:"기타" }}</span>
         <span class="meta-info">📍 {{ restaurant.address }}</span>
         {% if restaurant.phone %}<span class="meta-info">📞 {{ restaurant.phone }}</span>{% endif %}
       </div>
 
-      <!-- RATING SUMMARY -->
       <div class="rating-summary">
         <div class="rating-big">
-          <div class="rating-big-num">{{ avg_rating|default:"—" }}</div>
+          <div class="rating-big-num">{{ avg_rating|floatformat:1|default:"—" }}</div>
           <div class="rating-big-stars">
-            {% with avg=avg_rating|default:0 %}
+            {% with avg=avg_rating|default:0|floatformat:0 %}
             {% for i in "12345" %}
-              {% if forloop.counter <= avg %}<span class="on">★</span>{% else %}<span class="off">★</span>{% endif %}
+              {% if forloop.counter <= avg|add:0 %}<span class="on">★</span>{% else %}<span class="off">★</span>{% endif %}
             {% endfor %}
             {% endwith %}
           </div>
-          <div class="rating-big-count">{{ reviews|length }}개 리뷰</div>
+          <div class="rating-big-count">{{ restaurant.review_count|default:0 }}개 리뷰</div>
         </div>
         <div class="rating-bars">
           {% for star, count, pct in rating_distribution %}
@@ -212,7 +217,6 @@
       </div>
     </div>
 
-    <!-- INFO SIDEBAR -->
     <div class="info-card">
       <h3>음식점 정보</h3>
       <div class="info-row">
@@ -251,21 +255,20 @@
       {% endif %}
       <div class="map-placeholder">
         🗺️<br>
-        <span>지도 기능 (지도 API 연동 시 표시)</span>
+        <span>지도 기능 연동 준비 중</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- REVIEWS -->
 <div class="reviews-section">
   <h2 class="section-title">리뷰 {{ reviews|length }}개</h2>
   
-      <div class="filter-bar" style="margin-bottom: 20px; display: flex; gap: 8px; border: none; position: static;">
-        <a href="?sort=rating_high" class="chip {% if current_sort == 'rating_high' %}active{% endif %}">⭐ 별점 높은순</a>
-        <a href="?sort=latest" class="chip {% if current_sort == 'latest' %}active{% endif %}">🕐 최신순</a>
-        <a href="?sort=rating_low" class="chip {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
-    </div>
+  <div class="filter-bar">
+    <a href="?sort=rating_high" class="chip {% if current_sort == 'rating_high' %}active{% endif %}">⭐ 별점 높은순</a>
+    <a href="?sort=latest" class="chip {% if current_sort == 'latest' %}active{% endif %}">🕐 최신순</a>
+    <a href="?sort=rating_low" class="chip {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+  </div>
 
   {% for review in reviews %}
   <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
@@ -290,7 +293,7 @@
     {% if user == review.author %}
     <div class="review-actions">
       <a href="/reviews/{{ review.pk }}/edit/" class="review-action-btn">✏️ 수정</a>
-      <button class="review-action-btn delete" onclick="deleteReview({{ review.pk }})">🗑️ 삭제</button>
+      <button class="review-action-btn delete" onclick="deleteReview('{{ review.pk }}')">🗑️ 삭제</button>
     </div>
     {% endif %}
   </div>
@@ -306,6 +309,7 @@
 
 {% block extra_js %}
 <script>
+// 즐겨찾기 토글 (문법 오류 방지용 따옴표 추가)
 function toggleFav() {
   fetch(`/favorites/toggle/{{ restaurant.pk }}/`, {
     method: 'POST',
@@ -316,6 +320,8 @@ function toggleFav() {
     btn.textContent = data.is_favorite ? '❤️ 즐겨찾기 취소' : '🤍 즐겨찾기';
   });
 }
+
+// 리뷰 삭제
 function deleteReview(id) {
   if (confirm('정말 삭제하시겠어요?')) {
     fetch(`/reviews/${id}/delete/`, {
@@ -323,18 +329,29 @@ function deleteReview(id) {
     }).then(() => location.reload());
   }
 }
+
 function getCookie(name) {
-  return document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name+'='))?.split('=')[1] || '';
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
 }
 
-// Animate rating bars on load
+// 통계 바 애니메이션
 window.addEventListener('load', () => {
   document.querySelectorAll('.rating-bar-fill').forEach(bar => {
-    const w = bar.style.width; bar.style.width = '0'; 
+    const w = bar.style.width; 
+    bar.style.width = '0'; 
     setTimeout(() => bar.style.width = w, 100);
   });
 });
 </script>
-
-
 {% endblock %}

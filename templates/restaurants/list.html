@@ -3,6 +3,9 @@
 
 {% block extra_css %}
 <style>
+  /*  */
+  main { padding-top: 0 !important; }
+
   .page-header {
     background: var(--surface); border-bottom: 1px solid var(--border);
     padding: 40px 24px 32px;
@@ -61,11 +64,6 @@
   }
   .results-count { font-size: 14px; color: var(--text2); }
   .results-count strong { color: var(--text); }
-  .sort-select {
-    padding: 8px 14px; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; font-size: 13px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
-  }
 
   /* GRID */
   .restaurants-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
@@ -101,6 +99,7 @@
     background: rgba(255,255,255,0.9); border: none; cursor: pointer;
     font-size: 16px; display: flex; align-items: center; justify-content: center;
     transition: transform 0.2s; backdrop-filter: blur(4px);
+    z-index: 10;
   }
   .fav-btn:hover { transform: scale(1.15); }
 
@@ -123,25 +122,12 @@
     display: flex; align-items: center; gap: 4px;
   }
 
-  /* EMPTY STATE */
   .empty-state {
     grid-column: 1 / -1; text-align: center; padding: 80px 24px;
   }
   .empty-icon { font-size: 64px; margin-bottom: 20px; }
   .empty-title { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
   .empty-desc { color: var(--text2); font-size: 15px; }
-
-  /* PAGINATION */
-  .pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 48px; }
-  .page-btn {
-    min-width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-    border-radius: 10px; font-size: 14px; font-weight: 500;
-    border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
-    text-decoration: none; transition: all 0.2s;
-  }
-  .page-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
-  .page-btn.disabled { opacity: 0.3; pointer-events: none; }
 </style>
 {% endblock %}
 
@@ -153,25 +139,25 @@
       <div class="search-bar">
         <div class="search-wrap">
           <span class="icon">🔍</span>
-          <input type="text" name="q" value="{{ request.GET.q }}" placeholder="음식점 이름 검색...">
+          <input type="text" name="q" value="{{ q }}" placeholder="음식점 이름 검색...">
         </div>
         <select name="sort" onchange="this.form.submit()">
-          <option value="" {% if not request.GET.sort %}selected{% endif %}>정렬 기준</option>
-          <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>별점 높은 순</option>
-          <option value="reviews" {% if request.GET.sort == 'reviews' %}selected{% endif %}>리뷰 많은 순</option>
-          <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>최신 등록 순</option>
+          <option value="latest" {% if sort == 'latest' %}selected{% endif %}>최신 등록 순</option>
+          <option value="rating" {% if sort == 'rating' %}selected{% endif %}>별점 높은 순</option>
+          <option value="reviews" {% if sort == 'reviews' %}selected{% endif %}>리뷰 많은 순</option>
+          <option value="views" {% if sort == 'views' %}selected{% endif %}>조회수 높은 순</option>
         </select>
         <button type="submit">검색</button>
       </div>
+
       <div class="filter-row">
-        <a href="/restaurants/" class="chip {% if not request.GET.category %}active{% endif %}">🍽️ 전체</a>
-        <a href="?category=한식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '한식' %}active{% endif %}">🍚 한식</a>
-        <a href="?category=일식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '일식' %}active{% endif %}">🍣 일식</a>
-        <a href="?category=양식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '양식' %}active{% endif %}">🍝 양식</a>
-        <a href="?category=중식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '중식' %}active{% endif %}">🥟 중식</a>
-        <a href="?category=카페{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '카페' %}active{% endif %}">☕ 카페</a>
-        <a href="?category=분식{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '분식' %}active{% endif %}">🥚 분식</a>
-        <a href="?category=디저트{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="chip {% if request.GET.category == '디저트' %}active{% endif %}">🍰 디저트</a>
+        <a href="?q={{ q }}&sort={{ sort }}" class="chip {% if not category_id %}active{% endif %}">🍽️ 전체</a>
+        {% for cat in categories %}
+        <a href="?category={{ cat.id }}&q={{ q }}&sort={{ sort }}" 
+           class="chip {% if category_id == cat.id|stringformat:'s' %}active{% endif %}">
+           {{ cat.name }}
+        </a>
+        {% endfor %}
       </div>
     </form>
   </div>
@@ -181,43 +167,41 @@
   <div class="results-info">
     <span class="results-count">
       <strong>{{ restaurants|length }}</strong>개의 음식점
-      {% if request.GET.q %} — "<strong>{{ request.GET.q }}</strong>" 검색 결과{% endif %}
+      {% if q %} — "<strong>{{ q }}</strong>" 검색 결과{% endif %}
     </span>
   </div>
 
   <div class="restaurants-grid">
     {% for restaurant in restaurants %}
-    <a href="/restaurants/{{ restaurant.pk }}/" class="restaurant-card" style="animation-delay: {{ forloop.counter0 }}0ms">
+    <a href="{% url 'restaurants:detail' restaurant.pk %}" class="restaurant-card" style="animation-delay: {{ forloop.counter0 }}0ms">
       <div class="card-img">
-        {% if restaurant.image %}
-          <img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}">
+        {% if restaurant.thumbnail %}
+          <img src="{{ restaurant.thumbnail.url }}" alt="{{ restaurant.name }}">
         {% else %}
           🍽️
         {% endif %}
         <div class="card-img-overlay"></div>
-        <span class="card-category-tag">{{ restaurant.category|default:"기타" }}</span>
+        <span class="card-category-tag">{{ restaurant.category.name|default:"기타" }}</span>
+        
         {% if user.is_authenticated %}
         <button class="fav-btn" onclick="event.preventDefault(); toggleFav({{ restaurant.pk }}, this)" title="즐겨찾기">
           {% if restaurant.pk in user_favorites %}❤️{% else %}🤍{% endif %}
         </button>
         {% endif %}
       </div>
+
       <div class="card-body">
         <div class="card-name">{{ restaurant.name }}</div>
         <div class="card-address">📍 {{ restaurant.address|truncatechars:30 }}</div>
         <div class="card-stars">
           <div class="stars">
-            {% with avg=restaurant.avg_rating|default:0 %}
+            {% with avg=restaurant.avg_rating|default:0|floatformat:0 %}
             {% for i in "12345" %}
-              {% if forloop.counter <= avg %}
-                <span class="on">★</span>
-              {% else %}
-                <span class="off">★</span>
-              {% endif %}
+              {% if forloop.counter <= avg|add:0 %}<span class="on">★</span>{% else %}<span class="off">★</span>{% endif %}
             {% endfor %}
             {% endwith %}
           </div>
-          <span class="rating-num">{{ restaurant.avg_rating|floatformat:1|default:"—" }}</span>
+          <span class="rating-num">{{ restaurant.avg_rating|floatformat:1|default:"0.0" }}</span>
           <span class="review-count">({{ restaurant.review_count|default:0 }}개 리뷰)</span>
         </div>
         <div class="card-footer">
@@ -234,29 +218,6 @@
     </div>
     {% endfor %}
   </div>
-
-  <!-- PAGINATION -->
-  {% if restaurants.has_other_pages %}
-  <div class="pagination">
-    {% if restaurants.has_previous %}
-      <a href="?page={{ restaurants.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="page-btn">←</a>
-    {% else %}
-      <span class="page-btn disabled">←</span>
-    {% endif %}
-    {% for num in restaurants.paginator.page_range %}
-      {% if num == restaurants.number %}
-        <span class="page-btn active">{{ num }}</span>
-      {% elif num|add:"-2" <= restaurants.number and num|add:"2" >= restaurants.number %}
-        <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="page-btn">{{ num }}</a>
-      {% endif %}
-    {% endfor %}
-    {% if restaurants.has_next %}
-      <a href="?page={{ restaurants.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="page-btn">→</a>
-    {% else %}
-      <span class="page-btn disabled">→</span>
-    {% endif %}
-  </div>
-  {% endif %}
 </div>
 {% endblock %}
 
@@ -270,8 +231,20 @@ function toggleFav(restaurantId, btn) {
     btn.textContent = data.is_favorite ? '❤️' : '🤍';
   }).catch(() => {});
 }
+
 function getCookie(name) {
-  return document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name + '='))?.split('=')[1] || '';
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
 }
 </script>
 {% endblock %}

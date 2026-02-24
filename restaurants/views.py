@@ -4,61 +4,59 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Restaurant, Category
 
-# 음식점 목록
+# 1. 음식점 목록
 def restaurant_list(request):
-    q           = request.GET.get("q", "").strip()
+    q = request.GET.get("q", "").strip()
     category_id = request.GET.get("category", "").strip()
-    sort         = request.GET.get("sort", "latest")  # latest | rating | reviews | views
-
+    sort = request.GET.get("sort", "latest")
+    
     qs = Restaurant.objects.all().annotate(
-        avg_rating=Avg("reviews__rating"),
-        review_count=Count("reviews"),
+        avg_rating=Avg("reviews__rating"), 
+        review_count=Count("reviews")
     )
 
-    if q:
+    if q: 
         qs = qs.filter(Q(name__icontains=q) | Q(address__icontains=q))
-
+    
     if category_id:
-        if category_id.isdigit():
+        if category_id.isdigit(): 
             qs = qs.filter(category_id=category_id)
-        else:
+        else: 
             qs = qs.filter(category__name=category_id)
 
-    if sort == "rating":
+    # 정렬 로직
+    if sort == "rating": 
         qs = qs.order_by("-avg_rating", "-review_count", "-id")
-    elif sort == "reviews":
+    elif sort == "reviews": 
         qs = qs.order_by("-review_count", "-id")
-    elif sort == "views":
+    elif sort == "views": 
         qs = qs.order_by("-view_count", "-id")
-    else:
+    else: 
         qs = qs.order_by("-id")
 
-    categories = Category.objects.all()
-
     context = {
-        "restaurants": qs,
-        "q": q,
-        "categories": categories,
-        "category_id": category_id,
-        "sort": sort,
+        "restaurants": qs, 
+        "q": q, 
+        "categories": Category.objects.all(), 
+        "category_id": category_id, 
+        "sort": sort
     }
     return render(request, "restaurants/list.html", context)
 
-
-# 음식점 상세 (리뷰 정렬 기능 추가됨)
+# 2. 음식점 상세 (리뷰 정렬 및 소수점 처리 반영)
 def restaurant_detail(request, pk):
     restaurant = get_object_or_404(
         Restaurant.objects.annotate(
-            avg_rating=Avg("reviews__rating"),
-            review_count=Count("reviews"),
-        ),
-        pk=pk,
+            avg_rating=Avg("reviews__rating"), 
+            review_count=Count("reviews")
+        ), 
+        pk=pk
     )
-
+    
     # 조회수 증가
     Restaurant.objects.filter(pk=pk).update(view_count=restaurant.view_count + 1)
-
-    # --- [정렬 로직 추가] ---
+    
+    # --- [리뷰 정렬 로직 추가] ---
     sort = request.GET.get('sort', 'rating_high')  # 기본값: 별점 높은 순
     reviews_qs = restaurant.reviews.select_related("author")
 
@@ -68,7 +66,7 @@ def restaurant_detail(request, pk):
         reviews = reviews_qs.order_by("rating", "-created_at")
     else:  # rating_high
         reviews = reviews_qs.order_by("-rating", "-created_at")
-    # --- [추가 끝] ---
+    # ---------------------------
 
     # 별점 분포 계산
     rating_distribution = []
@@ -83,69 +81,77 @@ def restaurant_detail(request, pk):
     if request.user.is_authenticated:
         try:
             from favorites.models import Favorite
-            is_favorite = Favorite.objects.filter(
-                user=request.user, restaurant=restaurant
-            ).exists()
-        except Exception:
+            is_favorite = Favorite.objects.filter(user=request.user, restaurant=restaurant).exists()
+        except: 
             pass
 
     context = {
-        "restaurant": restaurant,
-        "reviews": reviews,  # 정렬된 리뷰 목록
-        "avg_rating": round(restaurant.avg_rating, 1) if restaurant.avg_rating else None,
-        "rating_distribution": rating_distribution,
+        "restaurant": restaurant, 
+        "reviews": reviews, 
+        # 소수점 1자리(혹은 2자리) 반올림 처리
+        "avg_rating": round(restaurant.avg_rating, 1) if restaurant.avg_rating else None, 
+        "rating_distribution": rating_distribution, 
         "is_favorite": is_favorite,
         "current_sort": sort,
     }
     return render(request, "restaurants/detail.html", context)
 
 
-# 음식점 등록
+# 3. 음식점 등록
 @login_required
 def restaurant_create(request):
+    if not request.user.is_staff:
+        messages.error(request, "권한이 없습니다.")
+        return redirect("/restaurants/")
+
+    # DB에 카테고리가 없다면 자동 생성
+    if not Category.objects.exists():
+        default_categories = ['한식', '중식', '일식', '양식', '카페', '패스트푸드', '기타']
+        for cat_name in default_categories:
+            Category.objects.create(name=cat_name)
+
     categories = Category.objects.all()
 
     if request.method == "POST":
-        name        = request.POST.get("name", "").strip()
-        category_id = request.POST.get("category", "")
-        address     = request.POST.get("address", "").strip()
-        phone       = request.POST.get("phone", "").strip()
-        description = request.POST.get("description", "").strip()
-        hours       = request.POST.get("hours", "").strip()
-        closed_days = request.POST.get("closed_days", "").strip()
-        website     = request.POST.get("website", "").strip()
-        image       = request.FILES.get("image")
+        name = request.POST.get("name", "").strip()
+        category_pk = request.POST.get("category", "").strip()
+        address = request.POST.get("address", "").strip()
 
         if not name or not address:
-            messages.error(request, "음식점 이름과 주소는 필수예요.")
-            return render(request, "restaurants/create.html", {
-                "categories": categories,
-                "form": request.POST,
-            })
+            messages.error(request, "필수 항목을 입력해주세요.")
+            return render(request, "restaurants/create.html", {"categories": categories, "form_data": request.POST})
 
+        # 조원 코드의 필드명(owner, thumbnail 등) 유지
         restaurant = Restaurant(
-            name=name,
+            owner=request.user, 
+            name=name, 
             address=address,
-            phone=phone,
-            description=description,
-            hours=hours,
-            website=website,
+            phone=request.POST.get("phone", "").strip(),
+            description=request.POST.get("description", "").strip(),
+            hours=request.POST.get("hours", "").strip(),
+            closed_days=request.POST.get("closed_days", "").strip(),
+            website=request.POST.get("website", "").strip(),
+            thumbnail=request.FILES.get("thumbnail") # image 대신 thumbnail 사용 확인
         )
 
-        if category_id:
+        if category_pk and category_pk.isdigit():
+            restaurant.category = Category.objects.filter(pk=category_pk).first()
+        else:
             try:
-                restaurant.category = Category.objects.get(pk=category_id)
-            except Category.DoesNotExist:
+                restaurant.category = Category.objects.get(name=category_pk)
+            except:
                 pass
-
-        if image:
-            restaurant.image = image
-
+        
         restaurant.save()
-        messages.success(request, f'"{name}" 음식점이 등록되었어요! 🎉')
-        return redirect("restaurants:detail", pk=restaurant.pk)
+        messages.success(request, f'"{name}" 등록 성공! 🎉')
 
-    return render(request, "restaurants/create.html", {
-        "categories": categories,
-        "form": {},
-    })
+        try: 
+            return redirect(f"/restaurants/{restaurant.pk}/")
+        except: 
+            return redirect("/restaurants/")
+
+    return render(request, "restaurants/create.html", {"categories": categories, "form_data": {}})
+
+# 4. 지도 페이지
+def restaurant_map(request):
+    return render(request, 'Maps_Api.html', {'restaurants': Restaurant.objects.all()})
