@@ -1,51 +1,56 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import JsonResponse
+from django.db.models import Avg, Count  # 임포트 위치를 최상단으로 이동
 from restaurants.models import Restaurant
 from .models import Favorite
 
-
-# 즐겨찾기 토글 (AJAX + 일반 요청 둘 다 처리)
+# 1. 즐겨찾기 토글 (AJAX + 일반 요청 모두 처리)
 @login_required
 def toggle_favorite(request, restaurant_id):
+    # 식당 존재 여부 확인
     restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
+    
+    # 해당 유저와 식당의 즐겨찾기 데이터 확인 (있으면 가져오고 없으면 생성)
     obj, created = Favorite.objects.get_or_create(
-        user=request.user, restaurant=restaurant
+        user=request.user, 
+        restaurant=restaurant
     )
+
     if not created:
+        # 이미 데이터가 있었다면 (다시 눌렀을 때) 삭제
         obj.delete()
         is_favorite = False
     else:
+        # 새로 생성되었다면 즐겨찾기 등록
         is_favorite = True
 
-    # AJAX 요청이면 JSON 반환, 일반 요청이면 상세페이지로 이동
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
-       request.content_type == 'application/json' or \
-       request.headers.get('Accept') == 'application/json':
+    # AJAX 요청 처리 (프론트엔드에서 비동기로 처리할 경우)
+    if (request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 
+        request.content_type == 'application/json' or 
+        request.headers.get('Accept') == 'application/json'):
         return JsonResponse({'is_favorite': is_favorite})
 
-    return redirect("restaurants:detail", pk=restaurant_id)
+    # 일반 요청 처리 (상세 페이지로 리다이렉트)
+    # 인자 이름을 프로젝트 urls.py 설정에 맞춰 'restaurant_id'로 수정했습니다.
+    return redirect("restaurants:detail", restaurant_id=restaurant_id)
 
 
-# 즐겨찾기 목록
+# 2. 즐겨찾기 목록 페이지
 @login_required
 def favorite_list(request):
-    from django.db.models import Avg, Count
-
+    # annotate를 사용하여 각 식당의 평균 별점과 리뷰 개수를 한 번의 쿼리로 가져옴 (성능 최적화)
     favorites = Favorite.objects.filter(
         user=request.user
-    ).select_related('restaurant').prefetch_related(
-        'restaurant__reviews'
+    ).select_related('restaurant').annotate(
+        avg_rating=Avg('restaurant__reviews__rating'),
+        review_count=Count('restaurant__reviews')
     ).order_by('-created_at')
 
-    # 각 음식점에 avg_rating, review_count 추가
+    # 소수점 첫째 자리 반올림 처리 (필요한 경우)
     for fav in favorites:
-        fav.restaurant.avg_rating = fav.restaurant.reviews.aggregate(
-            avg=Avg('rating')
-        )['avg']
-        if fav.restaurant.avg_rating:
-            fav.restaurant.avg_rating = round(fav.restaurant.avg_rating, 1)
-        fav.restaurant.review_count = fav.restaurant.reviews.count()
+        if fav.avg_rating:
+            fav.avg_rating = round(fav.avg_rating, 1)
 
     return render(request, 'favorites/list.html', {
         'favorites': favorites,

@@ -26,9 +26,9 @@ def restaurant_list(request):
     return render(request, "restaurants/list.html", context)
 
 # 2. 음식점 상세
-def restaurant_detail(request, pk):
-    restaurant = get_object_or_404(Restaurant.objects.annotate(avg_rating=Avg("reviews__rating"), review_count=Count("reviews")), pk=pk)
-    Restaurant.objects.filter(pk=pk).update(view_count=restaurant.view_count + 1)
+def restaurant_detail(request, restaurant_id):  # pk를 restaurant_id로 변경
+    restaurant = get_object_or_404(Restaurant.objects.annotate(avg_rating=Avg("reviews__rating"), review_count=Count("reviews")), pk=restaurant_id) # pk=pk를 pk=restaurant_id로 변경
+    Restaurant.objects.filter(pk=restaurant_id).update(view_count=restaurant.view_count + 1) # 여기도 변경
     reviews = restaurant.reviews.select_related("author").order_by("-created_at")
 
     rating_distribution = []
