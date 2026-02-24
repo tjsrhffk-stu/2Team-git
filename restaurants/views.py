@@ -76,7 +76,6 @@ def restaurant_detail(request, pk):
         pct = (count / total * 100) if total > 0 else 0
         rating_distribution.append((star, count, round(pct)))
 
-    # 즐겨찾기 여부
     is_favorite = False
     if request.user.is_authenticated:
         try:
@@ -104,7 +103,9 @@ def restaurant_create(request):
         messages.error(request, "권한이 없습니다.")
         return redirect("/restaurants/")
 
-    # DB에 카테고리가 없다면 자동 생성
+    # -------------------------------------------------------------
+    # [해결 핵심] DB에 카테고리가 한 개도 없다면 자동으로 만들어줍니다!
+    # -------------------------------------------------------------
     if not Category.objects.exists():
         default_categories = ['한식', '중식', '일식', '양식', '카페', '패스트푸드', '기타']
         for cat_name in default_categories:
@@ -145,6 +146,7 @@ def restaurant_create(request):
         restaurant.save()
         messages.success(request, f'"{name}" 등록 성공! 🎉')
 
+        # 리다이렉트 안전 장치
         try: 
             return redirect(f"/restaurants/{restaurant.pk}/")
         except: 
