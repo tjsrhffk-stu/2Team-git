@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}아이디 찾기 결과 — LocalEats{% endblock %}
+{% block content %}
+<div style="max-width:440px;margin:60px auto;padding:30px;border:1px solid #ddd;border-radius:16px;">
+  <h2>아이디 찾기 결과</h2>
+  <p><strong>{{ email }}</strong> 로 가입된 아이디:</p>
+
+  <ul>
+    {% for u in usernames %}
+      <li><strong>{{ u }}</strong></li>
+    {% endfor %}
+  </ul>
+
+  <div style="margin-top:16px;">
+    <a href="/users/login/">로그인 하러가기</a>
+  </div>
+</div>
+{% endblock %}
