@@ -132,8 +132,8 @@ EMAIL_HOST = "smtp.gmail.com"      # 예: Gmail
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = "django14413@gmail.com"
-EMAIL_HOST_PASSWORD = "wags abhs jsau ucbs"  # 일반 비번 아님!
+EMAIL_HOST_USER = "내 이메일 주소"
+EMAIL_HOST_PASSWORD = "내 APP 비밀번호"  # 일반 비번 아님!
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # reset 링크 만들 때 쓰는 값(너희 코드에서 settings.SITE_URL 쓰는 경우)
