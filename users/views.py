@@ -12,6 +12,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .models import OwnerProfile, Profile
+from favorites.models import Favorite
+from reviews.models import Review
 
 # ✅ 이메일 인증(verification, 베리피케이션) 아직 OFF면 False
 #   - 나중에 True로 바꾸면 signup_done.html + 인증 링크 발송 흐름으로 다시 쓸 수 있음
@@ -266,11 +268,38 @@ def logout_view(request):
 
 
 # -------------------------------------------------------
-# 마이페이지
+# 마이페이지  ✅ A안(?tab=) 방식
 # -------------------------------------------------------
 @login_required
 def mypage_view(request):
-    return render(request, 'users/mypage.html')
+    tab = request.GET.get("tab", "mypage").strip().lower()
+
+    allowed_tabs = {"mypage", "reservations", "visited", "favorites", "reviews"}
+    if tab not in allowed_tabs:
+        tab = "mypage"
+
+    favorites = (
+        Favorite.objects
+        .filter(user=request.user)
+        .select_related("restaurant")
+        .order_by("-created_at")
+    )
+    favorite_count = favorites.count()
+
+    reviews = (
+        Review.objects
+        .filter(author=request.user)
+        .select_related("restaurant")
+        .order_by("-created_at")
+    )
+
+    context = {
+        "active_tab": tab,
+        "favorites": favorites,
+        "favorite_count": favorite_count,
+        "reviews": reviews,
+    }
+    return render(request, "users/mypage.html", context)
 
 
 # -------------------------------------------------------
@@ -343,22 +372,51 @@ def edit_profile(request):
 
     return render(request, 'users/edit_profile.html')
 
-
 # -------------------------------------------------------
-# 비밀번호 찾기 (이메일 발송)
+# 아이디 찾기 (이메일로)
 # -------------------------------------------------------
-def forgot_password(request):
+def find_id(request):
     if request.user.is_authenticated:
         return redirect('/')
 
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
 
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+        if not email:
+            messages.error(request, '이메일을 입력해주세요.')
+            return render(request, 'users/find_id.html', {'email': email})
+
+        users = User.objects.filter(email__iexact=email).order_by('date_joined')
+        if not users.exists():
             messages.error(request, '해당 이메일로 가입된 계정이 없어요.')
-            return render(request, 'users/forgot_password.html', {'email': email})
+            return render(request, 'users/find_id.html', {'email': email})
+
+        usernames = [u.username for u in users]
+        return render(request, 'users/find_id_done.html', {'email': email, 'usernames': usernames})
+
+    return render(request, 'users/find_id.html')
+
+# -------------------------------------------------------
+# 비밀번호 찾기 (아이디 + 이메일로 확인 후 이메일 발송)
+# -------------------------------------------------------
+def forgot_password(request):
+    if request.user.is_authenticated:
+        return redirect('/')
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+
+        if not username or not email:
+            messages.error(request, '아이디와 이메일을 모두 입력해주세요.')
+            return render(request, 'users/forgot_password.html', {'username': username, 'email': email})
+
+        try:
+            # ✅ 아이디 + 이메일이 모두 일치해야만 발송
+            user = User.objects.get(username=username, email=email)
+        except User.DoesNotExist:
+            messages.error(request, '아이디 또는 이메일이 올바르지 않아요.')
+            return render(request, 'users/forgot_password.html', {'username': username, 'email': email})
 
         token = uuid.uuid4().hex
         profile, _ = Profile.objects.get_or_create(user=user)

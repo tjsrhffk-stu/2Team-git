@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}아이디 찾기 — LocalEats{% endblock %}
+{% block content %}
+<div style="max-width:440px;margin:60px auto;padding:30px;border:1px solid #ddd;border-radius:16px;">
+  <h2>아이디 찾기</h2>
+  <p style="opacity:0.8;">회원가입 때 사용한 이메일을 입력해주세요.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <label>이메일</label><br>
+    <input type="email" name="email" value="{{ email|default:'' }}" required style="width:100%;padding:12px;margin:8px 0 16px;">
+    <button type="submit" style="width:100%;padding:12px;">아이디 찾기</button>
+  </form>
+
+  <div style="margin-top:16px;">
+    <a href="/users/login/">로그인으로 돌아가기</a>
+  </div>
+</div>
+{% endblock %}

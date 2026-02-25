@@ -126,21 +126,18 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# -------------------------------------------------------
-# 사이트 URL (이메일 링크에 사용)
-# -------------------------------------------------------
-SITE_URL = 'http://127.0.0.1:8000'  # 배포 시 실제 도메인으로 변경
-
-# -------------------------------------------------------
-# 이메일 설정 (Gmail 기준)
-# -------------------------------------------------------
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+# ✅ 실제 이메일 발송용 (SMTP)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"      # 예: Gmail
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = '본인Gmail주소@gmail.com'      
-EMAIL_HOST_PASSWORD = 'Gmail앱비밀번호'           
+
+EMAIL_HOST_USER = "내이메일@gmail.com"
+EMAIL_HOST_PASSWORD = "앱비밀번호"  # 일반 비번 아님!
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# reset 링크 만들 때 쓰는 값(너희 코드에서 settings.SITE_URL 쓰는 경우)
+SITE_URL = "http://127.0.0.1:8000"  # 로컬 테스트
 
 # -------------------------------------------------------
 # 개발 중 이메일 테스트 (실제 발송 없이 터미널에 출력)
