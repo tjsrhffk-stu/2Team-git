@@ -9,4 +9,6 @@ urlpatterns = [
     path("create/", views.restaurant_create, name="create"),
     path('map/', views.restaurant_map, name='restaurant_map'),
     path('create/', views.restaurant_create, name='restaurant_create'),
-]
+] 
+
+
