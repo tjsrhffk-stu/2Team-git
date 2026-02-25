@@ -7,7 +7,6 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from restaurants.models import Restaurant
 from .models import Favorite
 
-
 # 1. 즐겨찾기 토글 (AJAX + 일반 요청 모두 처리)
 @login_required
 def toggle_favorite(request, restaurant_id):
@@ -36,20 +35,19 @@ def toggle_favorite(request, restaurant_id):
     ):
         return JsonResponse({'is_favorite': is_favorite})
 
-    # ✅ 일반 요청 처리: next 파라미터가 있으면 우선 그곳으로 복귀
+    # 일반 요청 처리: next 파라미터가 있으면 우선 그곳으로 복귀
     next_url = request.GET.get("next")
     if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
         return redirect(next_url)
 
     # 기본: 식당 상세 페이지로 이동
-    # (프로젝트 urls.py 설정에 맞춰 restaurant_id 인자 사용)
-    return redirect("restaurants:detail", restaurant_id=restaurant_id)
+    return redirect("restaurants:detail", pk=restaurant_id)
 
 
 # 2. 즐겨찾기 목록 페이지
 @login_required
 def favorite_list(request):
-    # annotate를 사용하여 각 식당의 평균 별점과 리뷰 개수를 한 번의 쿼리로 가져옴 (성능 최적화)
+    # annotate를 사용하여 각 식당의 평균 별점과 리뷰 개수를 가져옴
     favorites = (
         Favorite.objects
         .filter(user=request.user)
@@ -61,7 +59,7 @@ def favorite_list(request):
         .order_by('-created_at')
     )
 
-    # 소수점 첫째 자리 반올림 처리 (필요한 경우)
+    # 소수점 첫째 자리 반올림 처리
     for fav in favorites:
         if fav.avg_rating:
             fav.avg_rating = round(fav.avg_rating, 1)
@@ -69,3 +67,13 @@ def favorite_list(request):
     return render(request, 'favorites/list.html', {
         'favorites': favorites,
     })
+
+
+# 3. 최근 본 맛집 목록 페이지 (새로 추가됨)
+@login_required
+def recent_list(request):
+    """
+    브라우저 LocalStorage에 저장된 데이터를 JavaScript가 읽어서 화면을 구성하므로,
+    백엔드에서는 단순히 템플릿(recent_list.html)만 반환합니다.
+    """
+    return render(request, 'favorites/recent_list.html')

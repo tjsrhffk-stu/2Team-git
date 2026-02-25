@@ -127,3 +127,17 @@ def review_list(request):
         reviews = reviews.order_by('-id')
 
     return render(request, "reviews/list.html", {"reviews": reviews})
+
+
+# ✅ 4. 내가 쓴 리뷰 목록 (새로 추가됨)
+@login_required
+def my_reviews(request):
+    """
+    현재 로그인한 유저가 작성한 리뷰만 필터링하여 
+    마이페이지 내 리뷰 목록으로 보여줍니다.
+    """
+    reviews = Review.objects.filter(author=request.user).select_related("restaurant").order_by('-created_at')
+    return render(request, "reviews/list.html", {
+        "reviews": reviews,
+        "is_mypage": True  # 템플릿에서 마이페이지 전용 UI를 보여주고 싶을 때 사용
+    })

@@ -126,8 +126,7 @@
 {% block extra_js %}
 <script>
   /**
-   * 
-   * 즐겨찾기 토글 함수
+   * 1. 즐겨찾기 토글 함수
    */
   function toggleFav(id, btn) {
     const textSpan = btn.querySelector('#favText');
@@ -155,6 +154,34 @@
     .catch(error => {
       alert(error.message);
     });
-  }
+  } // <--- toggleFav 함수의 끝 (이 지점에서 중괄호를 닫아줘야 합니다)
+
+  /**
+   * 2. 최근 본 맛집 저장 로직 (페이지 로드 시 자동 실행)
+   */
+  document.addEventListener("DOMContentLoaded", function() {
+    // 저장할 식당 정보 객체 생성
+    const storeData = {
+      id: "{{ restaurant.pk }}",
+      name: "{{ restaurant.name }}",
+      category: "{{ restaurant.category.name|default:'음식점' }}",
+      img: "{% if restaurant.thumbnail %}{{ restaurant.thumbnail.url }}{% else %}https://via.placeholder.com/150?text=No+Image{% endif %}",
+      address: "{{ restaurant.address }}"
+    };
+
+    // 로컬 스토리지에서 기존 데이터 가져오기
+    let recentStores = JSON.parse(localStorage.getItem('recentStores')) || [];
+
+    // 중복 제거 및 최신순 정렬
+    recentStores = recentStores.filter(item => item.id !== storeData.id);
+    recentStores.unshift(storeData);
+
+    // 최대 10개 유지
+    if (recentStores.length > 10) {
+      recentStores.pop();
+    }
+
+    localStorage.setItem('recentStores', JSON.stringify(recentStores));
+  });
 </script>
 {% endblock %}
