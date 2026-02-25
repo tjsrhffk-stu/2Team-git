@@ -12,6 +12,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .models import OwnerProfile, Profile
+from favorites.models import Favorite
+from reviews.models import Review
 
 # ✅ 이메일 인증(verification, 베리피케이션) 아직 OFF면 False
 #   - 나중에 True로 바꾸면 signup_done.html + 인증 링크 발송 흐름으로 다시 쓸 수 있음
@@ -266,11 +268,38 @@ def logout_view(request):
 
 
 # -------------------------------------------------------
-# 마이페이지
+# 마이페이지  ✅ A안(?tab=) 방식
 # -------------------------------------------------------
 @login_required
 def mypage_view(request):
-    return render(request, 'users/mypage.html')
+    tab = request.GET.get("tab", "mypage").strip().lower()
+
+    allowed_tabs = {"mypage", "reservations", "visited", "favorites", "reviews"}
+    if tab not in allowed_tabs:
+        tab = "mypage"
+
+    favorites = (
+        Favorite.objects
+        .filter(user=request.user)
+        .select_related("restaurant")
+        .order_by("-created_at")
+    )
+    favorite_count = favorites.count()
+
+    reviews = (
+        Review.objects
+        .filter(author=request.user)
+        .select_related("restaurant")
+        .order_by("-created_at")
+    )
+
+    context = {
+        "active_tab": tab,
+        "favorites": favorites,
+        "favorite_count": favorite_count,
+        "reviews": reviews,
+    }
+    return render(request, "users/mypage.html", context)
 
 
 # -------------------------------------------------------
