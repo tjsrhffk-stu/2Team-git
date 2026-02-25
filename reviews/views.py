@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
+from django.utils.http import url_has_allowed_host_and_scheme
+
 from restaurants.models import Restaurant
 from .forms import ReviewForm
 from .models import Review
@@ -10,9 +12,9 @@ from .models import Review
 @login_required
 def create_review(request, restaurant_id):
     restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
-    
+
     # 1. 정렬 기준 가져오기 (기본값을 'rating_high'로 설정)
-    sort = request.GET.get('sort', 'rating_high') 
+    sort = request.GET.get('sort', 'rating_high')
     existing_reviews = Review.objects.filter(restaurant=restaurant)
 
     # 2. 정렬 로직
@@ -23,6 +25,9 @@ def create_review(request, restaurant_id):
     else:  # rating_high (기본값)
         existing_reviews = existing_reviews.order_by('-rating', '-created_at')
 
+    # ✅ next 처리: (마이페이지 등) 원래 페이지로 돌아가기 위한 값
+    next_url = request.GET.get("next")
+
     if request.method == "POST":
         form = ReviewForm(request.POST, request.FILES)
         if form.is_valid():
@@ -30,6 +35,12 @@ def create_review(request, restaurant_id):
             review.restaurant = restaurant
             review.author = request.user
             review.save()
+            messages.success(request, "리뷰가 작성되었어요! ✅")
+
+            # ✅ next 우선 복귀
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+
             return redirect("restaurants:detail", pk=restaurant.id)
     else:
         form = ReviewForm()
@@ -37,8 +48,9 @@ def create_review(request, restaurant_id):
     return render(request, "reviews/create.html", {
         "form": form,
         "restaurant": restaurant,
-        "existing_reviews": existing_reviews, # HTML로 전달
-        "current_sort": sort  # 현재 어떤 정렬인지 HTML이 알게 함
+        "existing_reviews": existing_reviews,  # HTML로 전달
+        "current_sort": sort,                  # 현재 어떤 정렬인지 HTML이 알게 함
+        "next": next_url,                      # 템플릿에서 hidden으로 넘기고 싶으면 사용
     })
 
 
@@ -51,11 +63,19 @@ def edit_review(request, review_id):
         messages.error(request, "본인이 작성한 리뷰만 수정할 수 있어요.")
         return redirect("restaurants:detail", pk=review.restaurant.id)
 
+    # ✅ next 처리
+    next_url = request.GET.get("next")
+
     if request.method == "POST":
         form = ReviewForm(request.POST, request.FILES, instance=review)
         if form.is_valid():
             form.save()
             messages.success(request, "리뷰가 수정되었어요! ✅")
+
+            # ✅ next 우선 복귀
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+
             return redirect("restaurants:detail", pk=review.restaurant.id)
     else:
         form = ReviewForm(instance=review)
@@ -65,6 +85,7 @@ def edit_review(request, review_id):
         "restaurant": review.restaurant,
         "edit_mode": True,
         "review": review,
+        "next": next_url,
     })
 
 
@@ -79,9 +100,16 @@ def delete_review(request, review_id):
 
     restaurant_id = review.restaurant.id
 
+    # ✅ next 처리
+    next_url = request.GET.get("next")
+
     if request.method == "POST":
         review.delete()
-        messages.success(request, "리뷰가 삭제되었어요.")
+        messages.success(request, "리뷰가 삭제되었어요. 🗑️")
+
+        # ✅ next 우선 복귀
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            return redirect(next_url)
 
     return redirect("restaurants:detail", pk=restaurant_id)
 

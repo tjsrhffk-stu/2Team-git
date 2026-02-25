@@ -3,194 +3,313 @@
 
 {% block extra_css %}
 <style>
-  .mypage-wrap { max-width: 900px; margin: 0 auto; }
+  /* ✅ 마이페이지 영역만 다크 테마 강제 (base.html의 밝은 테마 영향 차단) */
+  .mypage-bg{
+    min-height: calc(100vh - 90px);
+    padding: 28px 18px;
+    color: #f3eee9;
+    background:
+      radial-gradient(1200px 600px at 20% 10%, rgba(214,125,70,.25), transparent 60%),
+      radial-gradient(900px 500px at 80% 30%, rgba(255,255,255,.08), transparent 55%),
+      linear-gradient(135deg, #1a1411, #0f0c0a 55%, #14100e);
+  }
+  .mypage-bg a{color: inherit;}
+  .mypage-shell{max-width:1200px;margin:0 auto;padding:0;}
+  .mypage-grid{display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start;}
+  @media (max-width: 980px){ .mypage-grid{grid-template-columns:1fr;} }
 
-  /* PROFILE HEADER */
-  .profile-header {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 36px; margin-bottom: 28px;
-    display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
-    box-shadow: var(--shadow); animation: fadeUp 0.4s ease;
+  .panel{
+    background: rgba(20,16,14,.78);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 22px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.28);
+    backdrop-filter: blur(6px);
   }
-  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .panel-inner{padding:22px;}
 
-  .avatar {
-    width: 88px; height: 88px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), #E8A080);
-    color: #fff; font-size: 36px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; box-shadow: 0 4px 16px rgba(212,82,26,0.3);
+  .side-profile{display:flex;gap:14px;align-items:center;margin-bottom:18px;}
+  .avatar{
+    width:56px;height:56px;border-radius:50%;
+    background: rgba(255,255,255,.14);
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(255,255,255,.12);
+    font-size:22px;
   }
-  .profile-info { flex: 1; }
-  .profile-name { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
-  .profile-email { font-size: 14px; color: var(--text2); margin-bottom: 14px; }
-  .profile-stats { display: flex; gap: 24px; flex-wrap: wrap; }
-  .stat { text-align: center; }
-  .stat-num { font-size: 22px; font-weight: 700; color: var(--accent); display: block; }
-  .stat-label { font-size: 12px; color: var(--text2); }
-  .profile-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-  .btn-edit {
-    padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600;
-    border: 1.5px solid var(--border); background: var(--bg); color: var(--text);
-    text-decoration: none; transition: all 0.2s; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  .side-name{font-weight:800;font-size:18px;line-height:1.1;}
+  .side-email{opacity:.75;font-size:13px;margin-top:4px;word-break:break-all;}
+  .side-actions{display:flex;gap:10px;margin:12px 0 18px;}
+  .btn-mini{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:10px 12px;border-radius:12px;
+    background: rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.12);
+    text-decoration:none;font-weight:700;
   }
-  .btn-edit:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-mini:hover{background: rgba(255,255,255,.14);}
 
-  /* TABS */
-  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 2px solid var(--border); }
-  .tab {
-    padding: 12px 20px; font-size: 14px; font-weight: 600; color: var(--text2);
-    cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif;
-    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+  .menu{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none;}
+  .menu a{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 14px;border-radius:16px;
+    text-decoration:none;background: transparent;
+    border:1px solid transparent;font-weight:800;
   }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .menu a .dot{width:8px;height:8px;border-radius:50%;background: rgba(255,255,255,.25);margin-right:10px;}
+  .menu a .left{display:flex;align-items:center;gap:10px;}
+  .menu a .badge{
+    min-width:28px;height:24px;padding:0 8px;border-radius:999px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;
+    background: rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.12);
+  }
+  .menu a.active{
+    background: rgba(214,125,70,.95);
+    border-color: rgba(214,125,70,.95);
+    color: #fff;
+  }
+  .menu a.active .dot{background:#fff;}
+  .menu a.active .badge{background: rgba(255,255,255,.20); border-color: rgba(255,255,255,.28);}
 
-  /* REVIEW CARDS */
-  .review-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 24px; margin-bottom: 16px;
-    transition: box-shadow var(--transition); animation: fadeUp 0.4s ease both;
-  }
-  .review-card:hover { box-shadow: var(--shadow); }
-  .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
-  .restaurant-link {
-    font-size: 16px; font-weight: 700; color: var(--text); text-decoration: none;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .restaurant-link:hover { color: var(--accent); }
-  .review-date { font-size: 13px; color: var(--text2); }
-  .stars { display: flex; gap: 2px; margin-bottom: 10px; }
-  .stars .on { color: #F59E0B; }
-  .stars .off { color: var(--star-off); }
-  .review-text { font-size: 15px; line-height: 1.7; color: var(--text); margin-bottom: 14px; }
-  .review-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 14px; }
-  .review-actions { display: flex; gap: 8px; }
-  .btn-sm {
-    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
-    border: 1px solid var(--border); background: var(--bg); color: var(--text2);
-    text-decoration: none; transition: all 0.2s; cursor: pointer; font-family: 'DM Sans', sans-serif;
-  }
-  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-sm.danger { border-color: #FECACA; color: #EF4444; background: #FFF5F5; }
-  .btn-sm.danger:hover { background: #FEE2E2; }
+  .hero{padding:26px 26px 18px;border-radius:22px;}
+  .hero-title{font-size:48px;font-weight:900;letter-spacing:-1px;margin:0 0 10px;}
+  .hero-sub{opacity:.86;margin:0 0 18px;font-size:16px;}
 
-  /* EMPTY */
-  .empty { text-align: center; padding: 60px 24px; color: var(--text2); }
-  .empty-icon { font-size: 52px; margin-bottom: 16px; }
+  .pills{display:flex;flex-wrap:wrap;gap:10px;}
+  .pill{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:12px 16px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.22);
+    text-decoration:none;font-weight:900;
+  }
+  .pill.active{
+    background: rgba(214,125,70,.95);
+    border-color: rgba(214,125,70,.95);
+    color:#fff;
+  }
 
-  /* TAB CONTENT */
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+  .list{margin-top:18px;display:flex;flex-direction:column;gap:16px;}
+  .card{
+    display:flex;gap:16px;align-items:center;
+    padding:18px;border-radius:18px;
+    background: rgba(0,0,0,.28);
+    border:1px solid rgba(255,255,255,.10);
+  }
+  .thumb{
+    width:160px;height:92px;border-radius:14px;overflow:hidden;
+    background: rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.10);
+    flex:0 0 auto;
+  }
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .meta{flex:1;min-width:0;}
+  .meta h3{margin:0 0 8px;font-size:22px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .meta .sub{opacity:.85;font-weight:700;}
+
+  .btn-cta{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:12px 18px;border-radius:16px;
+    background: rgba(214,125,70,.95);
+    border:1px solid rgba(214,125,70,.95);
+    color:#fff;text-decoration:none;font-weight:900;
+    white-space:nowrap;
+  }
+  .btn-ghost{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:10px 14px;border-radius:14px;
+    background: rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.12);
+    text-decoration:none;font-weight:800;
+  }
+  .btn-ghost:hover{background: rgba(255,255,255,.14);}
+  .btn-danger{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:10px 14px;border-radius:14px;
+    background: rgba(255,70,70,.14);
+    border:1px solid rgba(255,70,70,.25);
+    color:#ffd7d7;text-decoration:none;font-weight:900;
+    cursor:pointer;
+  }
+
+  .empty{
+    padding:26px;border-radius:18px;
+    background: rgba(255,255,255,.06);
+    border:1px dashed rgba(255,255,255,.18);
+    opacity:.92;font-weight:800;
+  }
+
+  .stars{display:inline-flex;gap:2px;vertical-align:middle;margin-right:8px;}
+  .stars span{font-size:14px;opacity:.4;}
+  .stars span.on{opacity:1;}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="mypage-wrap">
+<div class="mypage-bg">
+  <div class="mypage-shell">
+    <div class="mypage-grid">
 
-  <!-- PROFILE -->
-  <div class="profile-header">
-    <div class="avatar">{{ user.username|first|upper }}</div>
-    <div class="profile-info">
-      <div class="profile-name">{{ user.username }}</div>
-      <div class="profile-email">{{ user.email|default:"이메일 미등록" }}</div>
-      <div class="profile-stats">
-        <div class="stat"><span class="stat-num">{{ reviews|length }}</span><div class="stat-label">작성한 리뷰</div></div>
-        <div class="stat"><span class="stat-num">{{ favorite_count|default:0 }}</span><div class="stat-label">즐겨찾기</div></div>
-        <div class="stat"><span class="stat-num">{{ user.date_joined|date:"Y" }}</span><div class="stat-label">가입년도</div></div>
-      </div>
-    </div>
-    <div class="profile-actions">
-      <a href="/users/edit/" class="btn-edit">✏️ 프로필 수정</a>
-      <a href="/users/logout/" class="btn-edit">🚪 로그아웃</a>
-    </div>
-  </div>
+      <!-- LEFT: SIDE -->
+      <aside class="panel">
+        <div class="panel-inner">
+          <div class="side-profile">
+            <div class="avatar">👤</div>
+            <div>
+              <div class="side-name">{{ request.user.username }}</div>
+              <div class="side-email">{{ request.user.email|default:"(email 없음)" }}</div>
+            </div>
+          </div>
 
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('reviews', this)">✍️ 내 리뷰 ({{ reviews|length }})</button>
-    <button class="tab" onclick="showTab('favorites', this)">❤️ 즐겨찾기 ({{ favorite_count|default:0 }})</button>
-  </div>
+          <div class="side-actions">
+            <a class="btn-mini" href="{% url 'users:edit' %}">프로필 수정</a>
+            <a class="btn-mini" href="{% url 'users:logout' %}">로그아웃</a>
+          </div>
 
-  <!-- 내 리뷰 -->
-  <div class="tab-content active" id="tab-reviews">
-    {% for review in reviews %}
-    <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
-      <div class="review-header">
-        <a href="/restaurants/{{ review.restaurant.pk }}/" class="restaurant-link">
-          🍽️ {{ review.restaurant.name }}
-        </a>
-        <span class="review-date">{{ review.created_at|date:"Y.m.d" }}</span>
-      </div>
-      <div class="stars">
-        {% for i in "12345" %}
-          {% if forloop.counter <= review.rating %}<span class="on">★</span>{% else %}<span class="off">★</span>{% endif %}
-        {% endfor %}
-      </div>
-      {% if review.image %}<img src="{{ review.image.url }}" class="review-img">{% endif %}
-      <p class="review-text">{{ review.content }}</p>
-      <div class="review-actions">
-        <a href="/reviews/{{ review.pk }}/edit/" class="btn-sm">✏️ 수정</a>
-        <button class="btn-sm danger" onclick="deleteReview({{ review.pk }})">🗑️ 삭제</button>
-      </div>
-    </div>
-    {% empty %}
-    <div class="empty">
-      <div class="empty-icon">✍️</div>
-      <p style="font-size:18px;font-weight:600;margin-bottom:8px;">아직 작성한 리뷰가 없어요</p>
-      <p style="margin-bottom:20px;">방문한 음식점의 리뷰를 남겨보세요!</p>
-      <a href="/restaurants/" style="background:var(--accent);color:#fff;padding:12px 24px;border-radius:12px;text-decoration:none;font-weight:600;">음식점 보러 가기</a>
-    </div>
-    {% endfor %}
-  </div>
+          <ul class="menu">
+            <!-- ✅ 마이페이지는 tab=mypage 로 분리 (두 개 주황색 문제 해결) -->
+            <li>
+              <a class="{% if active_tab == 'mypage' %}active{% endif %}"
+                 href="{% url 'users:mypage' %}?tab=mypage">
+                <span class="left"><span class="dot"></span>마이페이지</span>
+              </a>
+            </li>
+            <li>
+              <a class="{% if active_tab == 'reservations' %}active{% endif %}"
+                 href="{% url 'users:mypage' %}?tab=reservations">
+                <span class="left"><span class="dot"></span>예약 목록</span>
+              </a>
+            </li>
+            <li>
+              <a class="{% if active_tab == 'visited' %}active{% endif %}"
+                 href="{% url 'users:mypage' %}?tab=visited">
+                <span class="left"><span class="dot"></span>방문한 맛집</span>
+              </a>
+            </li>
+            <li>
+              <a class="{% if active_tab == 'favorites' %}active{% endif %}"
+                 href="{% url 'users:mypage' %}?tab=favorites">
+                <span class="left"><span class="dot"></span>즐겨찾기</span>
+                <span class="badge">{{ favorite_count|default:0 }}</span>
+              </a>
+            </li>
+            <li>
+              <a class="{% if active_tab == 'reviews' %}active{% endif %}"
+                 href="{% url 'users:mypage' %}?tab=reviews">
+                <span class="left"><span class="dot"></span>내 리뷰</span>
+                <span class="badge">{{ reviews|length }}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </aside>
 
-  <!-- 즐겨찾기 -->
-  <div class="tab-content" id="tab-favorites">
-    {% for fav in favorites %}
-    <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
-      <div class="review-header">
-        <a href="/restaurants/{{ fav.restaurant.pk }}/" class="restaurant-link">
-          🍽️ {{ fav.restaurant.name }}
-        </a>
-        <span class="review-date">{{ fav.restaurant.category }}</span>
-      </div>
-      <div style="font-size:14px;color:var(--text2);margin-bottom:12px;">📍 {{ fav.restaurant.address }}</div>
-      <div class="review-actions">
-        <a href="/restaurants/{{ fav.restaurant.pk }}/" class="btn-sm">상세보기 →</a>
-        <button class="btn-sm danger" onclick="removeFav({{ fav.restaurant.pk }}, this)">❤️ 즐겨찾기 취소</button>
-      </div>
+      <!-- RIGHT: CONTENT -->
+      <main>
+        <section class="panel hero">
+          <h1 class="hero-title">마이페이지</h1>
+          <p class="hero-sub">
+            안녕하세요, <b>{{ request.user.username }}</b>님! 예약/방문/즐겨찾기/리뷰를 한 번에 확인할 수 있어요.
+          </p>
+
+          <div class="pills">
+            <a class="pill {% if active_tab == 'mypage' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=mypage">마이페이지</a>
+            <a class="pill {% if active_tab == 'reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reservations">예약 목록</a>
+            <a class="pill {% if active_tab == 'visited' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=visited">방문한 맛집</a>
+            <a class="pill {% if active_tab == 'favorites' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=favorites">즐겨찾기</a>
+            <a class="pill {% if active_tab == 'reviews' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reviews">내 리뷰</a>
+          </div>
+
+          {% if active_tab == 'mypage' %}
+            <div class="list">
+              <div class="empty">
+                여기서 예약/방문/즐겨찾기/리뷰 탭으로 이동할 수 있어요 🙂
+              </div>
+            </div>
+
+          {% elif active_tab == 'reservations' %}
+            <div class="list">
+              <div class="empty">아직 예약 데이터가 없어요. (예약 기능 연결 전이면 정상입니다)</div>
+            </div>
+
+          {% elif active_tab == 'visited' %}
+            <div class="list">
+              <div class="empty">아직 방문한 맛집 데이터가 없어요. (방문 기능 연결 전이면 정상입니다)</div>
+            </div>
+
+          {% elif active_tab == 'favorites' %}
+            <div class="list">
+              {% if favorites %}
+                {% for fav in favorites %}
+                  <div class="card">
+                    <div class="thumb">
+                      {% if fav.restaurant.thumbnail %}
+                        <img src="{{ fav.restaurant.thumbnail.url }}" alt="{{ fav.restaurant.name }}">
+                      {% else %}
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
+                      {% endif %}
+                    </div>
+                    <div class="meta">
+                      <h3>{{ fav.restaurant.name }}</h3>
+                      <div class="sub">즐겨찾기 등록일: {{ fav.created_at|date:"Y-m-d" }}</div>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                      <a class="btn-ghost" href="{% url 'restaurants:detail' fav.restaurant.pk %}">상세 보기</a>
+                      <!-- ✅ favorites/urls.py: name="toggle" -->
+                      <a class="btn-cta" href="{% url 'favorites:toggle' fav.restaurant.pk %}?next={{ request.get_full_path|urlencode }}">해제</a>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty">아직 즐겨찾기한 식당이 없어요. 마음에 드는 식당을 ❤️ 해보세요!</div>
+              {% endif %}
+            </div>
+
+          {% elif active_tab == 'reviews' %}
+            <div class="list">
+              {% if reviews %}
+                {% for r in reviews %}
+                  <div class="card">
+                    <div class="thumb">
+                      {% if r.image %}
+                        <img src="{{ r.image.url }}" alt="review image">
+                      {% elif r.restaurant.thumbnail %}
+                        <img src="{{ r.restaurant.thumbnail.url }}" alt="{{ r.restaurant.name }}">
+                      {% else %}
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
+                      {% endif %}
+                    </div>
+                    <div class="meta">
+                      <h3>{{ r.restaurant.name }}</h3>
+                      <div class="sub">
+                        <span class="stars">
+                          {% for i in "12345" %}
+                            {% if forloop.counter <= r.rating %}<span class="on">★</span>{% else %}<span>★</span>{% endif %}
+                          {% endfor %}
+                        </span>
+                        {{ r.created_at|date:"Y-m-d" }} · {{ r.content|truncatechars:60 }}
+                      </div>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                      <a class="btn-ghost" href="{% url 'restaurants:detail' r.restaurant.pk %}">식당 보기</a>
+                      <!-- ✅ reviews/urls.py: name="edit/delete" -->
+                      <a class="btn-ghost" href="{% url 'reviews:edit' r.pk %}?next={{ request.get_full_path|urlencode }}">수정</a>
+                      <form method="post" action="{% url 'reviews:delete' r.pk %}?next={{ request.get_full_path|urlencode }}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-danger" onclick="return confirm('리뷰를 삭제할까요?');">삭제</button>
+                      </form>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty">아직 작성한 리뷰가 없어요. 방문한 식당에 리뷰를 남겨보세요!</div>
+              {% endif %}
+            </div>
+          {% endif %}
+        </section>
+      </main>
+
     </div>
-    {% empty %}
-    <div class="empty">
-      <div class="empty-icon">❤️</div>
-      <p style="font-size:18px;font-weight:600;margin-bottom:8px;">즐겨찾기한 음식점이 없어요</p>
-      <p style="margin-bottom:20px;">마음에 드는 음식점을 즐겨찾기해보세요!</p>
-      <a href="/restaurants/" style="background:var(--accent);color:#fff;padding:12px 24px;border-radius:12px;text-decoration:none;font-weight:600;">음식점 둘러보기</a>
-    </div>
-    {% endfor %}
   </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-function showTab(name, btn) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  btn.classList.add('active');
-}
-function deleteReview(id) {
-  if (!confirm('정말 삭제하시겠어요?')) return;
-  fetch(`/reviews/${id}/delete/`, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } })
-    .then(() => location.reload());
-}
-function removeFav(id, btn) {
-  fetch(`/favorites/toggle/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } })
-    .then(() => btn.closest('.review-card').remove());
-}
-function getCookie(name) {
-  return document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name + '='))?.split('=')[1] || '';
-}
-</script>
 {% endblock %}

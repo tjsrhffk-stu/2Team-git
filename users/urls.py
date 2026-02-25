@@ -13,6 +13,9 @@ urlpatterns = [
     path('edit/', views.edit_profile, name='edit'),
 
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
+
+    # ✅ 아이디 찾기 / 비밀번호 찾기
+    path('find-id/', views.find_id, name='find_id'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/<str:token>/', views.reset_password, name='reset_password'),
 
