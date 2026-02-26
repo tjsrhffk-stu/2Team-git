@@ -123,15 +123,28 @@
     text-decoration:none;font-weight:800;
     white-space:nowrap;
   }
-  .btn-ghost:hover{background: rgba(255,255,255,.14);}
+.btn-ghost:hover{background: rgba(255,255,255,.14);}
+
   .btn-danger{
-    display:inline-flex;align-items:center;justify-content:center;
-    padding:10px 14px;border-radius:14px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px 14px;
+    border-radius:14px;
     background: rgba(255,70,70,.14);
     border:1px solid rgba(255,70,70,.25);
-    color:#ffd7d7;text-decoration:none;font-weight:900;
+    color:#ffd7d7;
+    text-decoration:none;
+    font-weight:900;
     cursor:pointer;
     white-space:nowrap;
+  }
+
+  /* ✅ 보기/수정/삭제 버튼 높이/글자 크기 통일 */
+  .btn-ghost, .btn-danger{
+    min-height:40px;
+    font-size:14px;
+    line-height:1;
   }
 
   .empty{
@@ -185,6 +198,7 @@
           </div>
 
           <ul class="menu">
+            <!-- ✅ 마이페이지는 tab=mypage 로 분리 (두 개 주황색 문제 해결) -->
             <li>
               <a class="{% if active_tab == 'mypage' %}active{% endif %}"
                  href="{% url 'users:mypage' %}?tab=mypage">
@@ -237,6 +251,11 @@
             <a class="pill {% if active_tab == 'reviews' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reviews">내 리뷰</a>
           </div>
 
+          {# ======================================================
+            ✅ 사장 전용 섹션 (마이페이지 탭에서만 노출)
+            - 내 식당 목록
+            - 등록/추가/수정/삭제/보기
+            ====================================================== #}
           {% if active_tab == 'mypage' and is_owner %}
             <div class="owner-box">
               <div class="owner-head">
@@ -270,7 +289,9 @@
 
                       <div class="meta">
                         <h3>{{ r.name }}</h3>
-                        <div class="sub">{{ r.address }}</div>
+                        <div class="sub">
+                          {{ r.address }}
+                        </div>
                       </div>
 
                       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
@@ -291,6 +312,8 @@
               </div>
             </div>
           {% endif %}
+          {# ✅ 사장 전용 섹션 끝 #}
+
 
           {% if active_tab == 'mypage' %}
             <div class="list">
