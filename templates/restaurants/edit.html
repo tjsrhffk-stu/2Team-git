@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}식당 수정 - LocalEats{% endblock %}
+
+{% block content %}
+<div class="page fade-up">
+  <h2 style="font-family:'Instrument Serif', serif; font-size:2rem; margin-bottom:14px;">식당 수정</h2>
+
+  <form method="post" enctype="multipart/form-data" class="card" style="padding:18px;">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label>식당 이름</label>
+      <input name="name" value="{{ restaurant.name }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>카테고리</label>
+      <select name="category">
+        <option value="">선택</option>
+        {% for c in categories %}
+          <option value="{{ c.pk }}" {% if restaurant.category and restaurant.category.pk == c.pk %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>주소</label>
+      <input name="address" value="{{ restaurant.address }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>전화번호</label>
+      <input name="phone" value="{{ restaurant.phone|default_if_none:'' }}">
+    </div>
+
+    <div class="form-group">
+      <label>설명</label>
+      <textarea name="description">{{ restaurant.description|default_if_none:'' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>영업시간</label>
+      <input name="hours" value="{{ restaurant.hours|default_if_none:'' }}">
+    </div>
+
+    <div class="form-group">
+      <label>휴무일</label>
+      <input name="closed_days" value="{{ restaurant.closed_days|default_if_none:'' }}">
+    </div>
+
+    <div class="form-group">
+      <label>웹사이트</label>
+      <input name="website" value="{{ restaurant.website|default_if_none:'' }}">
+    </div>
+
+    <div class="form-group">
+      <label>썸네일(선택)</label>
+      <input type="file" name="thumbnail" accept="image/*">
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-primary" type="submit">저장</button>
+      <a class="btn btn-outline" href="/restaurants/{{ restaurant.pk }}/">취소</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

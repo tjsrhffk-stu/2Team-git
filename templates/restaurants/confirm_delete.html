@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}식당 삭제 - LocalEats{% endblock %}
+
+{% block content %}
+<div class="page fade-up">
+  <h2 style="font-family:'Instrument Serif', serif; font-size:2rem; margin-bottom:14px;">식당 삭제</h2>
+
+  <div class="card" style="padding:18px;">
+    <p style="margin-bottom:12px;">
+      정말로 <b>{{ restaurant.name }}</b> 을(를) 삭제할까요?
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" type="submit">삭제하기</button>
+        <a class="btn btn-outline" href="/users/mypage/">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

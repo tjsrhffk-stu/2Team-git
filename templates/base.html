@@ -219,7 +219,13 @@
     <a href="/" class="logo">🍽️ Local<span>Eats</span></a>
     <ul class="nav-links">
       <li><a href="/restaurants/">맛집 찾기</a></li>
+
       {% if user.is_authenticated %}
+        {# ✅ 사장(OWNER)일 때만 보이는 메뉴 #}
+        {% if is_owner %}
+          <li><a href="/restaurants/create/">식당 등록</a></li>
+        {% endif %}
+
         <li><a href="/favorites/">즐겨찾기</a></li>
         <li><a href="/users/logout/">로그아웃</a></li>
         <li><a href="/users/mypage/" class="btn-accent">{{ user.username }}</a></li>
@@ -227,6 +233,7 @@
         <li><a href="/users/login/">로그인</a></li>
         <li><a href="/users/signup/" class="btn-accent">시작하기</a></li>
       {% endif %}
+
       <li>
         <button class="theme-toggle" id="themeToggle" title="테마 변경">🌙</button>
       </li>
