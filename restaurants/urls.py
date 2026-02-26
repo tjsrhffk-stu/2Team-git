@@ -16,6 +16,9 @@ urlpatterns = [
     # 4. 상세 정보 (상세 페이지가 다른 문자열 경로보다 아래에 있는 것이 안전합니다)
     path("<int:pk>/", views.restaurant_detail, name="detail"),
     
-    # 5. [신규] 음식점 삭제 (폐업 관리)
+    # 5. 음식점 삭제 (폐업 관리)
     path("<int:pk>/delete/", views.restaurant_delete, name="delete"),
+
+    # 6. [신규] 업데이트 
+    path('<int:pk>/update/', views.restaurant_update, name='update'),
 ]
