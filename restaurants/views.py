@@ -177,3 +177,42 @@ def restaurant_delete(request, pk):
         return redirect('restaurants:list')
 
     return render(request, 'restaurants/restaurant_confirm_delete.html', {'restaurant': restaurant})
+
+@login_required
+def restaurant_update(request, pk):
+    restaurant = get_object_or_404(Restaurant, pk=pk)
+    
+    # [3번 해결] 본인 혹은 최고관리자만 수정 가능
+    if restaurant.owner != request.user and not request.user.is_superuser:
+        messages.error(request, "수정 권_한이 없습니다.")
+        return redirect('restaurants:detail', pk=pk)
+
+    if request.method == "POST":
+        # [1번 해결] .strip()으로 입력값 정제 (글자 깨짐 방지)
+        restaurant.name = request.POST.get("name", "").strip()
+        restaurant.address = request.POST.get("address", "").strip()
+        restaurant.phone = request.POST.get("phone", "").strip()
+        restaurant.description = request.POST.get("description", "").strip()
+        restaurant.hours = request.POST.get("hours", "").strip()
+        # ... 필요한 다른 필드들 ...
+
+        if request.FILES.get("thumbnail"):
+            restaurant.thumbnail = request.FILES.get("thumbnail")
+
+        # 네이버 API 좌표 갱신을 위해 lat, lng 초기화 (주소가 바뀌었을 경우 대비)
+        restaurant.lat, restaurant.lng = None, None
+        restaurant.save()
+
+        # [2번 해결] 상세 사진 다중 등록 (최대 10개)
+        additional_images = request.FILES.getlist('additional_images')
+        current_count = restaurant.additional_images.count()
+        for img in additional_images:
+            if current_count < 10:
+                RestaurantImage.objects.create(restaurant=restaurant, image=img)
+                current_count += 1
+
+        messages.success(request, "성공적으로 수정되었습니다.")
+        return redirect('restaurants:detail', pk=pk)
+
+    categories = Category.objects.all()
+    return render(request, "restaurants/update.html", {"restaurant": restaurant, "categories": categories})
