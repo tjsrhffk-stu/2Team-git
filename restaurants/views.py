@@ -55,7 +55,7 @@ def restaurant_list(request):
     return render(request, "restaurants/list.html", context)
 
 
-# 2. 음식점 상세 (인자 이름을 pk로 수정하여 에러 해결)
+# 2. 음식점 상세 (pk 인자 사용)
 def restaurant_detail(request, pk):
     restaurant = get_object_or_404(
         Restaurant.objects.annotate(
@@ -154,6 +154,26 @@ def restaurant_create(request):
 
     return render(request, "restaurants/create.html", {"categories": categories, "form_data": {}})
 
+
 # 4. 지도 페이지
 def restaurant_map(request):
     return render(request, 'Maps_Api.html', {'restaurants': Restaurant.objects.all()})
+
+
+# 5. [신규] 음식점 삭제 (관리자/폐업 처리 전용)
+@login_required
+def restaurant_delete(request, pk):
+    restaurant = get_object_or_404(Restaurant, pk=pk)
+
+    # 수정된 권한 체크: 최고 관리자(Superuser)만 삭제 가능하게 변경
+    if not request.user.is_superuser:
+        messages.error(request, "삭제 권한이 없습니다. 최고 관리자에게 문의하세요.")
+        return redirect('restaurants:detail', pk=pk)
+
+    if request.method == "POST":
+        name = restaurant.name
+        restaurant.delete()
+        messages.success(request, f'"{name}" 식당 정보가 성공적으로 삭제되었습니다.')
+        return redirect('restaurants:list')
+
+    return render(request, 'restaurants/restaurant_confirm_delete.html', {'restaurant': restaurant})

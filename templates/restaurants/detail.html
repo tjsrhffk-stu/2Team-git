@@ -5,7 +5,6 @@
 
 {% block extra_css %}
 <style>
-  /*  */
   .detail-container { max-width: 1200px; margin: 40px auto; padding: 0 24px; }
   .info-card { background: white; border: 1px solid #ddd; border-radius: 16px; padding: 30px; margin-bottom: 20px; }
   .rating-summary { display: flex; align-items: center; gap: 40px; padding: 20px; background: #f9f9f9; border-radius: 12px; }
@@ -13,8 +12,13 @@
   .bar-fill { height: 100%; background: #F59E0B; transition: width 0.5s ease; }
   .btn-fav.active { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
   
-  /* VS Code CSS 에러 방지를 위한 클래스 방식 */
-  .progress-inner { width: 0; height: 100%; background: #F59E0B; }
+  /* 삭제 버튼 스타일 (최고 관리자 전용) */
+  .btn-delete-admin {
+    width: 100%; padding: 12px; background: #fa5252; color: white; 
+    border: none; border-radius: 12px; font-weight: 600; 
+    cursor: pointer; transition: 0.3s; margin-top: 10px;
+  }
+  .btn-delete-admin:hover { background: #e03131; }
 </style>
 {% endblock %}
 
@@ -45,7 +49,6 @@
 
       <div class="info-card">
         <h3 style="margin-bottom:20px; font-weight: 700;">매장 상세정보</h3>
-        
         <div class="rating-summary">
           <div style="text-align:center; min-width:100px;">
             <div style="font-size:48px; font-weight:800; color:#F59E0B;">{{ restaurant.avg_rating|floatformat:1|default:"0.0" }}</div>
@@ -63,14 +66,13 @@
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px; font-size:13px;">
               <span style="width:15px; font-weight: 600;">{{ item.star }}</span>
               <div class="bar-bg">
-                <div class="bar-fill" style="--bar-width: {{ item.pct|default:0 }}%; width: var(--bar-width);"></div>
+                <div class="bar-fill" style="width: {{ item.pct|default:0 }}%;"></div>
               </div>
               <span style="width:30px; text-align:right; color:#888;">{{ item.count|default:0 }}</span>
             </div>
             {% endfor %}
           </div>
         </div>
-        
         <p style="white-space:pre-wrap; margin-top:25px; line-height:1.8; color:#444;">{{ restaurant.description|default:"매장 소개 내용이 아직 등록되지 않았습니다." }}</p>
       </div>
 
@@ -105,18 +107,23 @@
           <p><strong style="color:#333;">📞 전화번호</strong><br>{{ restaurant.phone|default:"정보없음" }}</p>
           <p><strong style="color:#333;">⏰ 영업시간</strong><br>{{ restaurant.hours|default:"정보없음" }}</p>
         </div>
+        
         <div style="margin-top:30px;">
           <button class="btn-fav {% if is_favorite %}active{% endif %}" 
-                  id="favBtn"
-                  onclick="toggleFav('{{ restaurant.pk }}', this)" 
+                  id="favBtn" onclick="toggleFav('{{ restaurant.pk }}', this)" 
                   style="width:100%; padding:15px; border:1.5px solid #ff4d4f; border-radius:14px; cursor:pointer; font-weight:700; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            {% if is_favorite %}
-              <span id="favText">❤️ 저장됨</span>
-            {% else %}
-              <span id="favText">🤍 저장하기</span>
-            {% endif %}
+            <span id="favText">{% if is_favorite %}❤️ 저장됨{% else %}🤍 저장하기{% endif %}</span>
           </button>
         </div>
+
+        {% if user.is_superuser %}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+          <p style="color: #fa5252; font-size: 13px; font-weight: 700; margin-bottom: 8px;">운영자 도구 (폐업 관리)</p>
+          <button onclick="deleteRestaurant()" class="btn-delete-admin">
+            🗑️ 식당 삭제하기
+          </button>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -125,21 +132,15 @@
 
 {% block extra_js %}
 <script>
-  /**
-   * 1. 즐겨찾기 토글 함수
-   */
+  // 1. 즐겨찾기 토글
   function toggleFav(id, btn) {
     const textSpan = btn.querySelector('#favText');
-    
     fetch(`/favorites/toggle/${id}/`, {
       method: 'POST',
-      headers: { 
-        'X-CSRFToken': '{{ csrf_token }}', 
-        'Content-Type': 'application/json' 
-      }
+      headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
     })
     .then(response => {
-      if (!response.ok) throw new Error('로그인이 필요하거나 잘못된 요청입니다.');
+      if (!response.ok) throw new Error('로그인이 필요합니다.');
       return response.json();
     })
     .then(data => {
@@ -151,16 +152,29 @@
         textSpan.innerHTML = '🤍 저장하기';
       }
     })
-    .catch(error => {
-      alert(error.message);
-    });
-  } // <--- toggleFav 함수의 끝 (이 지점에서 중괄호를 닫아줘야 합니다)
+    .catch(error => alert(error.message));
+  }
 
-  /**
-   * 2. 최근 본 맛집 저장 로직 (페이지 로드 시 자동 실행)
-   */
+  // 2. 최고 관리자 전용 삭제 함수
+  function deleteRestaurant() {
+    if (confirm('최고 관리자 권한으로 삭제를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = "{% url 'restaurants:delete' restaurant.pk %}";
+      
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrfmiddlewaretoken';
+      csrfInput.value = '{{ csrf_token }}';
+      
+      form.appendChild(csrfInput);
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+
+  // 3. 최근 본 맛집 저장
   document.addEventListener("DOMContentLoaded", function() {
-    // 저장할 식당 정보 객체 생성
     const storeData = {
       id: "{{ restaurant.pk }}",
       name: "{{ restaurant.name }}",
@@ -169,18 +183,10 @@
       address: "{{ restaurant.address }}"
     };
 
-    // 로컬 스토리지에서 기존 데이터 가져오기
     let recentStores = JSON.parse(localStorage.getItem('recentStores')) || [];
-
-    // 중복 제거 및 최신순 정렬
     recentStores = recentStores.filter(item => item.id !== storeData.id);
     recentStores.unshift(storeData);
-
-    // 최대 10개 유지
-    if (recentStores.length > 10) {
-      recentStores.pop();
-    }
-
+    if (recentStores.length > 10) recentStores.pop();
     localStorage.setItem('recentStores', JSON.stringify(recentStores));
   });
 </script>
