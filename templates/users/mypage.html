@@ -32,104 +32,138 @@
     width:56px;height:56px;border-radius:50%;
     background: rgba(255,255,255,.14);
     display:flex;align-items:center;justify-content:center;
-    border:1px solid rgba(255,255,255,.12);
-    font-size:22px;
+    font-weight:900;
   }
-  .side-name{font-weight:800;font-size:18px;line-height:1.1;}
-  .side-email{opacity:.75;font-size:13px;margin-top:4px;word-break:break-all;}
-  .side-actions{display:flex;gap:10px;margin:12px 0 18px;}
-  .btn-mini{
-    display:inline-flex;align-items:center;justify-content:center;
-    padding:10px 12px;border-radius:12px;
-    background: rgba(255,255,255,.10);
-    border:1px solid rgba(255,255,255,.12);
-    text-decoration:none;font-weight:700;
-  }
-  .btn-mini:hover{background: rgba(255,255,255,.14);}
+  .side-name{font-weight:900;font-size:18px;margin:0;}
+  .side-email{opacity:.8;margin:2px 0 0 0;font-size:13px;}
 
-  .menu{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none;}
-  .menu a{
+  .side-menu{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+  .side-menu a{
     display:flex;align-items:center;justify-content:space-between;
-    padding:14px 14px;border-radius:16px;
-    text-decoration:none;background: transparent;
-    border:1px solid transparent;font-weight:800;
+    padding:12px 14px;border-radius:14px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+    text-decoration:none;
+    font-weight:800;
+    transition:.2s;
   }
-  .menu a .dot{width:8px;height:8px;border-radius:50%;background: rgba(255,255,255,.25);margin-right:10px;}
-  .menu a .left{display:flex;align-items:center;gap:10px;}
-  .menu a .badge{
-    min-width:28px;height:24px;padding:0 8px;border-radius:999px;
-    display:inline-flex;align-items:center;justify-content:center;
-    font-size:12px;font-weight:800;
-    background: rgba(255,255,255,.10);
-    border:1px solid rgba(255,255,255,.12);
+  .side-menu a:hover{background: rgba(255,255,255,.10);}
+  .side-menu a.active{
+    background: rgba(214,125,70,.18);
+    border-color: rgba(214,125,70,.30);
   }
-  .menu a.active{
-    background: rgba(214,125,70,.95);
-    border-color: rgba(214,125,70,.95);
-    color: #fff;
-  }
-  .menu a.active .dot{background:#fff;}
-  .menu a.active .badge{background: rgba(255,255,255,.20); border-color: rgba(255,255,255,.28);}
 
-  .hero{padding:26px 26px 18px;border-radius:22px;}
-  .hero-title{font-size:48px;font-weight:900;letter-spacing:-1px;margin:0 0 10px;}
-  .hero-sub{opacity:.86;margin:0 0 18px;font-size:16px;}
+  .hero{
+    padding: 22px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow:hidden;
+  }
+  .hero:before{
+    content:"";
+    position:absolute;inset:-30px;
+    background: radial-gradient(500px 300px at 30% 20%, rgba(214,125,70,.26), transparent 55%);
+    filter: blur(2px);
+  }
+  .hero > *{position:relative;}
+  .hero-title{margin:0;font-size:22px;font-weight:1000;letter-spacing:-.2px;}
+  .hero-sub{margin:8px 0 0 0;opacity:.85;font-weight:700;}
 
-  .pills{display:flex;flex-wrap:wrap;gap:10px;}
+  .tabs{display:flex;gap:10px;flex-wrap:wrap;margin: 14px 0 18px;}
   .pill{
-    display:inline-flex;align-items:center;justify-content:center;
-    padding:12px 16px;border-radius:999px;
-    border:1px solid rgba(255,255,255,.14);
-    background: rgba(0,0,0,.22);
-    text-decoration:none;font-weight:900;
+    padding:10px 12px;border-radius:999px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+    text-decoration:none;
+    font-weight:900;
+    font-size:13px;
+    transition:.2s;
   }
+  .pill:hover{background: rgba(255,255,255,.10);}
   .pill.active{
-    background: rgba(214,125,70,.95);
-    border-color: rgba(214,125,70,.95);
-    color:#fff;
+    background: rgba(214,125,70,.18);
+    border-color: rgba(214,125,70,.30);
   }
 
-  .list{margin-top:18px;display:flex;flex-direction:column;gap:16px;}
+  .list{display:grid;gap:14px;}
   .card{
-    display:flex;gap:16px;align-items:center;
-    padding:18px;border-radius:18px;
-    background: rgba(0,0,0,.28);
-    border:1px solid rgba(255,255,255,.10);
+    display:grid;
+    grid-template-columns: 96px 1fr auto;
+    gap:14px;
+    align-items:center;
+    padding:14px;
+    border-radius:18px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  @media (max-width: 720px){
+    .card{grid-template-columns: 76px 1fr; grid-template-rows:auto auto; }
+    .card .actions{grid-column: 1 / -1; justify-content:flex-start;}
   }
   .thumb{
-    width:160px;height:92px;border-radius:14px;overflow:hidden;
+    width:96px;height:72px;border-radius:14px;
     background: rgba(255,255,255,.10);
-    border:1px solid rgba(255,255,255,.10);
-    flex:0 0 auto;
+    overflow:hidden;
+    border: 1px solid rgba(255,255,255,.10);
   }
   .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-  .meta{flex:1;min-width:0;}
-  .meta h3{margin:0 0 8px;font-size:22px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .meta .sub{opacity:.85;font-weight:700;}
 
+  .meta h3{margin:0;font-size:16px;font-weight:1000;letter-spacing:-.1px;}
+  .meta .sub{margin-top:6px;opacity:.85;font-weight:800;font-size:13px;}
+  .meta .sub small{opacity:.85;font-weight:800;}
+
+  .actions{display:flex;gap:10px;align-items:center;justify-content:flex-end;}
   .btn-cta{
-    display:inline-flex;align-items:center;justify-content:center;
-    padding:12px 18px;border-radius:16px;
-    background: rgba(214,125,70,.95);
-    border:1px solid rgba(214,125,70,.95);
-    color:#fff;text-decoration:none;font-weight:900;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px 14px;
+    border-radius:14px;
+    background: rgba(214,125,70,.18);
+    border:1px solid rgba(214,125,70,.35);
+    color:#ffe9db;
+    text-decoration:none;
+    font-weight:1000;
+    transition:.2s;
     white-space:nowrap;
   }
+  .btn-cta:hover{background: rgba(214,125,70,.24);}
   .btn-ghost{
-    display:inline-flex;align-items:center;justify-content:center;
-    padding:10px 14px;border-radius:14px;
-    background: rgba(255,255,255,.10);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px 14px;
+    border-radius:14px;
+    background: rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.12);
-    text-decoration:none;font-weight:800;
+    color:#f3eee9;
+    text-decoration:none;
+    font-weight:900;
+    transition:.2s;
+    white-space:nowrap;
   }
   .btn-ghost:hover{background: rgba(255,255,255,.14);}
+
   .btn-danger{
-    display:inline-flex;align-items:center;justify-content:center;
-    padding:10px 14px;border-radius:14px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px 14px;
+    border-radius:14px;
     background: rgba(255,70,70,.14);
     border:1px solid rgba(255,70,70,.25);
-    color:#ffd7d7;text-decoration:none;font-weight:900;
+    color:#ffd7d7;
+    text-decoration:none;
+    font-weight:900;
     cursor:pointer;
+    white-space:nowrap;
+  }
+
+  /* ✅ 보기/수정/삭제 버튼 높이/글자 크기 통일 */
+  .btn-ghost, .btn-danger{
+    min-height:40px;
+    font-size:14px;
+    line-height:1;
   }
 
   .empty{
@@ -142,6 +176,22 @@
   .stars{display:inline-flex;gap:2px;vertical-align:middle;margin-right:8px;}
   .stars span{font-size:14px;opacity:.4;}
   .stars span.on{opacity:1;}
+
+  /* ✅ 사장 전용 섹션 스타일 */
+  .owner-box{
+    margin-top:18px;
+    padding:18px;
+    border-radius:18px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .owner-head{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+    margin-bottom:14px;
+  }
+  .owner-title{font-size:18px;font-weight:900;margin:0;}
+  .owner-sub{margin:6px 0 0 0;opacity:.85;font-weight:800;font-size:13px;}
+  .owner-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 </style>
 {% endblock %}
 
@@ -150,91 +200,167 @@
   <div class="mypage-shell">
     <div class="mypage-grid">
 
-      <!-- LEFT: SIDE -->
+      <!-- 좌측 프로필 -->
       <aside class="panel">
         <div class="panel-inner">
           <div class="side-profile">
-            <div class="avatar">👤</div>
+            <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
             <div>
-              <div class="side-name">{{ request.user.username }}</div>
-              <div class="side-email">{{ request.user.email|default:"(email 없음)" }}</div>
+              <p class="side-name">{{ user.username }}</p>
+              <p class="side-email">{{ user.email }}</p>
             </div>
           </div>
 
-          <div class="side-actions">
-            <a class="btn-mini" href="{% url 'users:edit' %}">프로필 수정</a>
-            <a class="btn-mini" href="{% url 'users:logout' %}">로그아웃</a>
-          </div>
-
-          <ul class="menu">
-            <!-- ✅ 마이페이지는 tab=mypage 로 분리 (두 개 주황색 문제 해결) -->
-            <li>
-              <a class="{% if active_tab == 'mypage' %}active{% endif %}"
-                 href="{% url 'users:mypage' %}?tab=mypage">
-                <span class="left"><span class="dot"></span>마이페이지</span>
-              </a>
-            </li>
-            <li>
-              <a class="{% if active_tab == 'reservations' %}active{% endif %}"
-                 href="{% url 'users:mypage' %}?tab=reservations">
-                <span class="left"><span class="dot"></span>예약 목록</span>
-              </a>
-            </li>
-            <li>
-              <a class="{% if active_tab == 'visited' %}active{% endif %}"
-                 href="{% url 'users:mypage' %}?tab=visited">
-                <span class="left"><span class="dot"></span>방문한 맛집</span>
-              </a>
-            </li>
-            <li>
-              <a class="{% if active_tab == 'favorites' %}active{% endif %}"
-                 href="{% url 'users:mypage' %}?tab=favorites">
-                <span class="left"><span class="dot"></span>즐겨찾기</span>
-                <span class="badge">{{ favorite_count|default:0 }}</span>
-              </a>
-            </li>
-            <li>
-              <a class="{% if active_tab == 'reviews' %}active{% endif %}"
-                 href="{% url 'users:mypage' %}?tab=reviews">
-                <span class="left"><span class="dot"></span>내 리뷰</span>
-                <span class="badge">{{ reviews|length }}</span>
-              </a>
-            </li>
-          </ul>
+          <nav class="side-menu">
+            <a class="{% if active_tab == 'mypage' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=mypage">
+              내 정보 <span>›</span>
+            </a>
+            <a class="{% if active_tab == 'reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reservations">
+              예약 내역 <span>›</span>
+            </a>
+            <a class="{% if active_tab == 'history' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=history">
+              방문한 맛집 <span>›</span>
+            </a>
+            <a class="{% if active_tab == 'favorites' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=favorites">
+              즐겨찾기 <span>›</span>
+            </a>
+            <a class="{% if active_tab == 'reviews' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reviews">
+              내 리뷰 <span>›</span>
+            </a>
+          </nav>
         </div>
       </aside>
 
-      <!-- RIGHT: CONTENT -->
+      <!-- 우측 컨텐츠 -->
       <main>
         <section class="panel hero">
           <h1 class="hero-title">마이페이지</h1>
-          <p class="hero-sub">
-            안녕하세요, <b>{{ request.user.username }}</b>님! 예약/방문/즐겨찾기/리뷰를 한 번에 확인할 수 있어요.
-          </p>
+          <p class="hero-sub">내 활동과 정보를 한 곳에서 관리해요.</p>
 
-          <div class="pills">
-            <a class="pill {% if active_tab == 'mypage' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=mypage">마이페이지</a>
-            <a class="pill {% if active_tab == 'reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reservations">예약 목록</a>
-            <a class="pill {% if active_tab == 'visited' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=visited">방문한 맛집</a>
+          <div class="tabs">
+            <a class="pill {% if active_tab == 'mypage' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=mypage">내 정보</a>
+            <a class="pill {% if active_tab == 'reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reservations">예약 내역</a>
+            <a class="pill {% if active_tab == 'history' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=history">방문한 맛집</a>
             <a class="pill {% if active_tab == 'favorites' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=favorites">즐겨찾기</a>
             <a class="pill {% if active_tab == 'reviews' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reviews">내 리뷰</a>
           </div>
 
+
+          {% if active_tab == 'mypage' and is_owner %}
+            <div class="owner-box">
+              <div class="owner-head">
+                <div>
+                  <h2 class="owner-title">사장님 대시보드</h2>
+                  <p class="owner-sub">내가 등록한 식당을 여기서 추가/수정하고 바로 확인할 수 있어요.</p>
+                </div>
+
+                <div class="owner-actions">
+                  {% if my_restaurants|length == 0 %}
+                    <a class="btn-cta" style="font-size:15px;padding:14px 18px;" href="{% url 'restaurants:create' %}">
+                      + 식당 등록하기
+                    </a>
+                  {% else %}
+                    <a class="btn-cta" href="{% url 'restaurants:create' %}">+ 추가 등록</a>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="list" style="margin-top:0;">
+                {% if my_restaurants and my_restaurants|length > 0 %}
+                  {% for r in my_restaurants %}
+                    <div class="card">
+                      <div class="thumb">
+                        {% if r.thumbnail %}
+                          <img src="{{ r.thumbnail.url }}" alt="{{ r.name }}">
+                        {% else %}
+                          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
+                        {% endif %}
+                      </div>
+
+                      <div class="meta">
+                        <h3>{{ r.name }}</h3>
+                        <div class="sub">
+                          {{ r.address }}
+                        </div>
+                      </div>
+
+                      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+                        <a class="btn-ghost" href="{% url 'restaurants:detail' r.pk %}">보기</a>
+                        <a class="btn-ghost" href="{% url 'restaurants:update' r.pk %}">수정</a>
+                        {# ✅ 삭제 버튼 제거 #}
+                      </div>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="empty">
+                    아직 등록한 식당이 없어요. 위의 <b>식당 등록하기</b> 버튼으로 등록해보세요 🙂
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+
           {% if active_tab == 'mypage' %}
             <div class="list">
               <div class="empty">
-                여기서 예약/방문/즐겨찾기/리뷰 탭으로 이동할 수 있어요 🙂
+                여기서 예약/방문/즐겨찾기/리뷰 탭으로 내역을 확인할 수 있어요 🙂
               </div>
             </div>
-
           {% elif active_tab == 'reservations' %}
             <div class="list">
-              <div class="empty">아직 예약 데이터가 없어요. (예약 기능 연결 전이면 정상입니다)</div>
+              {% if reservations %}
+                {% for res in reservations %}
+                  <div class="card">
+                    <div class="thumb">
+                      {% if res.restaurant.thumbnail %}
+                        <img src="{{ res.restaurant.thumbnail.url }}" alt="{{ res.restaurant.name }}">
+                      {% else %}
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
+                      {% endif %}
+                    </div>
+                    <div class="meta">
+                      <h3>{{ res.restaurant.name }}</h3>
+                      <div class="sub">
+                        예약일: <b>{{ res.date }}</b> / 시간: <b>{{ res.time }}</b><br>
+                        인원: <b>{{ res.people }}</b>명
+                      </div>
+                    </div>
+                    <div class="actions">
+                      <a class="btn-ghost" href="{% url 'restaurants:detail' res.restaurant.pk %}">식당 보기</a>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty">예약 내역이 없어요.</div>
+              {% endif %}
             </div>
 
-          {% elif active_tab == 'visited' %}
+          {% elif active_tab == 'history' %}
             <div class="list">
-              <div class="empty">아직 방문한 맛집 데이터가 없어요. (방문 기능 연결 전이면 정상입니다)</div>
+              {% if history %}
+                {% for h in history %}
+                  <div class="card">
+                    <div class="thumb">
+                      {% if h.restaurant.thumbnail %}
+                        <img src="{{ h.restaurant.thumbnail.url }}" alt="{{ h.restaurant.name }}">
+                      {% else %}
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
+                      {% endif %}
+                    </div>
+                    <div class="meta">
+                      <h3>{{ h.restaurant.name }}</h3>
+                      <div class="sub">
+                        방문일: <b>{{ h.visited_at|date:"Y-m-d" }}</b>
+                      </div>
+                    </div>
+                    <div class="actions">
+                      <a class="btn-ghost" href="{% url 'restaurants:detail' h.restaurant.pk %}">식당 보기</a>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty">방문한 맛집 내역이 없어요.</div>
+              {% endif %}
             </div>
 
           {% elif active_tab == 'favorites' %}
@@ -251,61 +377,55 @@
                     </div>
                     <div class="meta">
                       <h3>{{ fav.restaurant.name }}</h3>
-                      <div class="sub">즐겨찾기 등록일: {{ fav.created_at|date:"Y-m-d" }}</div>
+                      <div class="sub">
+                        {{ fav.restaurant.address }}
+                      </div>
                     </div>
-                    <div style="display:flex;gap:10px;align-items:center;">
-                      <a class="btn-ghost" href="{% url 'restaurants:detail' fav.restaurant.pk %}">상세 보기</a>
-                      <!-- ✅ favorites/urls.py: name="toggle" -->
-                      <a class="btn-cta" href="{% url 'favorites:toggle' fav.restaurant.pk %}?next={{ request.get_full_path|urlencode }}">해제</a>
+                    <div class="actions">
+                      <a class="btn-ghost" href="{% url 'restaurants:detail' fav.restaurant.pk %}">식당 보기</a>
                     </div>
                   </div>
                 {% endfor %}
               {% else %}
-                <div class="empty">아직 즐겨찾기한 식당이 없어요. 마음에 드는 식당을 ❤️ 해보세요!</div>
+                <div class="empty">즐겨찾기한 식당이 없어요.</div>
               {% endif %}
             </div>
 
           {% elif active_tab == 'reviews' %}
             <div class="list">
               {% if reviews %}
-                {% for r in reviews %}
+                {% for rv in reviews %}
                   <div class="card">
                     <div class="thumb">
-                      {% if r.image %}
-                        <img src="{{ r.image.url }}" alt="review image">
-                      {% elif r.restaurant.thumbnail %}
-                        <img src="{{ r.restaurant.thumbnail.url }}" alt="{{ r.restaurant.name }}">
+                      {% if rv.restaurant.thumbnail %}
+                        <img src="{{ rv.restaurant.thumbnail.url }}" alt="{{ rv.restaurant.name }}">
                       {% else %}
                         <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
                       {% endif %}
                     </div>
                     <div class="meta">
-                      <h3>{{ r.restaurant.name }}</h3>
+                      <h3>{{ rv.restaurant.name }}</h3>
                       <div class="sub">
-                        <span class="stars">
+                        <div class="stars">
                           {% for i in "12345" %}
-                            {% if forloop.counter <= r.rating %}<span class="on">★</span>{% else %}<span>★</span>{% endif %}
+                            <span class="{% if forloop.counter <= rv.rating %}on{% endif %}">★</span>
                           {% endfor %}
-                        </span>
-                        {{ r.created_at|date:"Y-m-d" }} · {{ r.content|truncatechars:60 }}
+                        </div>
+                        <b>{{ rv.rating }}</b>/5 · {{ rv.created_at|date:"Y-m-d" }}<br>
+                        {{ rv.content|default:"(내용 없음)" }}
                       </div>
                     </div>
-                    <div style="display:flex;gap:10px;align-items:center;">
-                      <a class="btn-ghost" href="{% url 'restaurants:detail' r.restaurant.pk %}">식당 보기</a>
-                      <!-- ✅ reviews/urls.py: name="edit/delete" -->
-                      <a class="btn-ghost" href="{% url 'reviews:edit' r.pk %}?next={{ request.get_full_path|urlencode }}">수정</a>
-                      <form method="post" action="{% url 'reviews:delete' r.pk %}?next={{ request.get_full_path|urlencode }}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-danger" onclick="return confirm('리뷰를 삭제할까요?');">삭제</button>
-                      </form>
+                    <div class="actions">
+                      <a class="btn-ghost" href="{% url 'restaurants:detail' rv.restaurant.pk %}">식당 보기</a>
                     </div>
                   </div>
                 {% endfor %}
               {% else %}
-                <div class="empty">아직 작성한 리뷰가 없어요. 방문한 식당에 리뷰를 남겨보세요!</div>
+                <div class="empty">작성한 리뷰가 없어요.</div>
               {% endif %}
             </div>
           {% endif %}
+
         </section>
       </main>
 

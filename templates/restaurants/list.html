@@ -154,32 +154,5 @@ function toggleFav(restaurantId, btn) {
         console.error('Error:', error);
     });
 }
-
-// 최근 본 맛집 개별 삭제
-function removeRecent(storeId) {
-    if(!confirm("이 방문 기록을 삭제하시겠습니까?")) return;
-
-    // 1. 로컬 스토리지 데이터 로드
-    let recentStores = JSON.parse(localStorage.getItem('recentStores')) || [];
-
-    // 2. 선택한 ID만 제외 (불변성 유지)
-    recentStores = recentStores.filter(item => item.id != storeId);
-
-    // 3. 변경된 데이터 저장
-    localStorage.setItem('recentStores', JSON.stringify(recentStores));
-
-    // 4. 화면에서 해당 카드 부드럽게 제거
-    const card = document.getElementById(`recent-card-${storeId}`);
-    if (card) {
-        card.style.transition = '0.3s ease';
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.9)';
-        setTimeout(() => {
-            card.remove();
-            // 목록이 0개가 되면 페이지를 새로고침하여 '기록 없음' 메시지 표시
-            if (recentStores.length === 0) location.reload();
-        }, 300);
-    }
-}
 </script>
 {% endblock %}

@@ -3,6 +3,7 @@ import uuid
 from datetime import timedelta
 
 from django.conf import settings
+from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -11,7 +12,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .models import OwnerProfile, Profile
+from .models import OwnerProfile, Profile, CustomerProfile
 from favorites.models import Favorite
 from reviews.models import Review
 
@@ -86,13 +87,21 @@ def signup_view(request):
             messages.error(request, '이미 사용 중인 이메일이에요.')
             return _render_signup(request, 'normal', username=username, email=email)
 
-        # 계정 생성
-        user = User.objects.create_user(username=username, email=email, password=password1)
-        user.is_active = True
-        user.save()
+        # ✅ 계정 생성 (유저 + 프로필/타입까지 한 번에)
+        with transaction.atomic():
+            user = User.objects.create_user(username=username, email=email, password=password1)
+            user.is_active = True
+            user.save()
 
-        # Profile 보장
-        profile, _ = Profile.objects.get_or_create(user=user)
+            # Profile 보장 + ✅ 타입을 CUSTOMER로 명시
+            profile, _ = Profile.objects.get_or_create(user=user)
+            # (models.py에서 user_type 필드 추가한 기준)
+            if hasattr(profile, "user_type"):
+                profile.user_type = "CUSTOMER"
+                profile.save(update_fields=["user_type"])
+
+            # ✅ 일반회원 프로필 보장
+            CustomerProfile.objects.get_or_create(user=user)
 
         # 이메일 인증 ON일 때만 토큰/메일 발송
         if ENABLE_EMAIL_VERIFY:
@@ -208,17 +217,24 @@ def signup_owner_view(request):
                 o_username=username, o_email=email, o_business_number=business_number_raw
             )
 
-        # 계정 생성
-        user = User.objects.create_user(username=username, email=email, password=password1)
-        user.is_staff = True          # ✅ 핵심: 사업자 권한(스태프) ON
-        user.is_active = True
-        user.save()
+        # ✅ 계정 생성 (유저 + 타입 + OwnerProfile까지 한 번에)
+        with transaction.atomic():
+            user = User.objects.create_user(username=username, email=email, password=password1)
+            # user.is_staff = True          # ✅ 기존 흐름 유지(프로젝트 권한체크가 is_staff 기반이면 필요)
+            user.is_active = True
+            user.save()
 
-        # Profile 보장
-        profile, _ = Profile.objects.get_or_create(user=user)
+            # Profile 보장 + ✅ 타입을 OWNER로 명시
+            profile, _ = Profile.objects.get_or_create(user=user)
+            if hasattr(profile, "user_type"):
+                profile.user_type = "OWNER"
+                profile.save(update_fields=["user_type"])
 
-        # ✅ 사장 프로필 생성(사업자등록번호 저장)
-        OwnerProfile.objects.create(user=user, business_number=business_number)
+            # ✅ 사장 프로필 생성(사업자등록번호 저장)
+            OwnerProfile.objects.create(user=user, business_number=business_number)
+
+            # ✅ 일반회원 프로필이 자동 생성/존재하면 제거(데이터 꼬임 방지)
+            CustomerProfile.objects.filter(user=user).delete()
 
         # 이메일 인증 ON일 때만 토큰/메일 발송
         if ENABLE_EMAIL_VERIFY:
@@ -293,11 +309,23 @@ def mypage_view(request):
         .order_by("-created_at")
     )
 
+    # ✅ 사장(OWNER)이면 내 식당 목록 내려줌
+    from restaurants.models import Restaurant
+    my_restaurants = Restaurant.objects.none()
+    try:
+        is_owner = hasattr(request.user, "profile") and request.user.profile.user_type == "OWNER"
+    except Exception:
+        is_owner = False
+
+    if is_owner:
+        my_restaurants = Restaurant.objects.filter(owner=request.user).order_by("-id")
+
     context = {
         "active_tab": tab,
         "favorites": favorites,
         "favorite_count": favorite_count,
         "reviews": reviews,
+        "my_restaurants": my_restaurants,  # ✅ 추가
     }
     return render(request, "users/mypage.html", context)
 
@@ -372,6 +400,7 @@ def edit_profile(request):
 
     return render(request, 'users/edit_profile.html')
 
+
 # -------------------------------------------------------
 # 아이디 찾기 (이메일로)
 # -------------------------------------------------------
@@ -395,6 +424,7 @@ def find_id(request):
         return render(request, 'users/find_id_done.html', {'email': email, 'usernames': usernames})
 
     return render(request, 'users/find_id.html')
+
 
 # -------------------------------------------------------
 # 비밀번호 찾기 (아이디 + 이메일로 확인 후 이메일 발송)

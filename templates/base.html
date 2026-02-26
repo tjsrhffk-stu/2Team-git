@@ -1,4 +1,4 @@
-{% load static %}<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko" data-theme="light">
 <head>
   <meta charset="UTF-8" />
@@ -220,6 +220,10 @@
     <ul class="nav-links">
       <li><a href="/restaurants/">맛집 찾기</a></li>
       {% if user.is_authenticated %}
+        {# ✅ 사장(OWNER)일 때만 보이는 메뉴 #}
+        {% if is_owner %}
+          <li><a href="/restaurants/create/">식당 등록</a></li>
+        {% endif %}
         <li><a href="/favorites/">즐겨찾기</a></li>
         <li><a href="/favorites/recent/">최근 본 맛집</a></li>
         <li><a href="/reviews/mine/">내가 쓴 리뷰</a></li>

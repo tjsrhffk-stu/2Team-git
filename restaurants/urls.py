@@ -4,21 +4,22 @@ from . import views
 app_name = "restaurants"
 
 urlpatterns = [
-    # 1. 목록 및 검색
+    # 목록/검색
     path("", views.restaurant_list, name="list"),
-    
-    # 2. 음식점 등록 (중복 제거 및 이름 통일)
-    path("create/", views.restaurant_create, name="create"),
-    
-    # 3. 지도 보기
-    path("map/", views.restaurant_map, name="map"),
-    
-    # 4. 상세 정보 (상세 페이지가 다른 문자열 경로보다 아래에 있는 것이 안전합니다)
-    path("<int:pk>/", views.restaurant_detail, name="detail"),
-    
-    # 5. 음식점 삭제 (폐업 관리)
-    path("<int:pk>/delete/", views.restaurant_delete, name="delete"),
 
-    # 6. [신규] 업데이트 
-    path('<int:pk>/update/', views.restaurant_update, name='update'),
+    # 지도
+    path("map/", views.restaurant_map, name="map"),
+
+    # 등록 (사장/관리자만)
+    path("create/", views.restaurant_create, name="create"),
+
+    # 상세
+    path("<int:pk>/", views.restaurant_detail, name="detail"),
+
+    # 수정 (사장/관리자만) - 기존 update URL 유지 + edit 별칭도 제공
+    path("<int:pk>/update/", views.restaurant_update, name="update"),
+    path("<int:pk>/edit/", views.restaurant_edit, name="edit"),
+
+    # 삭제 (사장 본인 또는 관리자)
+    path("<int:pk>/delete/", views.restaurant_delete, name="delete"),
 ]

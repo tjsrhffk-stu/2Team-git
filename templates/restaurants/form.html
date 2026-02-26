@@ -1,0 +1,256 @@
+{# v4-template-minimized-2026-02-26 #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if mode == 'update' %}{{ restaurant.name }} 수정 — LocalEats{% else %}음식점 등록 — LocalEats{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/restaurant_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  {% if mode == 'update' %}
+    <h1 class="page-title">정보 수정하기 🛠️</h1>
+    <p class="page-subtitle">{{ restaurant.name }}의 최신 정보를 유지해주세요.</p>
+  {% else %}
+    <h1 class="page-title">음식점 등록 🏪</h1>
+    <p class="page-subtitle">새로운 맛집의 정보를 정확하게 입력해주세요.</p>
+  {% endif %}
+
+  <div class="form-card">
+    <form method="POST" enctype="multipart/form-data" id="restaurantForm">
+      {% csrf_token %}
+
+      <div class="form-section-title">🍽️ 기본 정보</div>
+
+      <div class="form-group">
+        <label>음식점 이름 <span class="required">*</span></label>
+        <div class="input-wrap">
+          <input type="text" name="name" class="form-input" placeholder="음식점 이름" required
+                 value="{{ restaurant.name|default:form_data.name|default:'' }}" autocomplete="off">
+          <span class="icon">🏪</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>카테고리 <span class="required">*</span></label>
+          <select name="category" class="form-select" required>
+            <option value="" disabled {% if not restaurant.category and not form_data.category %}selected{% endif %}>선택</option>
+            {% for cat in categories %}
+              <option value="{{ cat.pk }}"
+                {% if restaurant.category and restaurant.category.pk == cat.pk %}selected
+                {% elif form_data.category == cat.pk|stringformat:"s" %}selected
+                {% endif %}>
+                {{ cat.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>전화번호</label>
+          <div class="input-wrap">
+            <input type="tel" name="phone" class="form-input" placeholder="02-123-4567"
+                   value="{{ restaurant.phone|default:form_data.phone|default:'' }}">
+            <span class="icon">📞</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>소개</label>
+        <textarea name="description" class="form-textarea" placeholder="음식점 소개...">{{ restaurant.description|default:form_data.description|default:'' }}</textarea>
+      </div>
+
+      <div class="form-section-title">📍 위치 정보</div>
+
+      <div class="form-group">
+        <label>주소 <span class="required">*</span></label>
+        <div class="input-wrap">
+          <input type="text" name="address" class="form-input" placeholder="정확한 주소" required
+                 value="{{ restaurant.address|default:form_data.address|default:'' }}">
+          <span class="icon">📍</span>
+        </div>
+      </div>
+
+      <div class="form-section-title">🕒 운영 정보</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>영업시간</label>
+          <div class="input-wrap">
+            <input type="text" name="hours" class="form-input" placeholder="09:00 - 22:00"
+                   value="{{ restaurant.hours|default:form_data.hours|default:'' }}">
+            <span class="icon">🕐</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>휴무일</label>
+          <div class="input-wrap">
+            <input type="text" name="closed_days" class="form-input" placeholder="매주 월요일"
+                   value="{{ restaurant.closed_days|default:form_data.closed_days|default:'' }}">
+            <span class="icon">📅</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>웹사이트</label>
+        <div class="input-wrap">
+          <input type="url" name="website" class="form-input" placeholder="https://..."
+                 value="{{ restaurant.website|default:form_data.website|default:'' }}">
+          <span class="icon">🔗</span>
+        </div>
+      </div>
+
+      <div class="form-section-title">📷 사진 관리</div>
+
+      <div class="form-group">
+        <label>메인 대표 사진</label>
+        <div class="upload-area">
+          <input type="file" name="thumbnail" accept="image/*" id="thumbInput"
+                 style="position:absolute; width:100%; height:100%; top:0; left:0; opacity:0; cursor:pointer;">
+          <div id="thumbText">
+            {% if mode == 'update' %}🖼️ 클릭하여 대표 사진 변경{% else %}🖼️ 클릭하여 대표 사진 업로드{% endif %}
+          </div>
+          <div id="thumbPreviewBox" style="margin-top:10px; {% if not restaurant.thumbnail %}display:none;{% endif %}">
+            <img id="thumbPreviewImg"
+                 src="{% if restaurant.thumbnail %}{{ restaurant.thumbnail.url }}{% endif %}"
+                 style="width:100px; height:100px; border-radius:10px; object-fit:cover;">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:20px;">
+        <label>
+          추가 상세 사진
+          {% if mode == 'update' %}(현재 {{ current_registered|default:0 }}장 등록됨){% endif %}
+        </label>
+        <div class="upload-area">
+          <input type="file" name="additional_images" accept="image/*" multiple id="multiInput"
+                 style="position:absolute; width:100%; height:100%; top:0; left:0; opacity:0; cursor:pointer;">
+          <div>📸 사진 추가하기 (여러 번 선택하여 누적 가능)</div>
+        </div>
+        <div class="multiple-preview" id="multiPreview"></div>
+      </div>
+
+      <div class="form-submit" style="margin-top:40px; display:flex; gap:12px;">
+        <button type="submit" class="btn-submit" style="flex:2;">
+          {% if mode == 'update' %}정보 수정 완료{% else %}등록 완료{% endif %}
+        </button>
+
+        {% if mode == 'update' %}
+          <a href="{% url 'restaurants:detail' restaurant.pk %}"
+             style="flex:1; padding:15px; background:#f1f3f5; border-radius:12px; text-decoration:none; color:#495057; font-weight:600; text-align:center;">
+            취소
+          </a>
+        {% else %}
+          <a href="{% url 'restaurants:list' %}"
+             style="flex:1; padding:15px; background:#f1f3f5; border-radius:12px; text-decoration:none; color:#495057; font-weight:600; text-align:center;">
+            취소
+          </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // 대표 사진 미리보기
+  (function() {
+    const thumbInput = document.getElementById('thumbInput');
+    if (!thumbInput) return;
+    thumbInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = document.getElementById('thumbPreviewImg');
+        const box = document.getElementById('thumbPreviewBox');
+        const txt = document.getElementById('thumbText');
+        if (img) img.src = ev.target.result;
+        if (box) box.style.display = 'block';
+        if (txt) txt.innerText = "✅ 선택된 사진";
+      };
+      reader.readAsDataURL(file);
+    });
+  })();
+
+  // 상세 사진 누적 업로드 (최대 10장)
+  (function() {
+    const multiInput = document.getElementById('multiInput');
+    const previewContainer = document.getElementById('multiPreview');
+    if (!multiInput || !previewContainer) return;
+
+    const dataTransfer = new DataTransfer();
+    const currentRegistered = Number("{{ current_registered|default:0 }}");
+
+    function renderPreview() {
+      previewContainer.innerHTML = '';
+      Array.from(dataTransfer.files).forEach((file, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'preview-item';
+        wrapper.style.position = 'relative';
+
+        const img = document.createElement('img');
+        img.style.width = '96px';
+        img.style.height = '96px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '10px';
+        img.style.border = '1px solid #eee';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.innerText = '✖';
+        removeBtn.style.position = 'absolute';
+        removeBtn.style.top = '-8px';
+        removeBtn.style.right = '-8px';
+        removeBtn.style.width = '26px';
+        removeBtn.style.height = '26px';
+        removeBtn.style.borderRadius = '50%';
+        removeBtn.style.border = '0';
+        removeBtn.style.background = '#fa5252';
+        removeBtn.style.color = '#fff';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.addEventListener('click', () => {
+          dataTransfer.items.remove(idx);
+          multiInput.files = dataTransfer.files;
+          renderPreview();
+        });
+
+        const reader = new FileReader();
+        reader.onload = ev => { img.src = ev.target.result; };
+        reader.readAsDataURL(file);
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(removeBtn);
+        previewContainer.appendChild(wrapper);
+      });
+    }
+
+    multiInput.addEventListener('change', function() {
+      const incoming = Array.from(multiInput.files || []);
+      if (!incoming.length) return;
+
+      // 총 10장 제한 (기존 등록 + 새로 선택)
+      const totalCount = dataTransfer.items.length + currentRegistered + incoming.length;
+      if (totalCount > 10) {
+        alert(`추가 사진은 최대 10장까지 등록할 수 있어요. (현재 ${currentRegistered}장 등록됨)`);
+        multiInput.value = '';
+        return;
+      }
+
+      incoming.forEach(file => dataTransfer.items.add(file));
+      multiInput.files = dataTransfer.files;
+      renderPreview();
+    });
+  })();
+</script>
+{% endblock %}
