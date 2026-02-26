@@ -55,7 +55,7 @@ def restaurant_list(request):
     return render(request, "restaurants/list.html", context)
 
 
-# 2. 음식점 상세 (인자 이름을 pk로 수정하여 에러 해결)
+# 2. 음식점 상세 (pk 인자 사용)
 def restaurant_detail(request, pk):
     restaurant = get_object_or_404(
         Restaurant.objects.annotate(
@@ -154,6 +154,65 @@ def restaurant_create(request):
 
     return render(request, "restaurants/create.html", {"categories": categories, "form_data": {}})
 
+
 # 4. 지도 페이지
 def restaurant_map(request):
     return render(request, 'Maps_Api.html', {'restaurants': Restaurant.objects.all()})
+
+
+# 5. [신규] 음식점 삭제 (관리자/폐업 처리 전용)
+@login_required
+def restaurant_delete(request, pk):
+    restaurant = get_object_or_404(Restaurant, pk=pk)
+
+    # 수정된 권한 체크: 최고 관리자(Superuser)만 삭제 가능하게 변경
+    if not request.user.is_superuser:
+        messages.error(request, "삭제 권한이 없습니다. 최고 관리자에게 문의하세요.")
+        return redirect('restaurants:detail', pk=pk)
+
+    if request.method == "POST":
+        name = restaurant.name
+        restaurant.delete()
+        messages.success(request, f'"{name}" 식당 정보가 성공적으로 삭제되었습니다.')
+        return redirect('restaurants:list')
+
+    return render(request, 'restaurants/restaurant_confirm_delete.html', {'restaurant': restaurant})
+
+@login_required
+def restaurant_update(request, pk):
+    restaurant = get_object_or_404(Restaurant, pk=pk)
+    
+    # [3번 해결] 본인 혹은 최고관리자만 수정 가능
+    if restaurant.owner != request.user and not request.user.is_superuser:
+        messages.error(request, "수정 권_한이 없습니다.")
+        return redirect('restaurants:detail', pk=pk)
+
+    if request.method == "POST":
+        # [1번 해결] .strip()으로 입력값 정제 (글자 깨짐 방지)
+        restaurant.name = request.POST.get("name", "").strip()
+        restaurant.address = request.POST.get("address", "").strip()
+        restaurant.phone = request.POST.get("phone", "").strip()
+        restaurant.description = request.POST.get("description", "").strip()
+        restaurant.hours = request.POST.get("hours", "").strip()
+        # ... 필요한 다른 필드들 ...
+
+        if request.FILES.get("thumbnail"):
+            restaurant.thumbnail = request.FILES.get("thumbnail")
+
+        # 네이버 API 좌표 갱신을 위해 lat, lng 초기화 (주소가 바뀌었을 경우 대비)
+        restaurant.lat, restaurant.lng = None, None
+        restaurant.save()
+
+        # [2번 해결] 상세 사진 다중 등록 (최대 10개)
+        additional_images = request.FILES.getlist('additional_images')
+        current_count = restaurant.additional_images.count()
+        for img in additional_images:
+            if current_count < 10:
+                RestaurantImage.objects.create(restaurant=restaurant, image=img)
+                current_count += 1
+
+        messages.success(request, "성공적으로 수정되었습니다.")
+        return redirect('restaurants:detail', pk=pk)
+
+    categories = Category.objects.all()
+    return render(request, "restaurants/update.html", {"restaurant": restaurant, "categories": categories})
