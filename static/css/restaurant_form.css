@@ -1,0 +1,48 @@
+/* static/css/restaurant_form.css */
+
+.page-wrap { max-width: 720px; margin: 0 auto; animation: fadeUp 0.5s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+.page-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; margin-bottom: 8px; }
+.page-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 36px; }
+
+.form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px; box-shadow: var(--shadow); }
+.form-section-title { font-size: 13px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.form-section-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+.required { color: var(--accent); }
+
+/* 입력창 & 아이콘 로직 */
+.input-wrap { position: relative; }
+.input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; transition: all 0.2s ease; opacity: 0.7; z-index: 2; }
+.form-input { width: 100%; padding: 13px 16px 13px 42px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333 !important; font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.form-input:placeholder-shown { padding-left: 42px; }
+.form-input:focus, .form-input:not(:placeholder-shown) { padding-left: 16px; }
+.form-input:focus + .icon, .form-input:not(:placeholder-shown) + .icon { opacity: 0; transform: translateY(-50%) translateX(-15px); }
+
+.form-select { width: 100%; padding: 13px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.form-textarea { width: 100%; padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; min-height: 100px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* 업로드 영역 & 미리보기 */
+.upload-area { border: 2px dashed var(--border); border-radius: 14px; padding: 36px; text-align: center; cursor: pointer; position: relative; transition: 0.3s; }
+.upload-area:hover { border-color: var(--accent); background: #fffcfc; }
+#thumbInput, #multiInput { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
+
+.multiple-preview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
+.preview-box { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+
+/* 이미지 삭제 버튼 */
+.preview-item { position: relative; }
+.remove-btn { 
+  position: absolute; top: -5px; right: -5px; 
+  background: #ff5a5f; color: white; border-radius: 50%; 
+  width: 20px; height: 20px; font-size: 12px; 
+  display: flex; align-items: center; justify-content: center; 
+  cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-submit { padding: 15px 36px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
