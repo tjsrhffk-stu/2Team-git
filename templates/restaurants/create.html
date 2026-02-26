@@ -3,7 +3,7 @@
 
 {% block extra_css %}
 <style>
-  /* --- 통일된 디자인 & 애니메이션 --- */
+  /* ... 기존 스타일 유지 ... */
   .page-wrap { max-width: 720px; margin: 0 auto; animation: fadeUp 0.5s ease; }
   @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
   .page-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; margin-bottom: 8px; }
@@ -14,43 +14,49 @@
   .form-group { margin-bottom: 18px; }
   .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
   .required { color: var(--accent); }
-
-  /* 입력창 아이콘 애니메이션 (Update 버전과 통일) */
   .input-wrap { position: relative; }
   .input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; transition: all 0.2s ease; opacity: 0.7; z-index: 2; }
-  .form-input { width: 100%; padding: 13px 16px 13px 42px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333 !important; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .form-input { width: 100%; padding: 13px 16px 13px 42px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333 !important; font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .form-input:placeholder-shown { padding-left: 42px; }
   .form-input:focus, .form-input:not(:placeholder-shown) { padding-left: 16px; }
   .form-input:focus + .icon, .form-input:not(:placeholder-shown) + .icon { opacity: 0; transform: translateY(-50%) translateX(-15px); }
-
-  .form-select { width: 100%; padding: 13px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; }
-  .form-textarea { width: 100%; padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; min-height: 100px; }
+  .form-select { width: 100%; padding: 13px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+  .form-textarea { width: 100%; padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; min-height: 100px; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  
-  /* 업로드 영역 (Update 버전 스타일) */
-  .upload-area { border: 2px dashed var(--border); border-radius: 14px; padding: 24px; text-align: center; cursor: pointer; position: relative; transition: 0.3s; }
+  .upload-area { border: 2px dashed var(--border); border-radius: 14px; padding: 36px; text-align: center; cursor: pointer; position: relative; transition: 0.3s; }
   .upload-area:hover { border-color: var(--accent); background: #fffcfc; }
+  #thumbInput, #multiInput { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
   .multiple-preview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
-  .preview-box { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
-  
+  .preview-box { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
   .btn-submit { padding: 15px 36px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
-  .btn-submit:hover { background: #e03131; transform: translateY(-2px); }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+  /* 삭제 버튼 스타일 추가 */
+  .preview-item { position: relative; }
+  .remove-btn { 
+    position: absolute; top: -5px; right: -5px; 
+    background: #ff5a5f; color: white; border-radius: 50%; 
+    width: 20px; height: 20px; font-size: 12px; 
+    display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-wrap">
   <h1 class="page-title">음식점 등록 🏪</h1>
-  <p class="page-subtitle">새로운 맛집의 정보를 입력해주세요.</p>
+  <p class="page-subtitle">새로운 맛집의 정보를 정확하게 입력해주세요.</p>
 
   <div class="form-card">
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" id="restaurantForm">
       {% csrf_token %}
 
       <div class="form-section-title">📋 기본 정보</div>
       <div class="form-group">
         <label>음식점 이름 <span class="required">*</span></label>
         <div class="input-wrap">
-          <input type="text" name="name" class="form-input" placeholder="음식점 이름을 입력하세요" required value="{{ form_data.name|default:'' }}" autocomplete="off">
+          <input type="text" name="name" class="form-input" placeholder="이름을 입력하세요" required value="{{ form_data.name|default:'' }}">
           <span class="icon">🏪</span>
         </div>
       </div>
@@ -59,7 +65,7 @@
         <div class="form-group">
           <label>카테고리 <span class="required">*</span></label>
           <select name="category" class="form-select" required>
-            <option value="" disabled selected>카테고리 선택</option>
+            <option value="" disabled selected>선택</option>
             {% for cat in categories %}
               <option value="{{ cat.pk }}" {% if form_data.category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
@@ -76,19 +82,18 @@
 
       <div class="form-group">
         <label>소개 (선택)</label>
-        <textarea name="description" class="form-textarea" placeholder="음식점을 간단히 소개해주세요...">{{ form_data.description|default:'' }}</textarea>
+        <textarea name="description" class="form-textarea" placeholder="맛있는 이야기를 들려주세요...">{{ form_data.description|default:'' }}</textarea>
       </div>
 
-      <div class="form-section-title">📍 위치 정보</div>
+      <div class="form-section-title">📍 위치 및 운영 정보</div>
       <div class="form-group">
         <label>주소 <span class="required">*</span></label>
         <div class="input-wrap">
-          <input type="text" name="address" class="form-input" placeholder="정확한 주소를 입력하세요" required value="{{ form_data.address|default:'' }}">
+          <input type="text" name="address" class="form-input" placeholder="정확한 주소 입력" required value="{{ form_data.address|default:'' }}">
           <span class="icon">📍</span>
         </div>
       </div>
 
-      <div class="form-section-title">🕒 운영 정보</div>
       <div class="form-row">
         <div class="form-group">
           <label>영업시간</label>
@@ -106,23 +111,23 @@
         </div>
       </div>
 
-      <div class="form-section-title">📷 사진 등록 (최대 10장)</div>
+      <div class="form-section-title">📷 사진 등록</div>
       <div class="form-group">
-        <label>메인 대표 사진</label>
-        <div class="upload-area">
-          <input type="file" name="thumbnail" accept="image/*" id="thumbInput" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer;">
-          <div id="thumbText">🖼️ 대표 사진 등록하기</div>
+        <label>대표 사진</label>
+        <div class="upload-area" id="thumbArea">
+          <input type="file" name="thumbnail" accept="image/*" id="thumbInput">
+          <div id="thumbText">🖼️ 메인 이미지를 선택하세요</div>
           <div id="thumbPreviewBox" style="display:none; margin-top:10px;">
-            <img id="thumbPreviewImg" src="" style="width:100px; height:100px; border-radius:10px; object-fit:cover;">
+            <img id="thumbPreviewImg" src="" style="width:120px; height:120px; border-radius:12px; object-fit:cover;">
           </div>
         </div>
       </div>
 
-      <div class="form-group" style="margin-top:20px;">
-        <label>상세 소개 사진 (추가 가능)</label>
+      <div class="form-group" style="margin-top:24px;">
+        <label>상세 사진 (최대 10장)</label>
         <div class="upload-area">
-          <input type="file" name="additional_images" accept="image/*" multiple id="multiInput" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer;">
-          <div>📸 상세 사진 등록 (최대 10장)</div>
+          <input type="file" name="additional_images" accept="image/*" multiple id="multiInput">
+          <div>📸 상세 이미지를 클릭하여 추가하세요 (여러 번 선택 가능)</div>
         </div>
         <div class="multiple-preview" id="multiPreview"></div>
       </div>
@@ -138,7 +143,7 @@
 
 {% block extra_js %}
 <script>
-  // 1. 대표 사진 미리보기
+  // 1. 대표 사진 미리보기 (기존 유지)
   document.getElementById('thumbInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -146,34 +151,79 @@
       reader.onload = ev => {
         document.getElementById('thumbPreviewImg').src = ev.target.result;
         document.getElementById('thumbPreviewBox').style.display = 'block';
-        document.getElementById('thumbText').innerText = "✅ 선택된 사진";
+        document.getElementById('thumbText').style.display = 'none';
       };
       reader.readAsDataURL(file);
     }
   });
 
-  // 2. 상세 사진 다중 미리보기
-  document.getElementById('multiInput').addEventListener('change', function(e) {
-    const files = e.target.files;
-    const previewContainer = document.getElementById('multiPreview');
-    previewContainer.innerHTML = '';
+  // 2. 상세 사진 '누적' 업로드 로직
+  const dataTransfer = new DataTransfer(); // 파일들을 임시로 담아둘 바구니
+  const multiInput = document.getElementById('multiInput');
+  const previewContainer = document.getElementById('multiPreview');
 
-    if (files.length > 10) {
-      alert("상세 사진은 최대 10장까지만 가능합니다.");
-      this.value = "";
-      return;
-    }
+  multiInput.addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    
+    files.forEach(file => {
+      // 10장 제한 체크
+      if (dataTransfer.items.length >= 10) {
+        return;
+      }
 
-    Array.from(files).forEach(file => {
+      // 바구니에 추가
+      dataTransfer.items.add(file);
+      
+      // 미리보기 요소 생성
       const reader = new FileReader();
       reader.onload = ev => {
-        const img = document.createElement('img');
-        img.src = ev.target.result;
-        img.className = 'preview-box';
-        previewContainer.appendChild(img);
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'preview-item';
+        
+        // 고유 ID 부여 (나중에 삭제할 때 찾기 위함)
+        const fileId = Math.random().toString(36).substr(2, 9);
+        itemDiv.dataset.id = fileId;
+        
+        itemDiv.innerHTML = `
+          <img src="${ev.target.result}" class="preview-box">
+          <div class="remove-btn" onclick="removeFile('${fileId}')">×</div>
+        `;
+        previewContainer.appendChild(itemDiv);
       };
       reader.readAsDataURL(file);
     });
+
+    // 실제 input에 바구니에 담긴 파일들을 동기화
+    multiInput.files = dataTransfer.files;
+    
+    if (dataTransfer.items.length >= 10 && files.length > 0) {
+      alert("최대 10장까지만 등록 가능합니다.");
+    }
   });
+
+  // 3. 사진 개별 삭제 함수
+  function removeFile(fileId) {
+    const items = Array.from(dataTransfer.files);
+    const previewItem = document.querySelector(`.preview-item[data-id="${fileId}"]`);
+    const index = Array.from(previewContainer.children).indexOf(previewItem);
+
+    if (index > -1) {
+      // 바구니(DataTransfer)는 직접 수정이 안되므로 새로 생성해서 옮겨 담아야 함
+      const newDataTransfer = new DataTransfer();
+      for (let i = 0; i < dataTransfer.files.length; i++) {
+        if (i !== index) {
+          newDataTransfer.items.add(dataTransfer.files[i]);
+        }
+      }
+      
+      // 전역 바구니 업데이트 및 input 동기화
+      dataTransfer.items.clear();
+      Array.from(newDataTransfer.files).forEach(file => dataTransfer.items.add(file));
+      multiInput.files = dataTransfer.files;
+      
+      // UI 제거
+      previewItem.remove();
+    }
+  }
 </script>
 {% endblock %}

@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
-from .models import Restaurant, Category, RestaurantImage  # 상세 사진 모델 포함
+from .models import Restaurant, Category, RestaurantImage
 
 # 1. 음식점 목록
 def restaurant_list(request):
@@ -25,7 +25,6 @@ def restaurant_list(request):
         else: 
             qs = qs.filter(category__name=category_id)
 
-    # 정렬 로직
     if sort == "rating": 
         qs = qs.order_by("-avg_rating", "-review_count", "-id")
     elif sort == "reviews": 
@@ -35,7 +34,6 @@ def restaurant_list(request):
     else: 
         qs = qs.order_by("-id")
 
-    # 즐겨찾기 최적화
     user_favorites = []
     if request.user.is_authenticated:
         try:
@@ -65,10 +63,8 @@ def restaurant_detail(request, pk):
         pk=pk
     )
     
-    # 조회수 증가
     Restaurant.objects.filter(pk=pk).update(view_count=restaurant.view_count + 1)
     
-    # 리뷰 정렬
     sort = request.GET.get('sort', 'rating_high')
     reviews_qs = restaurant.reviews.select_related("author")
 
@@ -79,7 +75,6 @@ def restaurant_detail(request, pk):
     else: 
         reviews = reviews_qs.order_by("-rating", "-created_at")
 
-    # 별점 분포
     rating_distribution = []
     total = reviews_qs.count()
     for star in range(5, 0, -1):
@@ -87,7 +82,6 @@ def restaurant_detail(request, pk):
         pct = (count / total * 100) if total > 0 else 0
         rating_distribution.append((star, count, round(pct)))
 
-    # 즐겨찾기 여부
     is_favorite = False
     if request.user.is_authenticated:
         try:
@@ -107,7 +101,7 @@ def restaurant_detail(request, pk):
     return render(request, "restaurants/detail.html", context)
 
 
-# 3. 음식점 등록
+# 3. 음식점 등록 (다중 이미지 처리 보완)
 @login_required
 def restaurant_create(request):
     if not hasattr(request.user, "owner_profile") and not request.user.is_staff:
@@ -139,7 +133,7 @@ def restaurant_create(request):
             hours=request.POST.get("hours", "").strip(),
             closed_days=request.POST.get("closed_days", "").strip(),
             website=request.POST.get("website", "").strip(),
-            thumbnail=request.FILES.get("thumbnail")
+            thumbnail=request.FILES.get("thumbnail") # 단일 파일
         )
 
         if category_pk:
@@ -147,9 +141,10 @@ def restaurant_create(request):
         
         restaurant.save()
 
-        # 상세 사진 다중 등록 (최대 10장)
-        additional_images = request.FILES.getlist('additional_images')
-        for img in additional_images[:10]:
+        # --- 다중 이미지 처리 로직 ---
+        # HTML의 name="additional_images"와 일치해야 함
+        images = request.FILES.getlist('additional_images') 
+        for img in images[:10]: # 최대 10장 제한
             RestaurantImage.objects.create(restaurant=restaurant, image=img)
 
         messages.success(request, f'"{name}" 등록 성공! 🎉')
@@ -167,7 +162,6 @@ def restaurant_map(request):
 @login_required
 def restaurant_delete(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
-
     if not request.user.is_superuser:
         messages.error(request, "삭제 권한이 없습니다.")
         return redirect('restaurants:detail', pk=pk)
@@ -177,7 +171,6 @@ def restaurant_delete(request, pk):
         restaurant.delete()
         messages.success(request, f'"{name}" 식당 정보가 삭제되었습니다.')
         return redirect('restaurants:list')
-
     return render(request, 'restaurants/restaurant_confirm_delete.html', {'restaurant': restaurant})
 
 
@@ -191,7 +184,6 @@ def restaurant_update(request, pk):
         return redirect('restaurants:detail', pk=pk)
 
     if request.method == "POST":
-        # 기본 필드 업데이트
         restaurant.name = request.POST.get("name", "").strip()
         restaurant.address = request.POST.get("address", "").strip()
         restaurant.phone = request.POST.get("phone", "").strip()
@@ -200,23 +192,20 @@ def restaurant_update(request, pk):
         restaurant.closed_days = request.POST.get("closed_days", "").strip()
         restaurant.website = request.POST.get("website", "").strip()
 
-        # 카테고리 업데이트
         category_pk = request.POST.get("category")
         if category_pk:
             restaurant.category_id = category_pk
 
-        # 대표 사진 변경 시
         if request.FILES.get("thumbnail"):
             restaurant.thumbnail = request.FILES.get("thumbnail")
 
-        # 좌표 초기화 및 저장
         restaurant.lat, restaurant.lng = None, None
         restaurant.save()
 
-        # 상세 사진 추가 등록 (최대 10장까지)
-        additional_images = request.FILES.getlist('additional_images')
+        # 수정 시 다중 이미지 추가 로직
+        images = request.FILES.getlist('additional_images')
         current_count = restaurant.additional_images.count()
-        for img in additional_images:
+        for img in images:
             if current_count < 10:
                 RestaurantImage.objects.create(restaurant=restaurant, image=img)
                 current_count += 1

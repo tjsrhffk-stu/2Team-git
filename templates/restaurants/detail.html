@@ -12,11 +12,19 @@
   .bar-fill { height: 100%; background: #F59E0B; transition: width 0.5s ease; }
   .btn-fav.active { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
   
-  /* 다중 이미지 갤러리 스타일 */
-  .image-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 30px; scrollbar-width: thin; }
-  .gallery-item { width: 150px; height: 150px; flex-shrink: 0; border-radius: 12px; object-fit: cover; border: 1px solid #eee; }
+  /* --- 이미지 갤러리 스타일 고도화 --- */
+  .image-gallery { display: flex; gap: 12px; overflow-x: auto; padding: 5px 5px 15px 5px; margin-bottom: 30px; scrollbar-width: thin; }
+  .gallery-item { 
+    width: 120px; height: 120px; flex-shrink: 0; border-radius: 12px; 
+    object-fit: cover; border: 2px solid transparent; cursor: pointer; 
+    transition: all 0.2s ease; opacity: 0.6;
+  }
+  .gallery-item:hover { opacity: 1; transform: translateY(-2px); }
+  .gallery-item.active { opacity: 1; border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
-  /* 관리자/수정 버튼 스타일 */
+  /* 메인 이미지 전환 애니메이션 */
+  #viewMain { transition: opacity 0.2s ease-in-out; }
+
   .btn-delete-admin { width: 100%; padding: 12px; background: #fa5252; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
   .btn-delete-admin:hover { background: #e03131; }
   .btn-edit { padding: 8px 16px; background: #f1f3f5; color: #495057; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s; }
@@ -32,7 +40,6 @@
         <span style="color:var(--accent); font-weight:700;">{{ restaurant.category.name|default:"음식점" }}</span>
         <div style="display: flex; align-items: center; gap: 15px;">
             <h1 style="font-size:40px; margin:10px 0;">{{ restaurant.name }}</h1>
-            
             {% if user == restaurant.owner or user.is_superuser %}
                 <a href="{% url 'restaurants:update' restaurant.pk %}" class="btn-edit">✏️ 정보 수정</a>
             {% endif %}
@@ -47,21 +54,24 @@
 
   <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:30px; margin-top:30px;">
     <div class="main-content" style="grid-column: span 2;">
-      <div style="width:100%; height:450px; border-radius:20px; overflow:hidden; margin-bottom:15px; border: 1px solid #eee;">
+      
+      <div style="width:100%; height:500px; border-radius:24px; overflow:hidden; margin-bottom:15px; border: 1px solid #eee; background: #f8f9fa;">
         {% if restaurant.thumbnail %}
-          <img src="{{ restaurant.thumbnail.url }}" style="width:100%; height:100%; object-fit:cover;" alt="식당 이미지">
+          <img id="viewMain" src="{{ restaurant.thumbnail.url }}" style="width:100%; height:100%; object-fit:cover;" alt="식당 이미지">
         {% else %}
-          <div style="width:100%; height:100%; background:#f5f5f5; display:flex; align-items:center; justify-content:center; font-size:40px;">🍽️</div>
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px;">🍽️</div>
         {% endif %}
       </div>
 
-      {% if restaurant.additional_images.all %}
       <div class="image-gallery">
+          {% if restaurant.thumbnail %}
+            <img src="{{ restaurant.thumbnail.url }}" class="gallery-item active" onclick="changePhoto(this)" alt="대표 이미지">
+          {% endif %}
+          
           {% for img_obj in restaurant.additional_images.all %}
-            <img src="{{ img_obj.image.url }}" class="gallery-item" alt="상세 이미지">
+            <img src="{{ img_obj.image.url }}" class="gallery-item" onclick="changePhoto(this)" alt="상세 이미지">
           {% endfor %}
       </div>
-      {% endif %}
 
       <div class="info-card">
         <h3 style="margin-bottom:20px; font-weight: 700;">매장 상세정보</h3>
@@ -105,13 +115,11 @@
               </span>
             </div>
             <p style="margin:10px 0; line-height:1.6; color:#333;">{{ review.content }}</p>
-            
             {% if review.image %}
-            <div style="margin: 15px 0;">
-                <img src="{{ review.image.url }}" style="max-width: 250px; border-radius: 12px; border: 1px solid #eee;" alt="리뷰 사진">
-            </div>
+              <div style="margin: 15px 0;">
+                  <img src="{{ review.image.url }}" style="max-width: 250px; border-radius: 12px; border: 1px solid #eee;" alt="리뷰 사진">
+              </div>
             {% endif %}
-
             <small style="color:#bbb;">{{ review.created_at|date:"Y.m.d" }}</small>
           </div>
         {% empty %}
@@ -155,6 +163,26 @@
 
 {% block extra_js %}
 <script>
+  // 📸 사진 교체 함수
+  function changePhoto(element) {
+    const mainImg = document.getElementById('viewMain');
+    const newSrc = element.src;
+
+    // 메인 이미지 교체 (페이드 효과)
+    mainImg.style.opacity = '0';
+    setTimeout(() => {
+      mainImg.src = newSrc;
+      mainImg.style.opacity = '1';
+    }, 200);
+
+    // 썸네일 활성화 상태 변경
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    element.classList.add('active');
+  }
+
+  // 찜하기 기능
   function toggleFav(id, btn) {
     const textSpan = btn.querySelector('#favText');
     fetch(`/favorites/toggle/${id}/`, {
@@ -177,6 +205,7 @@
     .catch(error => alert(error.message));
   }
 
+  // 삭제 기능
   function deleteRestaurant() {
     if (confirm('최고 관리자 권한으로 삭제를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
       const form = document.createElement('form');
@@ -192,6 +221,7 @@
     }
   }
 
+  // 최근 본 매장 저장
   document.addEventListener("DOMContentLoaded", function() {
     const storeData = {
       id: "{{ restaurant.pk }}",
