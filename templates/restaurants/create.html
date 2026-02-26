@@ -3,7 +3,7 @@
 
 {% block extra_css %}
 <style>
-  /* --- 사용자님의 오리지널 디자인 & 애니메이션 완벽 복구 --- */
+  /* --- 통일된 디자인 & 애니메이션 --- */
   .page-wrap { max-width: 720px; margin: 0 auto; animation: fadeUp 0.5s ease; }
   @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
   .page-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; margin-bottom: 8px; }
@@ -15,39 +15,42 @@
   .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
   .required { color: var(--accent); }
 
-  /* 클릭 시 아이콘 사라지는 애니메이션 CSS */
+  /* 입력창 아이콘 애니메이션 (Update 버전과 통일) */
   .input-wrap { position: relative; }
   .input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; transition: all 0.2s ease; opacity: 0.7; z-index: 2; }
-  .form-input { width: 100%; padding: 13px 16px 13px 42px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333 !important; font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-  
-  .form-input:placeholder-shown { padding-left: 42px; }
+  .form-input { width: 100%; padding: 13px 16px 13px 42px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333 !important; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
   .form-input:focus, .form-input:not(:placeholder-shown) { padding-left: 16px; }
   .form-input:focus + .icon, .form-input:not(:placeholder-shown) + .icon { opacity: 0; transform: translateY(-50%) translateX(-15px); }
 
-  .form-select { width: 100%; padding: 13px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; font-family: 'DM Sans', sans-serif; cursor: pointer; }
-  .form-textarea { width: 100%; padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; min-height: 100px; }
+  .form-select { width: 100%; padding: 13px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; }
+  .form-textarea { width: 100%; padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; min-height: 100px; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .upload-area { border: 2px dashed var(--border); border-radius: 14px; padding: 36px; text-align: center; cursor: pointer; position: relative; }
-  #imageInput { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
-  .btn-submit { padding: 15px 36px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+  
+  /* 업로드 영역 (Update 버전 스타일) */
+  .upload-area { border: 2px dashed var(--border); border-radius: 14px; padding: 24px; text-align: center; cursor: pointer; position: relative; transition: 0.3s; }
+  .upload-area:hover { border-color: var(--accent); background: #fffcfc; }
+  .multiple-preview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
+  .preview-box { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
+  
+  .btn-submit { padding: 15px 36px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+  .btn-submit:hover { background: #e03131; transform: translateY(-2px); }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-wrap">
   <h1 class="page-title">음식점 등록 🏪</h1>
-  <p class="page-subtitle">새로운 맛집을 등록해보세요.</p>
+  <p class="page-subtitle">새로운 맛집의 정보를 입력해주세요.</p>
 
   <div class="form-card">
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div class="form-section-title">📋 기본 정보</div>
-
       <div class="form-group">
         <label>음식점 이름 <span class="required">*</span></label>
         <div class="input-wrap">
-          <input type="text" name="name" class="form-input" placeholder="음식점 이름을 입력하세요" required value="{{ form_data.name|default:'' }}">
+          <input type="text" name="name" class="form-input" placeholder="음식점 이름을 입력하세요" required value="{{ form_data.name|default:'' }}" autocomplete="off">
           <span class="icon">🏪</span>
         </div>
       </div>
@@ -103,27 +106,30 @@
         </div>
       </div>
 
+      <div class="form-section-title">📷 사진 등록 (최대 10장)</div>
       <div class="form-group">
-        <label>웹사이트</label>
-        <div class="input-wrap">
-          <input type="url" name="website" class="form-input" placeholder="https://..." value="{{ form_data.website|default:'' }}">
-          <span class="icon">🌐</span>
+        <label>메인 대표 사진</label>
+        <div class="upload-area">
+          <input type="file" name="thumbnail" accept="image/*" id="thumbInput" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer;">
+          <div id="thumbText">🖼️ 대표 사진 등록하기</div>
+          <div id="thumbPreviewBox" style="display:none; margin-top:10px;">
+            <img id="thumbPreviewImg" src="" style="width:100px; height:100px; border-radius:10px; object-fit:cover;">
+          </div>
         </div>
       </div>
 
-      <div class="form-section-title">📷 대표 사진</div>
-      <div class="upload-area" id="uploadArea">
-        <input type="file" name="thumbnail" accept="image/*" id="imageInput">
-        <div class="upload-icon">🖼️</div>
-        <div class="upload-text">클릭하거나 이미지를 드래그하세요</div>
-      </div>
-      <div class="image-preview" id="imagePreview" style="display:none; margin-top:15px;">
-        <img id="previewImg" src="" style="width:100%; border-radius:12px;">
+      <div class="form-group" style="margin-top:20px;">
+        <label>상세 소개 사진 (추가 가능)</label>
+        <div class="upload-area">
+          <input type="file" name="additional_images" accept="image/*" multiple id="multiInput" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer;">
+          <div>📸 상세 사진 등록 (최대 10장)</div>
+        </div>
+        <div class="multiple-preview" id="multiPreview"></div>
       </div>
 
-      <div class="form-submit" style="margin-top:30px; display:flex; gap:10px;">
-        <button type="submit" class="btn-submit">등록하기</button>
-        <a href="/restaurants/" style="padding:15px; background:#eee; border-radius:12px; text-decoration:none; color:#666; font-weight:600;">취소</a>
+      <div class="form-submit" style="margin-top:40px; display:flex; gap:12px;">
+        <button type="submit" class="btn-submit" style="flex:2;">음식점 등록 완료</button>
+        <a href="/restaurants/" style="flex:1; padding:15px; background:#f1f3f5; border-radius:12px; text-decoration:none; color:#495057; font-weight:600; text-align:center;">취소</a>
       </div>
     </form>
   </div>
@@ -132,17 +138,42 @@
 
 {% block extra_js %}
 <script>
-document.getElementById('imageInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      document.getElementById('previewImg').src = ev.target.result;
-      document.getElementById('imagePreview').style.display = 'block';
-      document.getElementById('uploadArea').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  }
-});
+  // 1. 대표 사진 미리보기
+  document.getElementById('thumbInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById('thumbPreviewImg').src = ev.target.result;
+        document.getElementById('thumbPreviewBox').style.display = 'block';
+        document.getElementById('thumbText').innerText = "✅ 선택된 사진";
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // 2. 상세 사진 다중 미리보기
+  document.getElementById('multiInput').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const previewContainer = document.getElementById('multiPreview');
+    previewContainer.innerHTML = '';
+
+    if (files.length > 10) {
+      alert("상세 사진은 최대 10장까지만 가능합니다.");
+      this.value = "";
+      return;
+    }
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = document.createElement('img');
+        img.src = ev.target.result;
+        img.className = 'preview-box';
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
 </script>
 {% endblock %}
