@@ -5,7 +5,6 @@
 
 {% block extra_css %}
 <style>
-  /*  */
   .detail-container { max-width: 1200px; margin: 40px auto; padding: 0 24px; }
   .info-card { background: white; border: 1px solid #ddd; border-radius: 16px; padding: 30px; margin-bottom: 20px; }
   .rating-summary { display: flex; align-items: center; gap: 40px; padding: 20px; background: #f9f9f9; border-radius: 12px; }
@@ -13,8 +12,15 @@
   .bar-fill { height: 100%; background: #F59E0B; transition: width 0.5s ease; }
   .btn-fav.active { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
   
-  /* VS Code CSS 에러 방지를 위한 클래스 방식 */
-  .progress-inner { width: 0; height: 100%; background: #F59E0B; }
+  /* 다중 이미지 갤러리 스타일 */
+  .image-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 30px; scrollbar-width: thin; }
+  .gallery-item { width: 150px; height: 150px; flex-shrink: 0; border-radius: 12px; object-fit: cover; border: 1px solid #eee; }
+
+  /* 관리자/수정 버튼 스타일 */
+  .btn-delete-admin { width: 100%; padding: 12px; background: #fa5252; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+  .btn-delete-admin:hover { background: #e03131; }
+  .btn-edit { padding: 8px 16px; background: #f1f3f5; color: #495057; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s; }
+  .btn-edit:hover { background: #e9ecef; }
 </style>
 {% endblock %}
 
@@ -24,7 +30,13 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:20px;">
       <div>
         <span style="color:var(--accent); font-weight:700;">{{ restaurant.category.name|default:"음식점" }}</span>
-        <h1 style="font-size:40px; margin:10px 0;">{{ restaurant.name }}</h1>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <h1 style="font-size:40px; margin:10px 0;">{{ restaurant.name }}</h1>
+            
+            {% if user == restaurant.owner or user.is_superuser %}
+                <a href="{% url 'restaurants:update' restaurant.pk %}" class="btn-edit">✏️ 정보 수정</a>
+            {% endif %}
+        </div>
         <p style="color:#666;">📍 {{ restaurant.address }}</p>
       </div>
       {% if user.is_authenticated %}
@@ -35,7 +47,7 @@
 
   <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:30px; margin-top:30px;">
     <div class="main-content" style="grid-column: span 2;">
-      <div style="width:100%; height:450px; border-radius:20px; overflow:hidden; margin-bottom:30px; border: 1px solid #eee;">
+      <div style="width:100%; height:450px; border-radius:20px; overflow:hidden; margin-bottom:15px; border: 1px solid #eee;">
         {% if restaurant.thumbnail %}
           <img src="{{ restaurant.thumbnail.url }}" style="width:100%; height:100%; object-fit:cover;" alt="식당 이미지">
         {% else %}
@@ -43,9 +55,16 @@
         {% endif %}
       </div>
 
+      {% if restaurant.additional_images.all %}
+      <div class="image-gallery">
+          {% for img_obj in restaurant.additional_images.all %}
+            <img src="{{ img_obj.image.url }}" class="gallery-item" alt="상세 이미지">
+          {% endfor %}
+      </div>
+      {% endif %}
+
       <div class="info-card">
         <h3 style="margin-bottom:20px; font-weight: 700;">매장 상세정보</h3>
-        
         <div class="rating-summary">
           <div style="text-align:center; min-width:100px;">
             <div style="font-size:48px; font-weight:800; color:#F59E0B;">{{ restaurant.avg_rating|floatformat:1|default:"0.0" }}</div>
@@ -63,14 +82,13 @@
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px; font-size:13px;">
               <span style="width:15px; font-weight: 600;">{{ item.star }}</span>
               <div class="bar-bg">
-                <div class="bar-fill" style="--bar-width: {{ item.pct|default:0 }}%; width: var(--bar-width);"></div>
+                <div class="bar-fill" style="width: {{ item.pct|default:0 }}%;"></div>
               </div>
               <span style="width:30px; text-align:right; color:#888;">{{ item.count|default:0 }}</span>
             </div>
             {% endfor %}
           </div>
         </div>
-        
         <p style="white-space:pre-wrap; margin-top:25px; line-height:1.8; color:#444;">{{ restaurant.description|default:"매장 소개 내용이 아직 등록되지 않았습니다." }}</p>
       </div>
 
@@ -87,6 +105,13 @@
               </span>
             </div>
             <p style="margin:10px 0; line-height:1.6; color:#333;">{{ review.content }}</p>
+            
+            {% if review.image %}
+            <div style="margin: 15px 0;">
+                <img src="{{ review.image.url }}" style="max-width: 250px; border-radius: 12px; border: 1px solid #eee;" alt="리뷰 사진">
+            </div>
+            {% endif %}
+
             <small style="color:#bbb;">{{ review.created_at|date:"Y.m.d" }}</small>
           </div>
         {% empty %}
@@ -105,18 +130,23 @@
           <p><strong style="color:#333;">📞 전화번호</strong><br>{{ restaurant.phone|default:"정보없음" }}</p>
           <p><strong style="color:#333;">⏰ 영업시간</strong><br>{{ restaurant.hours|default:"정보없음" }}</p>
         </div>
+        
         <div style="margin-top:30px;">
           <button class="btn-fav {% if is_favorite %}active{% endif %}" 
-                  id="favBtn"
-                  onclick="toggleFav('{{ restaurant.pk }}', this)" 
+                  id="favBtn" onclick="toggleFav('{{ restaurant.pk }}', this)" 
                   style="width:100%; padding:15px; border:1.5px solid #ff4d4f; border-radius:14px; cursor:pointer; font-weight:700; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            {% if is_favorite %}
-              <span id="favText">❤️ 저장됨</span>
-            {% else %}
-              <span id="favText">🤍 저장하기</span>
-            {% endif %}
+            <span id="favText">{% if is_favorite %}❤️ 저장됨{% else %}🤍 저장하기{% endif %}</span>
           </button>
         </div>
+
+        {% if user.is_superuser %}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+          <p style="color: #fa5252; font-size: 13px; font-weight: 700; margin-bottom: 8px;">운영자 도구 (폐업 관리)</p>
+          <button onclick="deleteRestaurant()" class="btn-delete-admin">
+            🗑️ 식당 삭제하기
+          </button>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -125,22 +155,14 @@
 
 {% block extra_js %}
 <script>
-  /**
-   * 
-   * 즐겨찾기 토글 함수
-   */
   function toggleFav(id, btn) {
     const textSpan = btn.querySelector('#favText');
-    
     fetch(`/favorites/toggle/${id}/`, {
       method: 'POST',
-      headers: { 
-        'X-CSRFToken': '{{ csrf_token }}', 
-        'Content-Type': 'application/json' 
-      }
+      headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
     })
     .then(response => {
-      if (!response.ok) throw new Error('로그인이 필요하거나 잘못된 요청입니다.');
+      if (!response.ok) throw new Error('로그인이 필요합니다.');
       return response.json();
     })
     .then(data => {
@@ -152,9 +174,37 @@
         textSpan.innerHTML = '🤍 저장하기';
       }
     })
-    .catch(error => {
-      alert(error.message);
-    });
+    .catch(error => alert(error.message));
   }
+
+  function deleteRestaurant() {
+    if (confirm('최고 관리자 권한으로 삭제를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = "{% url 'restaurants:delete' restaurant.pk %}";
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrfmiddlewaretoken';
+      csrfInput.value = '{{ csrf_token }}';
+      form.appendChild(csrfInput);
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const storeData = {
+      id: "{{ restaurant.pk }}",
+      name: "{{ restaurant.name }}",
+      category: "{{ restaurant.category.name|default:'음식점' }}",
+      img: "{% if restaurant.thumbnail %}{{ restaurant.thumbnail.url }}{% else %}https://via.placeholder.com/150?text=No+Image{% endif %}",
+      address: "{{ restaurant.address }}"
+    };
+    let recentStores = JSON.parse(localStorage.getItem('recentStores')) || [];
+    recentStores = recentStores.filter(item => item.id !== storeData.id);
+    recentStores.unshift(storeData);
+    if (recentStores.length > 10) recentStores.pop();
+    localStorage.setItem('recentStores', JSON.stringify(recentStores));
+  });
 </script>
 {% endblock %}

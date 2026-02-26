@@ -65,3 +65,16 @@ class Restaurant(models.Model):
 
     def __str__(self):
         return self.name
+    
+    # 사진 다중 등록 준비
+class RestaurantImage(models.Model):
+    restaurant = models.ForeignKey(
+        Restaurant, 
+        related_name='additional_images', # 이 이름으로 상세페이지에서 불러옵니다
+        on_delete=models.CASCADE
+    )
+    image = models.ImageField(upload_to="restaurants/gallery/")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.restaurant.name} - Image"

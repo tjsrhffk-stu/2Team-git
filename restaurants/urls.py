@@ -4,12 +4,22 @@ from . import views
 app_name = "restaurants"
 
 urlpatterns = [
+    # 1. 목록 및 검색
     path("", views.restaurant_list, name="list"),
-    path("map/", views.restaurant_map, name="map"),
+    
+    # 2. 음식점 등록 (중복 제거 및 이름 통일)
     path("create/", views.restaurant_create, name="create"),
+    
+    # 3. 지도 보기
+    path("map/", views.restaurant_map, name="map"),
+    
+    # 4. 상세 정보 (상세 페이지가 다른 문자열 경로보다 아래에 있는 것이 안전합니다)
     path("<int:pk>/", views.restaurant_detail, name="detail"),
-
-    # ✅ 사장 전용 수정/삭제
-    path("<int:pk>/edit/", views.restaurant_edit, name="edit"),
+    
+    # 5. [신규] 음식점 수정 (✅ 사장 전용 업데이트)
+    # ⚠️ 주의: views.py에 구현된 함수명에 따라 'update' 또는 'edit'으로 맞춰주세요.
+    path("<int:pk>/update/", views.restaurant_update, name="update"),
+    
+    # 6. 음식점 삭제 (폐업 관리 / ✅ 사장 전용)
     path("<int:pk>/delete/", views.restaurant_delete, name="delete"),
 ]

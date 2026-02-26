@@ -3,15 +3,13 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .models import Restaurant, Category
-
+from .models import Restaurant, Category, RestaurantImage  # RestaurantImage 모델 추가 확인 필요
 
 def _is_owner_user(user) -> bool:
     try:
         return user.is_authenticated and hasattr(user, "profile") and user.profile.user_type == "OWNER"
     except Exception:
         return False
-
 
 # 1. 음식점 목록
 def restaurant_list(request):
@@ -61,7 +59,7 @@ def restaurant_list(request):
     return render(request, "restaurants/list.html", context)
 
 
-# 2. 음식점 상세
+# 2. 음식점 상세 (pk 인자 사용)
 def restaurant_detail(request, pk):
     restaurant = get_object_or_404(
         Restaurant.objects.annotate(
@@ -115,7 +113,7 @@ def restaurant_detail(request, pk):
 def restaurant_create(request):
     if not _is_owner_user(request.user):
         messages.error(request, "사장님 계정만 식당 등록이 가능합니다.")
-        return redirect("/restaurants/")
+        return redirect("restaurants:list")
 
     if not Category.objects.exists():
         default_categories = ['한식', '중식', '일식', '양식', '카페', '패스트푸드', '기타']
@@ -153,29 +151,30 @@ def restaurant_create(request):
 
         restaurant.save()
         messages.success(request, f'"{name}" 등록 성공! 🎉')
-        return redirect(f"/restaurants/{restaurant.pk}/")
+        return redirect("restaurants:detail", pk=restaurant.pk)
 
     return render(request, "restaurants/create.html", {"categories": categories, "form_data": {}})
 
 
-# ✅ 4. 음식점 수정 (사장 + 내 소유 식당만)
+# 4. 지도 페이지
+def restaurant_map(request):
+    return render(request, 'Maps_Api.html', {'restaurants': Restaurant.objects.all()})
+
+
+# 5. 음식점 수정 (본인 혹은 최고관리자)
 @login_required
-def restaurant_edit(request, pk):
-    if not _is_owner_user(request.user):
-        messages.error(request, "사장님 계정만 수정이 가능합니다.")
-        return redirect("/restaurants/")
-
+def restaurant_update(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
-
-    if restaurant.owner_id != request.user.id:
-        messages.error(request, "내가 등록한 식당만 수정할 수 있어요.")
-        return redirect(f"/restaurants/{restaurant.pk}/")
+    
+    # 본인 식당이 아니면서 슈퍼유저도 아닌 경우 차단
+    if restaurant.owner != request.user and not request.user.is_superuser:
+        messages.error(request, "수정 권한이 없습니다.")
+        return redirect('restaurants:detail', pk=pk)
 
     categories = Category.objects.all()
 
     if request.method == "POST":
         restaurant.name = request.POST.get("name", "").strip()
-        category_input = request.POST.get("category", "").strip()
         restaurant.address = request.POST.get("address", "").strip()
         restaurant.phone = request.POST.get("phone", "").strip()
         restaurant.description = request.POST.get("description", "").strip()
@@ -183,53 +182,52 @@ def restaurant_edit(request, pk):
         restaurant.closed_days = request.POST.get("closed_days", "").strip()
         restaurant.website = request.POST.get("website", "").strip()
 
-        thumb = request.FILES.get("thumbnail")
-        if thumb:
-            restaurant.thumbnail = thumb
-
-        if not restaurant.name or not restaurant.address:
-            messages.error(request, "필수 항목을 입력해주세요.")
-            return render(
-                request,
-                "restaurants/edit.html",
-                {"restaurant": restaurant, "categories": categories}
-            )
-
+        category_input = request.POST.get("category", "").strip()
         if category_input:
             if category_input.isdigit():
                 restaurant.category = Category.objects.filter(pk=category_input).first()
             else:
                 restaurant.category = Category.objects.filter(name=category_input).first()
 
+        if request.FILES.get("thumbnail"):
+            restaurant.thumbnail = request.FILES.get("thumbnail")
+
+        # 주소 변경 대비 좌표 초기화
+        restaurant.lat, restaurant.lng = None, None
         restaurant.save()
-        messages.success(request, "수정이 완료됐어요 ✅")
-        return redirect(f"/restaurants/{restaurant.pk}/")
 
-    return render(request, "restaurants/edit.html", {"restaurant": restaurant, "categories": categories})
+        # 상세 사진 다중 등록 (최대 10개)
+        additional_images = request.FILES.getlist('additional_images')
+        current_count = restaurant.additional_images.count()
+        for img in additional_images:
+            if current_count < 10:
+                RestaurantImage.objects.create(restaurant=restaurant, image=img)
+                current_count += 1
+
+        messages.success(request, "성공적으로 수정되었습니다. ✅")
+        return redirect('restaurants:detail', pk=pk)
+
+    return render(request, "restaurants/update.html", {"restaurant": restaurant, "categories": categories})
 
 
-# ✅ 5. 음식점 삭제 (사장 + 내 소유 식당만)
+# 6. 음식점 삭제 (본인 혹은 최고관리자)
 @login_required
 def restaurant_delete(request, pk):
-    if not _is_owner_user(request.user):
-        messages.error(request, "사장님 계정만 삭제가 가능합니다.")
-        return redirect("/restaurants/")
-
     restaurant = get_object_or_404(Restaurant, pk=pk)
 
-    if restaurant.owner_id != request.user.id:
-        messages.error(request, "내가 등록한 식당만 삭제할 수 있어요.")
-        return redirect(f"/restaurants/{restaurant.pk}/")
+    # 본인 식당이거나 슈퍼유저인 경우만 삭제 허용
+    if restaurant.owner != request.user and not request.user.is_superuser:
+        messages.error(request, "삭제 권한이 없습니다.")
+        return redirect('restaurants:detail', pk=pk)
 
     if request.method == "POST":
         name = restaurant.name
         restaurant.delete()
         messages.success(request, f'"{name}" 삭제 완료 🗑️')
+        
+        # 삭제 후 슈퍼유저는 목록으로, 사장님은 마이페이지로 이동 (선택 가능)
+        if request.user.is_superuser:
+            return redirect('restaurants:list')
         return redirect("/users/mypage/")
 
-    return render(request, "restaurants/confirm_delete.html", {"restaurant": restaurant})
-
-
-# 6. 지도 페이지
-def restaurant_map(request):
-    return render(request, 'Maps_Api.html', {'restaurants': Restaurant.objects.all()})
+    return render(request, 'restaurants/restaurant_confirm_delete.html', {'restaurant': restaurant})

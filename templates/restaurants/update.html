@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ restaurant.name }} 수정 — LocalEats{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* --- 오리지널 디자인 & 애니메이션 유지 --- */
+  .page-wrap { max-width: 720px; margin: 0 auto; animation: fadeUp 0.5s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .page-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; margin-bottom: 8px; }
+  .page-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 36px; }
+  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px; box-shadow: var(--shadow); }
+  .form-section-title { font-size: 13px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .form-section-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+  .required { color: var(--accent); }
+
+  /* 입력창 아이콘 애니메이션 */
+  .input-wrap { position: relative; }
+  .input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; transition: all 0.2s ease; opacity: 0.7; z-index: 2; }
+  .form-input { width: 100%; padding: 13px 16px 13px 42px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333 !important; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  
+  .form-input:focus, .form-input:not(:placeholder-shown) { padding-left: 16px; }
+  .form-input:focus + .icon, .form-input:not(:placeholder-shown) + .icon { opacity: 0; transform: translateY(-50%) translateX(-15px); }
+
+  .form-select { width: 100%; padding: 13px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; }
+  .form-textarea { width: 100%; padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; min-height: 100px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  
+  /* 이미지 업로드 영역 커스텀 */
+  .upload-area { border: 2px dashed var(--border); border-radius: 14px; padding: 24px; text-align: center; cursor: pointer; position: relative; transition: 0.3s; }
+  .upload-area:hover { border-color: var(--accent); background: #fffcfc; }
+  .multiple-preview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
+  .preview-box { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
+  
+  .btn-submit { padding: 15px 36px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+  .btn-submit:hover { background: #e03131; transform: translateY(-2px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <h1 class="page-title">정보 수정하기 🛠️</h1>
+  <p class="page-subtitle">{{ restaurant.name }}의 최신 정보를 유지해주세요.</p>
+
+  <div class="form-card">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="form-section-title">📋 기본 정보</div>
+
+      <div class="form-group">
+        <label>음식점 이름 <span class="required">*</span></label>
+        <div class="input-wrap">
+          <input type="text" name="name" class="form-input" placeholder="음식점 이름" required value="{{ restaurant.name }}" autocomplete="off">
+          <span class="icon">🏪</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>카테고리 <span class="required">*</span></label>
+          <select name="category" class="form-select" required>
+            {% for cat in categories %}
+              <option value="{{ cat.pk }}" {% if restaurant.category.pk == cat.pk %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>전화번호</label>
+          <div class="input-wrap">
+            <input type="tel" name="phone" class="form-input" placeholder="02-123-4567" value="{{ restaurant.phone }}">
+            <span class="icon">📞</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>소개</label>
+        <textarea name="description" class="form-textarea" placeholder="음식점 소개...">{{ restaurant.description }}</textarea>
+      </div>
+
+      <div class="form-section-title">📍 위치 정보</div>
+      <div class="form-group">
+        <label>주소 <span class="required">*</span></label>
+        <div class="input-wrap">
+          <input type="text" name="address" class="form-input" placeholder="정확한 주소" required value="{{ restaurant.address }}">
+          <span class="icon">📍</span>
+        </div>
+      </div>
+
+      <div class="form-section-title">🕒 운영 정보</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>영업시간</label>
+          <div class="input-wrap">
+            <input type="text" name="hours" class="form-input" placeholder="09:00 - 22:00" value="{{ restaurant.hours }}">
+            <span class="icon">🕐</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>휴무일</label>
+          <div class="input-wrap">
+            <input type="text" name="closed_days" class="form-input" placeholder="매주 월요일" value="{{ restaurant.closed_days }}">
+            <span class="icon">📅</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section-title">📷 사진 관리 (최대 10장)</div>
+      
+      <div class="form-group">
+        <label>메인 대표 사진</label>
+        <div class="upload-area">
+          <input type="file" name="thumbnail" accept="image/*" id="thumbInput" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer;">
+          <div id="thumbText">🖼️ 대표 사진 변경하기</div>
+          <div id="thumbPreviewBox" style="margin-top:10px; {% if not restaurant.thumbnail %}display:none;{% endif %}">
+            <img id="thumbPreviewImg" src="{% if restaurant.thumbnail %}{{ restaurant.thumbnail.url }}{% endif %}" style="width:100px; height:100px; border-radius:10px; object-fit:cover;">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:20px;">
+        <label>상세 소개 사진 (여러 장 선택 가능)</label>
+        <div class="upload-area">
+          <input type="file" name="additional_images" accept="image/*" multiple id="multiInput" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer;">
+          <div>📸 상세 사진 추가하기 (최대 10장)</div>
+        </div>
+        <div class="multiple-preview" id="multiPreview"></div>
+      </div>
+
+      <div class="form-submit" style="margin-top:40px; display:flex; gap:12px;">
+        <button type="submit" class="btn-submit" style="flex:2;">정보 수정 완료</button>
+        <a href="{% url 'restaurants:detail' restaurant.pk %}" style="flex:1; padding:15px; background:#f1f3f5; border-radius:12px; text-decoration:none; color:#495057; font-weight:600; text-align:center;">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // 1. 대표 사진 미리보기
+  document.getElementById('thumbInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById('thumbPreviewImg').src = ev.target.result;
+        document.getElementById('thumbPreviewBox').style.display = 'block';
+        document.getElementById('thumbText').innerText = "✅ 변경될 사진";
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // 2. 상세 사진 다중 미리보기 (최대 10장)
+  document.getElementById('multiInput').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const previewContainer = document.getElementById('multiPreview');
+    previewContainer.innerHTML = ''; // 초기화
+
+    if (files.length > 10) {
+      alert("상세 사진은 최대 10장까지만 가능합니다.");
+      this.value = "";
+      return;
+    }
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = document.createElement('img');
+        img.src = ev.target.result;
+        img.className = 'preview-box';
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+</script>
+{% endblock %}
