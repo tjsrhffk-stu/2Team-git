@@ -102,6 +102,12 @@
         <p style="white-space:pre-wrap; margin-top:25px; line-height:1.8; color:#444;">{{ restaurant.description|default:"매장 소개 내용이 아직 등록되지 않았습니다." }}</p>
       </div>
 
+          <div class="filter-bar" style="margin-bottom: 20px; display: flex; gap: 8px; border: none; position: static;">
+        <a href="?sort=rating_high" class="chip {% if current_sort == 'rating_high' %}active{% endif %}">⭐ 별점 높은순</a>
+        <a href="?sort=latest" class="chip {% if current_sort == 'latest' %}active{% endif %}">🕐 최신순</a>
+        <a href="?sort=rating_low" class="chip {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+      </div>
+
       <div class="info-card">
         <h3 style="margin-bottom:20px; font-weight: 700;">리뷰 ({{ reviews|length }})</h3>
         {% for review in reviews %}
