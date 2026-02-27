@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}예약 수정{% endblock %}
+
+{% block extra_css %}
+<style>
+  .container { max-width: 960px; margin: 24px auto; padding: 0 24px; }
+  .page-title { font-size: 2rem; margin: 8px 0 16px; }
+  .muted { color: var(--text2); margin: 6px 0; }
+  .form-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .form-row input, .form-row textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h1 class="page-title">예약 수정</h1>
+    <p class="muted">식당: <strong>{{ reservation.restaurant.name }}</strong></p>
+
+    <form method="post" class="card">
+      {% csrf_token %}
+
+      <div class="form-row">
+        <label>예약 날짜/시간</label>
+        <input type="datetime-local" name="reserved_at"
+               value="{{ reservation.reserved_at|date:'Y-m-d\\TH:i' }}" required>
+      </div>
+
+      <div class="form-row">
+        <label>인원</label>
+        <input type="number" name="party_size" min="1" value="{{ reservation.party_size }}" required>
+      </div>
+
+      <div class="form-row">
+        <label>요청사항(선택)</label>
+        <textarea name="request_note" rows="4">{{ reservation.request_note }}</textarea>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">수정 저장</button>
+        <a href="{% url 'users:reservation_my_list' %}" class="btn btn-outline">내 예약</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

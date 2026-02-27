@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}내 예약{% endblock %}
+
+{% block extra_css %}
+<style>
+  .container { max-width: 960px; margin: 24px auto; padding: 0 24px; }
+  .page-title { font-size: 2rem; margin: 8px 0 16px; }
+  .muted { color: var(--text2); margin: 6px 0; }
+  .title { font-size: 1.125rem; font-weight: 700; margin-bottom: 6px; }
+  .row { display: flex; gap: 16px; justify-content: space-between; align-items: flex-start; }
+  .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+  .actions.right { justify-content: flex-end; }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h1 class="page-title">내 예약</h1>
+
+    {% if reservations %}
+      {% for r in reservations %}
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="title">{{ r.restaurant.name }}</div>
+              <div class="muted">
+                예약일시: {{ r.reserved_at|date:"Y-m-d H:i" }} · 인원: {{ r.party_size }}명
+              </div>
+              {% if r.request_note %}
+                <div class="muted">요청: {{ r.request_note }}</div>
+              {% endif %}
+              <div class="muted">상태: <strong>{{ r.get_status_display }}</strong></div>
+            </div>
+
+            <div class="actions right">
+              {% if r.status != "CANCELED" %}
+                <a class="btn btn-outline" href="{% url 'users:reservation_edit' r.id %}">수정</a>
+                <form method="post" action="{% url 'users:reservation_cancel' r.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button class="btn btn-accent" type="submit">취소</button>
+                </form>
+              {% else %}
+                <span class="muted">취소됨</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="muted">아직 예약이 없어요.</p>
+    {% endif %}
+  </div>
+{% endblock %}

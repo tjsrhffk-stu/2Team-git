@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from .reservation_models import Reservation
 
 from .models import CustomerUser, OwnerUser, CustomerProfile, OwnerProfile
 
@@ -86,3 +87,13 @@ try:
     admin.site.unregister(OwnerProfile)
 except admin.sites.NotRegistered:
     pass
+
+# ----------------------------
+# 예약(Reservation) 관리
+# ----------------------------
+@admin.register(Reservation)
+class ReservationAdmin(admin.ModelAdmin):
+    list_display = ("id", "restaurant", "user", "reserved_at", "party_size", "status", "created_at")
+    list_filter = ("status", "restaurant")
+    search_fields = ("user__username", "restaurant__name")
+    ordering = ("-created_at",)
