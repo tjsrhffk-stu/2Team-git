@@ -2,10 +2,14 @@ from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
+from django.conf import settings
 from .models import Restaurant, Category, RestaurantImage
 
-import os
+
+import os,environ
+env = environ.Env()
+environ.Env.read_env()
+
 
 def _extract_form_data(post):
     """기존 팀원이 만든 폼 데이터 추출 함수 유지"""
@@ -129,7 +133,7 @@ def restaurant_update(request, pk):
     old_address = restaurant.address
 
     if not (_is_owner_user(request.user) and restaurant.owner == request.user) and \
-       not request.user.is_staff:
+        not request.user.is_staff:
         messages.error(request, "수정 권한이 없습니다.")
         return redirect("restaurants:detail", pk=pk)
 
