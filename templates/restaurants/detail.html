@@ -56,9 +56,17 @@
         
         <p style="color:#666; margin: 0;">📍 {{ restaurant.address }}</p>
       </div>
-      {% if user.is_authenticated and not user.owner_profile %}
-      <a href="{% url 'reviews:create' restaurant.pk %}" class="btn btn-primary" style="padding:12px 24px; border-radius:12px; font-weight:600;">리뷰 작성</a>
-      {% endif %}
+      
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        {% if user.is_authenticated %}
+        <a class="btn btn-primary" href="{% url 'users:reservation_create' restaurant.id %}" style="padding:12px 24px; border-radius:12px; font-weight:600; background-color: #2b8a3e; border-color: #2b8a3e; color: white;">🗓️ 예약하기</a>
+        {% endif %}
+
+        {% if user.is_authenticated and not user.owner_profile %}
+        <a href="{% url 'reviews:create' restaurant.pk %}" class="btn btn-primary" style="padding:12px 24px; border-radius:12px; font-weight:600;">리뷰 작성</a>
+        {% endif %}
+      </div>
+
     </div>
   </div>
 
@@ -196,7 +204,7 @@
           <p><strong style="color:#333;">☕ 브레이크 타임</strong><br>{{ restaurant.break_time }}</p>
           {% endif %}
           <p><strong style="color:#333;">📅 휴무일</strong><br>{{ restaurant.closed_days|default:"정보없음" }}</p>
-          </div>
+        </div>
         
         <div style="margin-top:30px;">
           <button class="btn-fav {% if is_favorite %}active{% endif %}" id="favBtn" onclick="toggleFav('{{ restaurant.pk }}', this)" style="width:100%; padding:15px; border:1.5px solid #ff4d4f; border-radius:14px; cursor:pointer; font-weight:700; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
