@@ -64,6 +64,11 @@ def restaurant_map(request):
 def restaurant_detail(request, pk):
     """상세 페이지 뷰 - 환경 변수 키 전달 추가"""
     restaurant = get_object_or_404(Restaurant, pk=pk)
+    
+    # ✅ 누락되었던 조회수 증가 로직 복구
+    restaurant.view_count += 1
+    restaurant.save()
+    
     reviews = restaurant.reviews.all().order_by("-created_at")
     total_reviews = reviews.count()
     

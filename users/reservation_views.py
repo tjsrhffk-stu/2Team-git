@@ -74,7 +74,8 @@ def reservation_create(request, restaurant_id):
         )
 
         messages.success(request, "예약이 완료됐어요! (신청 완료)")
-        return redirect("restaurants:detail", restaurant_id=restaurant.id)
+        # ✅ 에러가 났던 리다이렉트 부분 수정 (restaurant_id -> pk)
+        return redirect("restaurants:detail", pk=restaurant.id)
 
     return render(request, "users/reservations/create.html", {"restaurant": restaurant})
 
