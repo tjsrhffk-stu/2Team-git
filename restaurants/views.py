@@ -5,11 +5,17 @@ from django.contrib import messages
 
 from .models import Restaurant, Category, RestaurantImage
 
-import os
+import os, environ
+from django.conf import settings
+
+# ✅ 추가된 부분: env 객체 초기화 (NameError 해결)
+env = environ.Env()
+environ.Env.read_env()
 
 def _extract_form_data(post):
     """기존 팀원이 만든 폼 데이터 추출 함수 유지"""
-    keys = ["name", "category", "phone", "description", "address", "hours", "closed_days", "website"]
+    # ✅ break_time 키가 포함되어 있는지 확인
+    keys = ["name", "category", "phone", "description", "address", "hours", "break_time", "closed_days", "website"]
     if hasattr(post, "get"):
         return {k: (post.get(k, "") or "") for k in keys}
     return {k: "" for k in keys}
@@ -63,12 +69,11 @@ def restaurant_detail(request, pk):
         pct = (count / total_reviews * 100) if total_reviews > 0 else 0
         rating_distribution.append({"star": i, "count": count, "pct": int(pct)})
     
-    # ✅ 수정 포인트: 환경 변수에서 키를 가져와 템플릿에 넘겨줌
     context = {
         "restaurant": restaurant,
         "reviews": reviews,
         "rating_distribution": rating_distribution,
-        "MAP_API_KEY": env('NAVER_CLIENT_ID'), 
+        "MAP_API_KEY": settings.NAVER_CLIENT_ID, 
     }
     
     return render(request, "restaurants/detail.html", context)
@@ -103,6 +108,8 @@ def restaurant_create(request):
             phone=request.POST.get("phone", "").strip(),
             description=request.POST.get("description", "").strip(),
             hours=request.POST.get("hours", "").strip(),
+            # ✅ 추가: 브레이크 타임 저장
+            break_time=request.POST.get("break_time", "").strip(),
             closed_days=request.POST.get("closed_days", "").strip(),
             website=request.POST.get("website", "").strip(),
             thumbnail=request.FILES.get("thumbnail")
@@ -122,10 +129,8 @@ def restaurant_create(request):
 
 @login_required
 def restaurant_update(request, pk):
-    """음식점 수정 뷰 - 기존 구조를 유지하며 주소 변경 로직만 수정"""
+    """음식점 수정 뷰"""
     restaurant = get_object_or_404(Restaurant, pk=pk)
-    
-    # [수정 포인트 1] 기존 주소를 미리 보관
     old_address = restaurant.address
 
     if not (_is_owner_user(request.user) and restaurant.owner == request.user) and \
@@ -138,12 +143,13 @@ def restaurant_update(request, pk):
     if request.method == "POST":
         restaurant.name = request.POST.get("name", "").strip()
         restaurant.phone = request.POST.get("phone", "").strip()
-        
-        # [수정 포인트 2] 주소 값을 먼저 가져옴
         new_address = request.POST.get("address", "").strip()
-        
         restaurant.description = request.POST.get("description", "").strip()
         restaurant.hours = request.POST.get("hours", "").strip()
+        
+        # ✅ 추가: 브레이크 타임 수정 반영
+        restaurant.break_time = request.POST.get("break_time", "").strip()
+        
         restaurant.closed_days = request.POST.get("closed_days", "").strip()
         restaurant.website = request.POST.get("website", "").strip()
 
@@ -154,13 +160,9 @@ def restaurant_update(request, pk):
         if request.FILES.get("thumbnail"):
             restaurant.thumbnail = request.FILES.get("thumbnail")
 
-        # [수정 포인트 3] 무조건 None으로 만들지 않고, 주소가 바뀌었을 때만 초기화
         if old_address != new_address:
             restaurant.address = new_address
             restaurant.lat, restaurant.lng = None, None
-        else:
-            # 주소가 같으면 기존 lat, lng 유지
-            pass
 
         restaurant.save()
 
