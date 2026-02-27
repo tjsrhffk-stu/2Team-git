@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from restaurants.models import Restaurant
 from .models import Profile
@@ -74,7 +75,6 @@ def reservation_create(request, restaurant_id):
         )
 
         messages.success(request, "예약이 완료됐어요! (신청 완료)")
-        # ✅ 에러가 났던 리다이렉트 부분 수정 (restaurant_id -> pk)
         return redirect("restaurants:detail", pk=restaurant.id)
 
     return render(request, "users/reservations/create.html", {"restaurant": restaurant})
@@ -82,7 +82,7 @@ def reservation_create(request, restaurant_id):
 
 # -----------------------------
 # 예약(예약자 기능): 내 예약 목록
-# ✅ 취소(CANCELED)는 목록에서 제외 (그리고 취소 시 delete라 원칙적으로 남지 않음)
+# ✅ 취소(CANCELED)는 목록에서 제외 (취소 시 delete라 원칙적으로 남지 않음)
 # -----------------------------
 @login_required
 def reservation_my_list(request):
@@ -148,23 +148,15 @@ def reservation_edit(request, reservation_id):
 
 
 # -----------------------------
-# 예약(예약자 기능): 예약 취소
-# ✅ 요청대로: 취소하면 DB에서도 행 자체 삭제(delete)
+# 예약(예약자 기능): 예약 취소 (DB에서 완전 삭제)
 # -----------------------------
 @login_required
+@require_POST
 def reservation_cancel_by_customer(request, reservation_id):
     if not _can_book(request):
         return HttpResponseForbidden("로그인한 사용자만 접근할 수 있어요.")
 
     reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
-
-    if request.method != "POST":
-        return redirect("users:reservation_my_list")
-
-    # 이미 취소 상태였던 레코드가 남아있는 경우 대비
-    if reservation.status == Reservation.Status.CANCELED:
-        messages.info(request, "이미 취소된 예약이에요.")
-        return redirect("users:reservation_my_list")
 
     # ✅ DB에서 완전 삭제
     reservation.delete()
@@ -172,11 +164,19 @@ def reservation_cancel_by_customer(request, reservation_id):
     return redirect("users:reservation_my_list")
 
 
+# ✅ (중요) 템플릿/urls에서 보통 쓰는 이름을 맞추기 위한 별칭 함수
+# - 템플릿에서 {% url 'users:reservation_cancel' res.id %} 를 쓰는 경우가 많아서 추가
+@login_required
+@require_POST
+def reservation_cancel(request, reservation_id):
+    return reservation_cancel_by_customer(request, reservation_id)
+
+
 # -----------------------------
 # 사장 기능: 내 식당 예약 목록
 # - OWNER만 가능
 # - 내 식당(restaurant.owner = request.user)에 들어온 예약만 조회
-# ✅ 취소(CANCELED)는 제외 (그리고 취소 시 delete라 남지 않음)
+# ✅ 취소(CANCELED)는 제외 (취소 시 delete라 남지 않음)
 # -----------------------------
 @login_required
 def reservation_owner_list(request):
@@ -193,10 +193,10 @@ def reservation_owner_list(request):
 
 
 # -----------------------------
-# 사장 기능: 예약 취소
-# ✅ 요청대로: 취소하면 DB에서도 행 자체 삭제(delete)
+# 사장 기능: 예약 취소 (DB에서 완전 삭제)
 # -----------------------------
 @login_required
+@require_POST
 def reservation_cancel_by_owner(request, reservation_id):
     if not _require_owner(request):
         return HttpResponseForbidden("사장만 접근할 수 있어요.")
@@ -207,15 +207,15 @@ def reservation_cancel_by_owner(request, reservation_id):
         restaurant__owner=request.user,
     )
 
-    if request.method != "POST":
-        return redirect("users:reservation_owner_list")
-
-    # 이미 취소 상태였던 레코드가 남아있는 경우 대비
-    if reservation.status == Reservation.Status.CANCELED:
-        messages.info(request, "이미 취소된 예약이에요.")
-        return redirect("users:reservation_owner_list")
-
     # ✅ DB에서 완전 삭제
     reservation.delete()
     messages.success(request, "예약을 취소(삭제) 처리했어요.")
     return redirect("users:reservation_owner_list")
+
+
+# ✅ (중요) 템플릿/urls에서 보통 쓰는 이름을 맞추기 위한 별칭 함수
+# - 템플릿에서 {% url 'users:reservation_owner_cancel' r.id %} 를 쓰는 경우가 많아서 추가
+@login_required
+@require_POST
+def reservation_owner_cancel(request, reservation_id):
+    return reservation_cancel_by_owner(request, reservation_id)

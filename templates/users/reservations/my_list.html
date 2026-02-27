@@ -35,7 +35,10 @@
             <div class="actions right">
               {% if r.status != "CANCELED" %}
                 <a class="btn btn-outline" href="{% url 'users:reservation_edit' r.id %}">수정</a>
-                <form method="post" action="{% url 'users:reservation_cancel' r.id %}" style="display:inline;">
+                <form method="post"
+                      action="{% url 'users:reservation_cancel' r.id %}"
+                      style="display:inline;"
+                      onsubmit="return confirm('정말 이 예약을 취소할까요? 취소하면 되돌릴 수 없어요.');">
                   {% csrf_token %}
                   <button class="btn btn-accent" type="submit">취소</button>
                 </form>
