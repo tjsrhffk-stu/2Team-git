@@ -37,10 +37,12 @@ class Restaurant(models.Model):
     view_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # models.py 수정안
     def save(self, *args, **kwargs):
-        # 주소가 있고 좌표가 없을 때 네이버 API를 통해 좌표 자동 변환
-        if self.address and not (self.lat and self.lng):
+        # 주소는 있는데 위도나 경도 중 하나라도 비어있다면 API 호출
+        if self.address and (self.lat is None or self.lng is None):
             self.get_coords_from_naver()
+        
         super().save(*args, **kwargs)
 
     def get_coords_from_naver(self):

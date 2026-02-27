@@ -149,7 +149,7 @@
           </p>
 
           <form method="post" action="/restaurants/{{ restaurant.pk }}/delete/"
-                onsubmit="return confirm('관리자 권한으로 삭제를 진행하시겠습니까?\\n이 작업은 되돌릴 수 없습니다.');">
+                onsubmit="return confirm('관리자 권한으로 삭제를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');">
             {% csrf_token %}
             <button type="submit" class="btn-delete-admin">
               🗑️ 식당 삭제하기
