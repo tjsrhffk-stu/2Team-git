@@ -2,11 +2,20 @@ from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
+from django.conf import settings
 from .models import Restaurant, Category, RestaurantImage
 
-import os, environ
-from django.conf import settings
+# --- 수정 및 병합된 임포트 섹션 ---
+import os
+import environ
+
+# 메인 브랜치의 설정과 feature 브랜치의 environ 설정을 통합
+env = environ.Env()
+# .env 파일이 존재하는 경우 읽어옴 (settings.py에서 이미 처리했다면 생략 가능하지만 유지해도 무방)
+env_file = os.path.join(settings.BASE_DIR, '.env')
+if os.path.exists(env_file):
+    environ.Env.read_env(env_file)
+# --------------------------------
 
 def _extract_form_data(post):
     """기존 팀원이 만든 폼 데이터 추출 함수 유지"""
@@ -127,7 +136,7 @@ def restaurant_update(request, pk):
     old_address = restaurant.address
 
     if not (_is_owner_user(request.user) and restaurant.owner == request.user) and \
-       not request.user.is_staff:
+        not request.user.is_staff:
         messages.error(request, "수정 권한이 없습니다.")
         return redirect("restaurants:detail", pk=pk)
 

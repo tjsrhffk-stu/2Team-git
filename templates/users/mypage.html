@@ -336,6 +336,12 @@
             </div>
 
           {% elif active_tab == 'history' %}
+            <!-- ✅ 4점 이상만 ‘방문한 맛집’으로 표시 -->
+            <div class="empty" style="margin-bottom:14px;">
+              ⭐ 방문한 맛집은 <b>{{ history_min_rating }}점 이상</b> 리뷰를 남긴 식당만 표시돼요.
+              <span style="opacity:.75;">(전체 리뷰는 ‘내 리뷰’ 탭에서 확인)</span>
+            </div>
+
             <div class="list">
               {% if history %}
                 {% for h in history %}
@@ -350,7 +356,8 @@
                     <div class="meta">
                       <h3>{{ h.restaurant.name }}</h3>
                       <div class="sub">
-                        방문일: <b>{{ h.visited_at|date:"Y-m-d" }}</b>
+                        방문일: <b>{{ h.visited_at|date:"Y-m-d" }}</b><br>
+                        내 별점: <b>★ {{ h.my_rating }}</b>/5
                       </div>
                     </div>
                     <div class="actions">

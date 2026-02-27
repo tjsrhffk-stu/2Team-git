@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import OuterRef, Subquery  # ✅ 추가
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -290,7 +291,8 @@ def logout_view(request):
 def mypage_view(request):
     tab = request.GET.get("tab", "mypage").strip().lower()
 
-    allowed_tabs = {"mypage", "reservations", "visited", "favorites", "reviews"}
+    # ✅ 템플릿은 tab=history를 사용 중이므로 history를 허용해야 함
+    allowed_tabs = {"mypage", "reservations", "history", "visited", "favorites", "reviews"}
     if tab not in allowed_tabs:
         tab = "mypage"
 
@@ -320,12 +322,45 @@ def mypage_view(request):
     if is_owner:
         my_restaurants = Restaurant.objects.filter(owner=request.user).order_by("-id")
 
+    # ✅ 방문한 맛집(= 내 리뷰 중 4점 이상만)
+    # - 내 것만: author=request.user
+    # - 같은 식당에 리뷰가 여러 개면 최신 리뷰(created_at 기준)를 사용
+    history_min_rating = 4
+
+    latest_review_qs = (
+        Review.objects
+        .filter(
+            author=request.user,
+            rating__gte=history_min_rating,
+            restaurant=OuterRef("pk"),
+        )
+        .order_by("-created_at")
+    )
+
+    visited_qs = (
+        Restaurant.objects
+        .annotate(
+            visited_at=Subquery(latest_review_qs.values("created_at")[:1]),
+            my_rating=Subquery(latest_review_qs.values("rating")[:1]),
+        )
+        .filter(visited_at__isnull=False)
+        .order_by("-my_rating", "-visited_at")
+    )
+
+    history = [
+        {"restaurant": r, "visited_at": r.visited_at, "my_rating": r.my_rating}
+        for r in visited_qs
+    ]
+
     context = {
         "active_tab": tab,
         "favorites": favorites,
         "favorite_count": favorite_count,
         "reviews": reviews,
         "my_restaurants": my_restaurants,  # ✅ 추가
+        "is_owner": is_owner,              # ✅ 템플릿에서 사용 중
+        "history": history,                # ✅ 방문한 맛집
+        "history_min_rating": history_min_rating,
     }
     return render(request, "users/mypage.html", context)
 
