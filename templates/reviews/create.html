@@ -228,6 +228,18 @@
                 </div>
                 <p style="font-size: 14px; line-height: 1.6; color: var(--text); margin: 0;">{{ rev.content }}</p>
                 <div style="margin-top: 10px; font-size: 12px; color: var(--text2);">{{ rev.created_at|date:"Y.m.d" }}</div>
+
+                <!-- ✅ 사장님 답글 표시 -->
+                {% if rev.reply %}
+                  <div style="margin-top:12px; padding:12px 16px; background:#fff8f5; border-left:3px solid var(--accent); border-radius:0 10px 10px 0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                      <strong style="font-size:13px; color:var(--accent);">🏪 사장님 답글</strong>
+                      <small style="color:#bbb;">{{ rev.reply.created_at|date:"Y.m.d" }}</small>
+                    </div>
+                    <p style="font-size:13px; line-height:1.6; color:#444; margin:0;">{{ rev.reply.content }}</p>
+                  </div>
+                {% endif %}
+
             </div>
         {% empty %}
             <p style="text-align: center; color: var(--text2); padding: 40px 0;">아직 작성된 리뷰가 없습니다. 첫 리뷰를 남겨보세요!</p>
