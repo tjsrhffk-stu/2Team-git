@@ -94,6 +94,12 @@
         <p style="white-space:pre-wrap; margin-top:25px; line-height:1.8; color:#444;">{{ restaurant.description|default:"매장 소개 내용이 아직 등록되지 않았습니다." }}</p>
       </div>
 
+   <div class="filter-bar" style="margin-bottom: 20px; display: flex; gap: 8px; border: none; position: static;">
+        <a href="?sort=rating_high" class="chip {% if current_sort == 'rating_high' %}active{% endif %}">⭐ 별점 높은순</a>
+        <a href="?sort=latest" class="chip {% if current_sort == 'latest' %}active{% endif %}">🕐 최신순</a>
+        <a href="?sort=rating_low" class="chip {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+      </div>
+
       <div class="info-card">
         <h3 style="margin-bottom:20px; font-weight: 700;">리뷰 ({{ reviews|length }})</h3>
         {% for review in reviews %}
@@ -141,15 +147,17 @@
           </button>
         </div>
 
-        {# ✅ 관리자(staff/superuser)만 삭제 버튼 노출 + POST로 바로 삭제 #}
+        {# ✅ 관리자 도구 #}
         {% if user.is_staff or user.is_superuser or request.user.is_staff or request.user.is_superuser %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
           <p style="color: #fa5252; font-size: 13px; font-weight: 700; margin-bottom: 8px;">
             운영자 도구 (폐업 관리)
           </p>
 
+          {# ✅ 줄바꿈 버그 해결 (백틱 사용) #}
           <form method="post" action="/restaurants/{{ restaurant.pk }}/delete/"
-                onsubmit="return confirm('관리자 권한으로 삭제를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');">
+                onsubmit="return confirm(`관리자 권한으로 삭제를 진행하시겠습니까?
+이 작업은 되돌릴 수 없습니다.`);">
             {% csrf_token %}
             <button type="submit" class="btn-delete-admin">
               🗑️ 식당 삭제하기
@@ -157,6 +165,16 @@
           </form>
         </div>
         {% endif %}
+
+        {# 📍 추가된 지도 영역 (사이드바 하단 빈 공간) #}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+            <h4 style="margin-bottom:15px; font-weight: 700;">📍 위치 안내</h4>
+            <div id="detail-map" style="width:100%; height:250px; border-radius:12px; border: 1px solid #eee; background: #f9f9f9;"></div>
+            <a href="https://map.naver.com/v5/search/{{ restaurant.address|urlencode }}" target="_blank" 
+               style="display: block; margin-top: 10px; font-size: 12px; color: #ff4d4f; text-decoration: none; font-weight: 600;">
+               큰 지도로 보기/길찾기 →
+            </a>
+        </div>
       </div>
     </div>
   </div>
@@ -164,7 +182,11 @@
 {% endblock %}
 
 {% block extra_js %}
+{# 네이버 지도 API 추가 #}
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId={{ MAP_API_KEY }}"></script>
+
 <script>
+  // 1. 즐겨찾기 함수 (기존 유지)
   function toggleFav(id, btn) {
     const textSpan = btn.querySelector('#favText');
     fetch(`/favorites/toggle/${id}/`, {
@@ -188,6 +210,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", function() {
+    // 2. 최근 본 맛집 저장 (기존 유지)
     const storeData = {
       id: "{{ restaurant.pk }}",
       name: "{{ restaurant.name }}",
@@ -200,6 +223,29 @@
     recentStores.unshift(storeData);
     if (recentStores.length > 10) recentStores.pop();
     localStorage.setItem('recentStores', JSON.stringify(recentStores));
+
+    // 3. 상세페이지 지도 로딩 (추가)
+    {% if restaurant.lat and restaurant.lng %}
+    var mapPos = new naver.maps.LatLng({{ restaurant.lat }}, {{ restaurant.lng }});
+    var mapOptions = {
+        center: mapPos,
+        zoom: 16,
+        zoomControl: true,
+        zoomControlOptions: { position: naver.maps.Position.RIGHT_BOTTOM }
+    };
+    var map = new naver.maps.Map('detail-map', mapOptions);
+    new naver.maps.Marker({
+        position: mapPos,
+        map: map,
+        icon: {
+            content: '<div style="background:#ff4d4f; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow:0 0 5px rgba(0,0,0,0.3);"></div>',
+            anchor: new naver.maps.Point(8, 8)
+        }
+    });
+    {% else %}
+    document.getElementById('detail-map').innerHTML = 
+        '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#999; font-size:12px;">좌표 정보가 없습니다.</div>';
+    {% endif %}
   });
 </script>
 {% endblock %}

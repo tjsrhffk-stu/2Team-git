@@ -5,6 +5,7 @@ from django.contrib import messages
 
 from .models import Restaurant, Category, RestaurantImage
 
+import os
 
 def _extract_form_data(post):
     """기존 팀원이 만든 폼 데이터 추출 함수 유지"""
@@ -51,20 +52,26 @@ def restaurant_map(request):
 
 
 def restaurant_detail(request, pk):
-    """상세 페이지 뷰"""
+    """상세 페이지 뷰 - 환경 변수 키 전달 추가"""
     restaurant = get_object_or_404(Restaurant, pk=pk)
     reviews = restaurant.reviews.all().order_by("-created_at")
     total_reviews = reviews.count()
+    
     rating_distribution = []
     for i in range(5, 0, -1):
         count = reviews.filter(rating=i).count()
         pct = (count / total_reviews * 100) if total_reviews > 0 else 0
         rating_distribution.append({"star": i, "count": count, "pct": int(pct)})
-    return render(request, "restaurants/detail.html", {
+    
+    # ✅ 수정 포인트: 환경 변수에서 키를 가져와 템플릿에 넘겨줌
+    context = {
         "restaurant": restaurant,
         "reviews": reviews,
         "rating_distribution": rating_distribution,
-    })
+        "MAP_API_KEY": env('NAVER_CLIENT_ID'), 
+    }
+    
+    return render(request, "restaurants/detail.html", context)
 
 
 @login_required
