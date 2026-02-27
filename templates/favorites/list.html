@@ -8,27 +8,22 @@
   .fav-wrapper { max-width: 1200px; margin: 40px auto; display: flex; gap: 40px; padding: 0 20px; }
   .sidebar { width: 240px; flex-shrink: 0; }
   .sidebar-menu { list-style: none; padding: 0; position: sticky; top: 100px; }
-  
-  /* 사이드바 아이템 스타일 수정: a 태그 대응 */
   .sidebar-item { padding: 12px 0; border-bottom: 1px solid #eee; color: #666; font-size: 15px; text-decoration: none; display: block; transition: 0.2s; }
   .sidebar-item:hover { color: var(--accent); padding-left: 5px; }
   .sidebar-item.active { color: #1a1a1a; font-weight: 700; border-bottom: 2px solid #1a1a1a; }
-  
   .main-content { flex: 1; }
   .favorites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; justify-content: center; }
-
   .fav-card { background: #fff; border: 1.5px solid #eee; border-radius: 15px; overflow: hidden; transition: 0.3s; position: relative; }
   .fav-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
   .card-img { height: 180px; position: relative; background: #f8f9fa; cursor: pointer; }
   .card-img img { width: 100%; height: 100%; object-fit: cover; }
-  
   .fav-remove-btn { position: absolute; top: 12px; right: 12px; border: none; background: white; border-radius: 50%; width: 32px; height: 32px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10; font-size: 16px; }
   .btn-detail { flex: 1; padding: 10px; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; text-align: center; background-color: #D36633; color: #fff !important; }
 
-  /* 상단 퀵 버튼 스타일 */
-  .quick-nav { display: flex; gap: 16px; margin-bottom: 30px; }
-  .quick-btn { flex: 1; padding: 15px; border: 1px solid #eee; border-radius: 12px; text-align: center; text-decoration: none; color: inherit; background: #fff; transition: 0.2s; }
-  .quick-btn:hover { border-color: var(--accent); background: #fffaf8; }
+  /* 필터 및 검색창 스타일 추가 */
+  .btn-filter { padding: 8px 18px; border-radius: 25px; border: 1px solid #eee; background: #f8f9fa; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: 0.2s; color: #666; }
+  .btn-filter.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+  #fav-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(211, 102, 51, 0.1); }
 </style>
 {% endblock %}
 
@@ -44,39 +39,43 @@
   </aside>
 
   <main class="main-content">
-    <div class="quick-nav">
-        <a href="{% url 'favorites:recent' %}" class="quick-btn">
-            <div style="font-size: 1.2rem; margin-bottom: 4px;">🕒</div>
-            <div style="font-size: 0.9rem; font-weight: 600;">최근 본 맛집</div>
-        </a>
-        <a href="{% url 'reviews:my_reviews' %}" class="quick-btn">
-            <div style="font-size: 1.2rem; margin-bottom: 4px;">✍️</div>
-            <div style="font-size: 0.9rem; font-weight: 600;">내가 쓴 리뷰</div>
-        </a>
-    </div>
-
     <div class="page-header mb-4">
       <h1 class="page-title fw-bold">즐겨찾기 ❤️</h1>
     </div>
 
+    <div style="margin-bottom: 30px;">
+        <input type="text" id="fav-search" oninput="searchFavorites()" 
+               placeholder="이름이나 주소로 즐겨찾기 검색..." 
+               style="width: 100%; padding: 14px 20px; border-radius: 15px; border: 1px solid #eee; font-size: 1rem; outline: none; margin-bottom: 15px; transition: 0.3s;">
+
+        <div class="filter-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button onclick="filterFavorites('전체')" class="btn-filter active">전체</button>
+            <button onclick="filterFavorites('한식')" class="btn-filter">한식</button>
+            <button onclick="filterFavorites('일식')" class="btn-filter">일식</button>
+            <button onclick="filterFavorites('중식')" class="btn-filter">중식</button>
+            <button onclick="filterFavorites('양식')" class="btn-filter">양식</button>
+            <button onclick="filterFavorites('카페')" class="btn-filter">카페</button>
+        </div>
+    </div>
+
     {% if favorites %}
-    <div class="mb-4" style="color: #D36633; font-weight: bold;">❤️ {{ favorites|length }}개의 맛집을 저장했어요</div>
+    <div id="fav-count" class="mb-4" style="color: #D36633; font-weight: bold;">❤️ {{ favorites|length }}개의 맛집을 저장했어요</div>
+    
     <div class="favorites-grid">
       {% for fav in favorites %}
       <div class="fav-card" id="fav-{{ fav.restaurant.pk }}">
         <div class="card-img" onclick="location.href='{% url 'restaurants:detail' fav.restaurant.pk %}'">
           {% if fav.restaurant.thumbnail %}
             <img src="{{ fav.restaurant.thumbnail.url }}" alt="{{ fav.restaurant.name }}">
-          {% elif fav.restaurant.image %}
-            <img src="{{ fav.restaurant.image.url }}" alt="{{ fav.restaurant.name }}">
           {% else %}
             <div class="d-flex h-100 align-items-center justify-content-center fs-1">🍽️</div>
           {% endif %}
           <button class="fav-remove-btn" onclick="event.stopPropagation(); removeFav({{ fav.restaurant.pk }})" title="삭제">❤️</button>
         </div>
         <div class="card-body p-3">
+          <span class="badge mb-2" style="background:rgba(211, 102, 51, 0.1); color:#D36633; font-size: 0.7rem;">{{ fav.restaurant.category.name|default:"음식점" }}</span>
           <div class="fw-bold fs-5 mb-1">{{ fav.restaurant.name }}</div>
-          <div class="text-muted small mb-3">📍 {{ fav.restaurant.address|truncatechars:25 }}</div>
+          <div class="text-muted small mb-3">📍 {{ fav.restaurant.address }}</div>
           <div class="d-flex gap-2 border-top pt-3">
             <a href="{% url 'restaurants:detail' fav.restaurant.pk %}" class="btn-detail">상세보기</a>
           </div>
@@ -95,43 +94,63 @@
 
 {% block extra_js %}
 <script>
-/**
- * 즐겨찾기 삭제 함수 (기존 원본 로직)
- */
+// 1. 실시간 검색 로직
+function searchFavorites() {
+    const query = document.getElementById('fav-search').value.toLowerCase();
+    const cards = document.querySelectorAll('.fav-card');
+
+    cards.forEach(card => {
+        const name = card.querySelector('.fw-bold.fs-5').innerText.toLowerCase();
+        const address = card.querySelector('.text-muted.small').innerText.toLowerCase();
+
+        if (name.includes(query) || address.includes(query)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// 2. 카테고리 필터 로직
+function filterFavorites(category) {
+    const cards = document.querySelectorAll('.fav-card');
+    const buttons = document.querySelectorAll('.btn-filter');
+
+    buttons.forEach(btn => {
+        if(btn.innerText === category) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+
+    cards.forEach(card => {
+        const cardCategory = card.querySelector('.badge').innerText.trim();
+        if (category === '전체' || cardCategory === category) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// 3. 기존 삭제 함수
 function removeFav(restaurantId) {
     if (!confirm('즐겨찾기에서 제거할까요?')) return;
-
     fetch(`/favorites/toggle/${restaurantId}/`, {
         method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
     })
-    .then(response => {
-        if (!response.ok) throw new Error('네트워크 응답에 문제가 있습니다.');
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.is_favorite === false) {
             const card = document.getElementById(`fav-${restaurantId}`);
             if (card) {
-                card.style.transition = 'all 0.4s ease';
                 card.style.opacity = '0';
                 card.style.transform = 'scale(0.9)';
-                
                 setTimeout(() => {
                     card.remove();
-                    if (document.querySelectorAll('.fav-card').length === 0) {
-                        location.reload();
-                    }
+                    if (document.querySelectorAll('.fav-card').length === 0) location.reload();
                 }, 400);
             }
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('즐겨찾기 수정 중 오류가 발생했습니다.');
     });
 }
 </script>
