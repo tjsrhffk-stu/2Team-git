@@ -45,8 +45,8 @@ class Restaurant(models.Model):
 
     def get_coords_from_naver(self):
         """네이버 지오코딩 API를 사용하여 주소를 좌표로 변환"""
-        client_id = "3z7t86u9wa"
-        client_secret = "IS2ws9rljq7339ajeMpbkeKMtCe3cxwVEP4jN7V2"
+        client_id = settings.NAVER_CLIENT_ID
+        client_secret = settings.NAVER_CLIENT_SECRET
         endpoint = "https://maps.apigw.ntruss.com/map-geocode/v2/geocode"
         headers = {
             "x-ncp-apigw-api-key-id": client_id, 
