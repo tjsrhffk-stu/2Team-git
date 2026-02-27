@@ -29,6 +29,7 @@ class Restaurant(models.Model):
     hours = models.CharField(max_length=100, blank=True)
     closed_days = models.CharField(max_length=100, blank=True)
     website = models.URLField(blank=True)
+    break_time = models.CharField(max_length=100, blank=True, null=True, help_text="예: 15:00~17:00")
 
     # [위치 및 메타 정보]
     lat = models.DecimalField(max_digits=12, decimal_places=8, null=True, blank=True)
@@ -37,16 +38,18 @@ class Restaurant(models.Model):
     view_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # models.py 수정안
     def save(self, *args, **kwargs):
-        # 주소가 있고 좌표가 없을 때 네이버 API를 통해 좌표 자동 변환
-        if self.address and not (self.lat and self.lng):
+        # 주소는 있는데 위도나 경도 중 하나라도 비어있다면 API 호출
+        if self.address and (self.lat is None or self.lng is None):
             self.get_coords_from_naver()
+        
         super().save(*args, **kwargs)
 
     def get_coords_from_naver(self):
         """네이버 지오코딩 API를 사용하여 주소를 좌표로 변환"""
-        client_id = "3z7t86u9wa"
-        client_secret = "IS2ws9rljq7339ajeMpbkeKMtCe3cxwVEP4jN7V2"
+        client_id = settings.NAVER_CLIENT_ID
+        client_secret = settings.NAVER_CLIENT_SECRET
         endpoint = "https://maps.apigw.ntruss.com/map-geocode/v2/geocode"
         headers = {
             "x-ncp-apigw-api-key-id": client_id, 

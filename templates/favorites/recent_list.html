@@ -2,50 +2,159 @@
 
 {% block title %}최근 본 맛집 — LocalEats{% endblock %}
 
+{% block extra_css %}
+<style>
+    .btn-filter {
+        padding: 8px 18px;
+        border-radius: 25px;
+        border: 1px solid #eee;
+        background: #f8f9fa;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: 0.2s all ease;
+        color: #666;
+    }
+    .btn-filter.active {
+        background: var(--text);
+        color: white;
+        border-color: var(--text);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page fade-up">
-  <h2 style="font-family:'Instrument Serif', serif; font-size:2.5rem; margin-bottom:32px; color:var(--text);">🕒 최근 본 맛집</h2>
-  
-  <div id="recent-list-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+        <h2 style="font-family:'Instrument Serif', serif; font-size:2.5rem; color:var(--text); margin: 0;">🕒 최근 본 맛집</h2>
+        <button onclick="clearAllRecent()" class="btn" style="background-color: var(--accent); color: white; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600;">
+            전체 기록 삭제
+        </button>
     </div>
 
-  <div id="empty-message" style="display:none; text-align:center; padding:100px 0;">
-    <p style="font-size:4rem; margin-bottom:16px;">🔍</p>
-    <p style="color:var(--text2);">최근에 확인한 맛집이 아직 없습니다.</p>
-    <a href="/restaurants/" class="btn btn-primary" style="margin-top:24px;">맛집 보러가기</a>
-  </div>
+<div style="margin-bottom: 20px;">
+    <input type="text" id="recent-search" oninput="searchRecent()" 
+          placeholder="이름이나 주소로 맛집 검색..." 
+          style="width: 100%; padding: 12px 20px; border-radius: 12px; border: 1px solid #ddd; font-size: 1rem; outline: none; transition: 0.3s;">
+</div>
+
+    <div class="filter-group" style="margin-bottom: 24px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button onclick="filterRecent('전체')" class="btn-filter active">전체</button>
+        <button onclick="filterRecent('한식')" class="btn-filter">한식</button>
+        <button onclick="filterRecent('일식')" class="btn-filter">일식</button>
+        <button onclick="filterRecent('중식')" class="btn-filter">중식</button>
+        <button onclick="filterRecent('양식')" class="btn-filter">양식</button>
+        <button onclick="filterRecent('카페')" class="btn-filter">카페</button>
+    </div>
+
+    <div id="recent-list-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px;">
+    </div>
+
+    <div id="empty-message" style="display:none; text-align:center; padding:100px 0;">
+        <p style="font-size:4rem; margin-bottom:16px;">🔍</p>
+        <p style="color:var(--text2);">최근에 확인한 맛집이 아직 없습니다.</p>
+        <a href="/restaurants/" class="btn btn-primary" style="margin-top:24px;">맛집 보러가기</a>
+    </div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  const recentStores = JSON.parse(localStorage.getItem('recentStores')) || [];
-  const container = document.getElementById('recent-list-container');
-  const emptyMessage = document.getElementById('empty-message');
+    const recentStores = JSON.parse(localStorage.getItem('recentStores')) || [];
+    const container = document.getElementById('recent-list-container');
+    const emptyMessage = document.getElementById('empty-message');
 
-  if (recentStores.length === 0) {
-    emptyMessage.style.display = 'block';
-    return;
-  }
+    if (recentStores.length === 0) {
+        if (emptyMessage) emptyMessage.style.display = 'block';
+        return;
+    }
 
-  recentStores.forEach(s => {
-    // base.html의 카드 스타일 적용
-    const cardHtml = `
-      <div class="card shadow">
-        <div style="height:200px; overflow:hidden; background:#eee;">
-          <img src="${s.img}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-        </div>
-        <div style="padding:20px;">
-          <span style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase;">${s.category}</span>
-          <h3 style="margin:8px 0 12px; font-size:1.25rem; color:var(--text);">${s.name}</h3>
-          <p style="font-size:0.875rem; color:var(--text2); margin-bottom:20px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">
-            📍 ${s.address}
-          </p>
-          <a href="/restaurants/${s.id}/" class="btn btn-outline" style="width:100%; justify-content:center;">상세보기</a>
-        </div>
-      </div>
-    `;
-    container.innerHTML += cardHtml;
-  });
+    if (container) {
+        recentStores.forEach(s => {
+            const visitTime = s.timestamp ? new Date(s.timestamp).toLocaleString('ko-KR', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            }) : "기록 없음";
+
+            const cardHtml = `
+                <div class="card shadow" id="recent-card-${s.id}" style="position: relative;">
+                    <button onclick="removeRecent('${s.id}')" 
+                            style="position: absolute; top: 12px; right: 12px; z-index: 10; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1;">
+                        &times;
+                    </button>
+                    <div style="position: absolute; top: 12px; left: 12px; z-index: 10; background: rgba(255,255,255,0.9); color: #333; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        🕒 ${visitTime}
+                    </div>
+                    <div style="height:200px; overflow:hidden; background:#eee;">
+                        <img src="${s.img}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                    </div>
+                    <div style="padding:20px;">
+                        <span style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase;">${s.category}</span>
+                        <h3 style="margin:8px 0 12px; font-size:1.25rem; color:var(--text);">${s.name}</h3>
+                        <p style="font-size:0.875rem; color:var(--text2); margin-bottom:20px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">
+                            📍 ${s.address}
+                        </p>
+                        <a href="/restaurants/${s.id}/" class="btn btn-outline" style="width:100%; justify-content:center;">상세보기</a>
+                    </div>
+                </div>`;
+            container.innerHTML += cardHtml;
+        });
+    }
 });
+
+function removeRecent(storeId) {
+    if(!confirm("이 방문 기록을 삭제하시겠습니까?")) return;
+    let recentStores = JSON.parse(localStorage.getItem('recentStores')) || [];
+    recentStores = recentStores.filter(item => item.id != storeId);
+    localStorage.setItem('recentStores', JSON.stringify(recentStores));
+    const card = document.getElementById(`recent-card-${storeId}`);
+    if (card) {
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.remove();
+            if (recentStores.length === 0) location.reload();
+        }, 300);
+    }
+}
+
+function clearAllRecent() {
+    if (!confirm("정말로 모든 방문 기록을 삭제하시겠습니까?")) return;
+    localStorage.removeItem('recentStores');
+    const container = document.getElementById('recent-list-container');
+    if (container) {
+        container.style.opacity = '0';
+        setTimeout(() => { location.reload(); }, 500);
+    }
+}
+
+function filterRecent(category) {
+    const cards = document.querySelectorAll('.card.shadow'); 
+    const buttons = document.querySelectorAll('.btn-filter');
+    buttons.forEach(btn => {
+        if(btn.innerText === category) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+    cards.forEach(card => {
+        const cardCategory = card.querySelector('span').innerText.trim();
+        card.style.display = (category === '전체' || cardCategory === category) ? 'block' : 'none';
+    });
+}
+
+// 실시간 검색 로직
+function searchRecent() {
+    const query = document.getElementById('recent-search').value.toLowerCase(); // 검색어 소문자 변환
+    const cards = document.querySelectorAll('.card.shadow');
+
+    cards.forEach(card => {
+        const name = card.querySelector('h3').innerText.toLowerCase(); // 식당 이름
+        const address = card.querySelector('p').innerText.toLowerCase(); // 주소 정보
+
+        // 이름이나 주소에 검색어가 포함되어 있는지 확인 (패킷 필터링 원리)
+        if (name.includes(query) || address.includes(query)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
 </script>
 {% endblock %}

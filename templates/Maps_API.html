@@ -15,7 +15,7 @@
         padding: 0 !important; 
         max-width: none !important; 
         width: 100vw;
-        height: calc(100vh - 70px); /* 헤더 높이가 70px이라고 가정 */
+        height: calc(100vh - 70px); /* 헤더 높이에 맞게 조절 */
         display: flex !important;
     }
 
@@ -23,10 +23,10 @@
         display: flex; 
         width: 100%; 
         height: 100%; 
-        align-items: stretch; /* 자식 요소들이 세로로 꽉 차게 함 */
+        align-items: stretch;
     }
 
-/* 4. 사이드바와 지도가 각각 독립적으로 바닥까지 닿게 설정 */
+    /* 사이드바 설정 */
     .map-sidebar {
         width: 320px; 
         height: 100%; 
@@ -39,7 +39,9 @@
 
     #map { 
         flex: 1; 
-        height: 100% !important; /* 중요: 지도가 부모 높이를 꽉 채움 */
+        height: 100% !important; 
+        min-height: 500px; 
+        background: #f8f9fa;
     }
     
     .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); background: var(--text); color: #fff; }
@@ -56,6 +58,7 @@
     .sidebar-search .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
 
     /* 맛집 리스트 */
+    .res-list { overflow-y: auto; flex: 1; }
     .res-list-item {
         padding: 20px; border-bottom: 1px solid var(--border);
         transition: all 0.2s; cursor: pointer; text-decoration: none; color: inherit;
@@ -63,14 +66,6 @@
     .res-list-item:hover { background: var(--accent-light); }
     .res-list-item .res-name { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
     .res-list-item .res-meta { font-size: 13px; color: var(--text2); }
-
-    /* 3. 지도 영역 - 높이가 0이 되지 않도록 강제 설정 */
-    #map { 
-        flex: 1; 
-        height: 100%; 
-        min-height: 500px; 
-        background: #f8f9fa; /* 로딩 전 배경 */
-    }
 
     /* 인포윈도우 스타일 */
     .custom-iw {
@@ -106,6 +101,7 @@
         
         <div class="res-list">
             {% for res in restaurants %}
+            {% if res.lat and res.lng %}
             <div class="res-list-item" onclick="panToMarker({{ res.lat }}, {{ res.lng }}, '{{ res.id }}')">
                 <div class="res-name">{{ res.name }}</div>
                 <div class="res-meta">{{ res.category }} · {{ res.address|truncatechars:25 }}</div>
@@ -113,6 +109,7 @@
                     ★ {{ res.avg_rating|default:"0.0" }}
                 </div>
             </div>
+            {% endif %}
             {% empty %}
             <div style="padding: 40px; text-align: center; color: var(--text2);">등록된 맛집이 없습니다.</div>
             {% endfor %}
@@ -131,7 +128,6 @@
     var markers = {};
     var infoWindows = {};
 
-    // 1. 페이지 로드 후 실행
     window.onload = function() {
         var mapOptions = {
             center: new naver.maps.LatLng(37.5665, 126.9780),
@@ -143,7 +139,6 @@
         map = new naver.maps.Map('map', mapOptions);
         var bounds = new naver.maps.LatLngBounds();
 
-        // 2. 마커 생성 로직
         {% for res in restaurants %}
         {% if res.lat and res.lng %}
         (function() {
@@ -174,15 +169,14 @@
                 pixelOffset: new naver.maps.Point(0, -10)
             });
 
+            // 딕셔너리에 저장하여 외부 함수에서 접근 가능케 함
             markers['{{ res.id }}'] = marker;
             infoWindows['{{ res.id }}'] = infowindow;
 
             naver.maps.Event.addListener(marker, "click", function() {
-                if (infowindow.getMap()) {
-                    infowindow.close();
-                } else {
-                    infowindow.open(map, marker);
-                }
+                // 클릭 시 다른 인포윈도우는 닫기
+                for (var key in infoWindows) { infoWindows[key].close(); }
+                infowindow.open(map, marker);
             });
 
             bounds.extend(pos);
@@ -190,23 +184,40 @@
         {% endif %}
         {% endfor %}
 
-        // 3. 모든 마커가 보이도록 범위 조정
         if (!bounds.isEmpty()) {
             map.fitBounds(bounds);
         }
 
-        // 4. 지도가 깨져 보일 때를 대비한 리사이즈 강제 호출
-        window.dispatchEvent(new Event('resize'));
+        // 지도가 처음 로드될 때 레이아웃 깨짐 방지
+        setTimeout(function() {
+            window.dispatchEvent(new Event('resize'));
+        }, 100);
     };
 
-    // 사이드바 클릭 시 이동 함수
+    /**
+     * 사이드바 클릭 시 호출되는 함수
+     * morph를 사용하여 이동과 줌을 최적화했습니다.
+     */
     function panToMarker(lat, lng, id) {
+        if (!map) return;
+
         var pos = new naver.maps.LatLng(lat, lng);
-        map.panTo(pos);
-        map.setZoom(16);
-        
-        for (var key in infoWindows) { infoWindows[key].close(); }
-        if(infoWindows[id]) infoWindows[id].open(map, markers[id]);
+
+        // 1. 모든 인포윈도우 닫기
+        for (var key in infoWindows) {
+            infoWindows[key].close();
+        }
+
+        // 2. morph를 사용하여 좌표 이동과 줌 레벨 조정을 동시에 처리 (부드럽게 이동)
+        // 만약 애니메이션 없이 즉시 이동을 원하면 map.setCenter(pos); map.setZoom(16); 사용
+        map.morph(pos, 16);
+
+        // 3. 약간의 지연 후 인포윈도우 열기 (이동 애니메이션과 겹치지 않게 안정화)
+        setTimeout(function() {
+            if (infoWindows[id] && markers[id]) {
+                infoWindows[id].open(map, markers[id]);
+            }
+        }, 300);
     }
 </script>
 {% endblock %}

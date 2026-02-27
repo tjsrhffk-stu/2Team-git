@@ -12,7 +12,7 @@
   .bar-fill { height: 100%; background: #F59E0B; transition: width 0.5s ease; }
   .btn-fav.active { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
   
-  /* --- 이미지 갤러리 스타일 고도화 --- */
+  /* --- 이미지 갤러리 스타일 --- */
   .image-gallery { display: flex; gap: 12px; overflow-x: auto; padding: 5px 5px 15px 5px; margin-bottom: 30px; scrollbar-width: thin; }
   .gallery-item { 
     width: 120px; height: 120px; flex-shrink: 0; border-radius: 12px; 
@@ -40,7 +40,8 @@
         <span style="color:var(--accent); font-weight:700;">{{ restaurant.category.name|default:"음식점" }}</span>
         <div style="display: flex; align-items: center; gap: 15px;">
             <h1 style="font-size:40px; margin:10px 0;">{{ restaurant.name }}</h1>
-            {% if user == restaurant.owner or user.is_superuser %}
+            {# 권한 로직 병합: 소유자, 스태프, 슈퍼유저 모두 수정 가능 #}
+            {% if user == restaurant.owner or user.is_staff or user.is_superuser %}
                 <a href="{% url 'restaurants:update' restaurant.pk %}" class="btn-edit">✏️ 정보 수정</a>
             {% endif %}
         </div>
@@ -102,25 +103,16 @@
         <p style="white-space:pre-wrap; margin-top:25px; line-height:1.8; color:#444;">{{ restaurant.description|default:"매장 소개 내용이 아직 등록되지 않았습니다." }}</p>
       </div>
 
-<div class="sort-filter-container fade-up delay-2">
-<div class="sort-filter-bar" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px;">
-  <span class="sort-label" style="font-size: 0.875rem; font-weight: 700; white-space: nowrap;">정렬 :</span>
-  
-  <div class="sort-buttons" style="display: flex; gap: 8px; flex-wrap: nowrap;">
-    <a href="?sort=rating_high" class="sort-btn {% if current_sort == 'rating_high' or not current_sort %}active{% endif %}" style="white-space: nowrap;">
-      ⭐ 별점 높은순
-    </a>
-    
-    <a href="?sort=latest" class="sort-btn {% if current_sort == 'latest' %}active{% endif %}" style="white-space: nowrap;">
-      🕒 최신순
-    </a>
-    
-    <a href="?sort=rating_low" class="sort-btn {% if current_sort == 'rating_low' %}active{% endif %}" style="white-space: nowrap;">
-      💔 별점 낮은순
-    </a>
-  </div>
-</div>
-</div>
+      <div class="sort-filter-container">
+        <div class="sort-filter-bar" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 24px;">
+          <span class="sort-label" style="font-size: 0.875rem; font-weight: 700; white-space: nowrap;">정렬 :</span>
+          <div class="sort-buttons" style="display: flex; gap: 8px; flex-wrap: nowrap;">
+            <a href="?sort=rating_high" class="sort-btn {% if current_sort == 'rating_high' or not current_sort %}active{% endif %}">⭐ 별점 높은순</a>
+            <a href="?sort=latest" class="sort-btn {% if current_sort == 'latest' %}active{% endif %}">🕒 최신순</a>
+            <a href="?sort=rating_low" class="sort-btn {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+          </div>
+        </div>
+      </div>
 
       <div class="info-card">
         <h3 style="margin-bottom:20px; font-weight: 700;">리뷰 ({{ reviews|length }})</h3>
@@ -144,57 +136,37 @@
 
             {% if user == review.author %}
               <div style="display:flex; gap:8px; margin-top:10px;">
-                <a href="{% url 'reviews:edit' review.pk %}" 
-                   style="font-size:13px; color:var(--text2); text-decoration:none; padding:4px 10px; border:1px solid var(--border); border-radius:8px;">✏️ 수정</a>
+                <a href="{% url 'reviews:edit' review.pk %}" style="font-size:13px; text-decoration:none; padding:4px 10px; border:1px solid #ddd; border-radius:8px; color:#666;">✏️ 수정</a>
                 <form method="post" action="{% url 'reviews:delete' review.pk %}" style="display:inline;">
                   {% csrf_token %}
-                  <button type="submit" onclick="return confirm('리뷰를 삭제할까요?')"
-                    style="font-size:13px; color:#EF4444; background:none; border:1px solid #FECACA; border-radius:8px; padding:4px 10px; cursor:pointer;">
-                    🗑️ 삭제
-                  </button>
+                  <button type="submit" onclick="return confirm('리뷰를 삭제할까요?')" style="font-size:13px; color:#EF4444; background:none; border:1px solid #FECACA; border-radius:8px; padding:4px 10px; cursor:pointer;">🗑️ 삭제</button>
                 </form>
               </div>
             {% endif %}
 
-            <!-- ✅ 사장님 답글 표시 -->
             {% if review.reply %}
-              <div style="margin-top:14px; margin-left:20px; padding:14px 18px; background:#fff8f5; border-left:3px solid var(--accent); border-radius:0 12px 12px 0;">
+              <div style="margin-top:14px; margin-left:20px; padding:14px 18px; background:#fff8f5; border-left:3px solid #ff4d4f; border-radius:0 12px 12px 0;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <strong style="font-size:14px; color:var(--accent);">🏪 사장님 답글</strong>
+                  <strong style="font-size:14px; color:#ff4d4f;">🏪 사장님 답글</strong>
                   <small style="color:#bbb;">{{ review.reply.created_at|date:"Y.m.d" }}</small>
                 </div>
                 <p style="font-size:14px; line-height:1.6; color:#444; margin:0;">{{ review.reply.content }}</p>
 
-                <!-- 사장님 본인만 수정/삭제 버튼 보임 -->
                 {% if user == restaurant.owner %}
                   <div style="display:flex; gap:8px; margin-top:10px;">
-                    <!-- 수정 버튼 - 모달 열기 -->
-                    <button onclick="openEditModal({{ review.pk }}, '{{ review.reply.content|escapejs }}')"
-                      style="font-size:12px; color:var(--text2); background:none; border:1px solid var(--border); border-radius:8px; padding:4px 10px; cursor:pointer;">
-                      ✏️ 수정
-                    </button>
-                    <!-- 삭제 버튼 -->
+                    <button onclick="openEditModal({{ review.pk }}, '{{ review.reply.content|escapejs }}')" style="font-size:12px; color:#666; background:none; border:1px solid #ddd; border-radius:8px; padding:4px 10px; cursor:pointer;">✏️ 수정</button>
                     <form method="post" action="{% url 'reviews:reply_delete' review.pk %}" style="display:inline;">
                       {% csrf_token %}
-                      <button type="submit" onclick="return confirm('답글을 삭제할까요?')"
-                        style="font-size:12px; color:#EF4444; background:none; border:1px solid #FECACA; border-radius:8px; padding:4px 10px; cursor:pointer;">
-                        🗑️ 삭제
-                      </button>
+                      <button type="submit" onclick="return confirm('답글을 삭제할까요?')" style="font-size:12px; color:#EF4444; background:none; border:1px solid #FECACA; border-radius:8px; padding:4px 10px; cursor:pointer;">🗑️ 삭제</button>
                     </form>
                   </div>
                 {% endif %}
               </div>
-
-            <!-- ✅ 답글 없을 때 사장님한테만 작성 버튼 보임 -->
             {% elif user == restaurant.owner %}
               <div style="margin-top:12px; margin-left:20px;">
-                <button onclick="openCreateModal({{ review.pk }})"
-                  style="font-size:13px; color:var(--accent); background:none; border:1px solid var(--accent); border-radius:8px; padding:6px 14px; cursor:pointer;">
-                  💬 답글 달기
-                </button>
+                <button onclick="openCreateModal({{ review.pk }})" style="font-size:13px; color:#ff4d4f; background:none; border:1px solid #ff4d4f; border-radius:8px; padding:6px 14px; cursor:pointer;">💬 답글 달기</button>
               </div>
             {% endif %}
-
           </div>
         {% empty %}
           <div style="text-align:center; padding:60px 0; color:#ccc;">
@@ -211,24 +183,34 @@
         <div style="display:grid; gap:15px; font-size:15px; color:#555;">
           <p><strong style="color:#333;">📞 전화번호</strong><br>{{ restaurant.phone|default:"정보없음" }}</p>
           <p><strong style="color:#333;">⏰ 영업시간</strong><br>{{ restaurant.hours|default:"정보없음" }}</p>
+          {% if restaurant.break_time %}
+          <p><strong style="color:#333;">☕ 브레이크 타임</strong><br>{{ restaurant.break_time }}</p>
+          {% endif %}
+          <p><strong style="color:#333;">📅 휴무일</strong><br>{{ restaurant.closed_days|default:"정보없음" }}</p>
         </div>
         
         <div style="margin-top:30px;">
-          <button class="btn-fav {% if is_favorite %}active{% endif %}" 
-                  id="favBtn" onclick="toggleFav('{{ restaurant.pk }}', this)" 
-                  style="width:100%; padding:15px; border:1.5px solid #ff4d4f; border-radius:14px; cursor:pointer; font-weight:700; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <button class="btn-fav {% if is_favorite %}active{% endif %}" id="favBtn" onclick="toggleFav('{{ restaurant.pk }}', this)" style="width:100%; padding:15px; border:1.5px solid #ff4d4f; border-radius:14px; cursor:pointer; font-weight:700; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <span id="favText">{% if is_favorite %}❤️ 저장됨{% else %}🤍 저장하기{% endif %}</span>
           </button>
         </div>
 
-        {% if user.is_superuser %}
+        {# 관리자 삭제 도구 (main 로직 준수) #}
+        {% if user.is_staff or user.is_superuser %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
           <p style="color: #fa5252; font-size: 13px; font-weight: 700; margin-bottom: 8px;">운영자 도구 (폐업 관리)</p>
-          <button onclick="deleteRestaurant()" class="btn-delete-admin">
-            🗑️ 식당 삭제하기
-          </button>
+          <form method="post" action="{% url 'restaurants:delete' restaurant.pk %}" onsubmit="return confirm('관리자 권한으로 삭제를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');">
+            {% csrf_token %}
+            <button type="submit" class="btn-delete-admin">🗑️ 식당 삭제하기</button>
+          </form>
         </div>
         {% endif %}
+
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+            <h4 style="margin-bottom:15px; font-weight: 700;">📍 위치 안내</h4>
+            <div id="detail-map" style="width:100%; height:250px; border-radius:12px; border: 1px solid #eee; background: #f9f9f9;"></div>
+            <a href="https://map.naver.com/v5/search/{{ restaurant.address|urlencode }}" target="_blank" style="display: block; margin-top: 10px; font-size: 12px; color: #ff4d4f; text-decoration: none; font-weight: 600;">큰 지도로 보기/길찾기 →</a>
+        </div>
       </div>
     </div>
   </div>
@@ -236,23 +218,17 @@
 {% endblock %}
 
 {% block extra_js %}
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId={{ MAP_API_KEY }}"></script>
 <script>
   // 📸 사진 교체 함수
   function changePhoto(element) {
     const mainImg = document.getElementById('viewMain');
-    const newSrc = element.src;
-
-    // 메인 이미지 교체 (페이드 효과)
     mainImg.style.opacity = '0';
     setTimeout(() => {
-      mainImg.src = newSrc;
+      mainImg.src = element.src;
       mainImg.style.opacity = '1';
     }, 200);
-
-    // 썸네일 활성화 상태 변경
-    document.querySelectorAll('.gallery-item').forEach(item => {
-      item.classList.remove('active');
-    });
+    document.querySelectorAll('.gallery-item').forEach(item => item.classList.remove('active'));
     element.classList.add('active');
   }
 
@@ -279,23 +255,7 @@
     .catch(error => alert(error.message));
   }
 
-  // 삭제 기능
-  function deleteRestaurant() {
-    if (confirm('최고 관리자 권한으로 삭제를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = "{% url 'restaurants:delete' restaurant.pk %}";
-      const csrfInput = document.createElement('input');
-      csrfInput.type = 'hidden';
-      csrfInput.name = 'csrfmiddlewaretoken';
-      csrfInput.value = '{{ csrf_token }}';
-      form.appendChild(csrfInput);
-      document.body.appendChild(form);
-      form.submit();
-    }
-  }
-
-  // 최근 본 매장 저장
+  // 최근 본 매장 저장 및 지도 로드
   document.addEventListener("DOMContentLoaded", function() {
     const storeData = {
       id: "{{ restaurant.pk }}",
@@ -309,9 +269,22 @@
     recentStores.unshift(storeData);
     if (recentStores.length > 10) recentStores.pop();
     localStorage.setItem('recentStores', JSON.stringify(recentStores));
+
+    {% if restaurant.lat and restaurant.lng %}
+    var mapPos = new naver.maps.LatLng({{ restaurant.lat }}, {{ restaurant.lng }});
+    var map = new naver.maps.Map('detail-map', { center: mapPos, zoom: 16 });
+    new naver.maps.Marker({
+        position: mapPos,
+        map: map,
+        icon: {
+            content: '<div style="background:#ff4d4f; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow:0 0 5px rgba(0,0,0,0.3);"></div>',
+            anchor: new naver.maps.Point(8, 8)
+        }
+    });
+    {% endif %}
   });
 
-    // ✅ 답글 모달 JS
+  // 답글 모달 로직
   let currentReviewId = null;
   let currentMode = null;
 
@@ -320,7 +293,6 @@
     currentMode = 'create';
     document.getElementById('replyModalTitle').textContent = '💬 답글 작성';
     document.getElementById('replyContent').value = '';
-    document.getElementById('replyCharCount').textContent = '0 / 500';
     document.getElementById('replyModal').style.display = 'flex';
   }
 
@@ -329,88 +301,34 @@
     currentMode = 'edit';
     document.getElementById('replyModalTitle').textContent = '✏️ 답글 수정';
     document.getElementById('replyContent').value = existingContent;
-    document.getElementById('replyCharCount').textContent = existingContent.length + ' / 500';
     document.getElementById('replyModal').style.display = 'flex';
   }
 
-  function closeModal() {
-    document.getElementById('replyModal').style.display = 'none';
-    currentReviewId = null;
-    currentMode = null;
-  }
+  function closeModal() { document.getElementById('replyModal').style.display = 'none'; }
 
   function submitReply() {
     const content = document.getElementById('replyContent').value.trim();
-    if (!content) {
-      alert('답글 내용을 입력해주세요.');
-      return;
-    }
-    const url = currentMode === 'create'
-      ? `/reviews/${currentReviewId}/reply/`
-      : `/reviews/${currentReviewId}/reply/edit/`;
-
+    if (!content) return alert('내용을 입력해주세요.');
+    const url = currentMode === 'create' ? `/reviews/${currentReviewId}/reply/` : `/reviews/${currentReviewId}/reply/edit/`;
     const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = url;
-
-    const csrf = document.createElement('input');
-    csrf.type = 'hidden';
-    csrf.name = 'csrfmiddlewaretoken';
-    csrf.value = '{{ csrf_token }}';
-
-    const contentInput = document.createElement('input');
-    contentInput.type = 'hidden';
-    contentInput.name = 'content';
-    contentInput.value = content;
-
-    form.appendChild(csrf);
-    form.appendChild(contentInput);
-    document.body.appendChild(form);
-    form.submit();
+    form.method = 'POST'; form.action = url;
+    const csrf = document.createElement('input'); csrf.type = 'hidden'; csrf.name = 'csrfmiddlewaretoken'; csrf.value = '{{ csrf_token }}';
+    const contentInput = document.createElement('input'); contentInput.type = 'hidden'; contentInput.name = 'content'; contentInput.value = content;
+    form.appendChild(csrf); form.appendChild(contentInput);
+    document.body.appendChild(form); form.submit();
   }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const textarea = document.getElementById('replyContent');
-    if (textarea) {
-      textarea.addEventListener('input', function() {
-        const len = textarea.value.length;
-        const counter = document.getElementById('replyCharCount');
-        counter.textContent = len + ' / 500';
-        counter.style.color = len > 400 ? '#F59E0B' : '#aaa';
-      });
-    }
-    const modal = document.getElementById('replyModal');
-    if (modal) {
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) closeModal();
-      });
-    }
-  });
 </script>
 
-<!-- ✅ 답글 모달 HTML -->
 <div id="replyModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-  <div style="background:var(--surface); border-radius:20px; padding:32px; width:100%; max-width:500px; margin:0 20px; box-shadow:var(--shadow-lg);">
+  <div style="background:white; border-radius:20px; padding:32px; width:100%; max-width:500px; margin:0 20px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
       <strong id="replyModalTitle" style="font-size:18px;">💬 답글 작성</strong>
-      <button onclick="closeModal()" style="font-size:20px; color:var(--text2); background:none; border:none; cursor:pointer;">✕</button>
+      <button onclick="closeModal()" style="font-size:20px; background:none; border:none; cursor:pointer;">✕</button>
     </div>
-    <textarea
-      id="replyContent"
-      placeholder="고객님의 리뷰에 감사한 마음을 전해보세요..."
-      maxlength="500"
-      style="width:100%; padding:14px; background:var(--bg); border:1.5px solid var(--border); border-radius:12px; font-size:15px; font-family:'DM Sans',sans-serif; resize:vertical; min-height:120px; outline:none; color:var(--text);"
-    ></textarea>
-    <div id="replyCharCount" style="font-size:12px; color:#aaa; text-align:right; margin-top:4px;">0 / 500</div>
+    <textarea id="replyContent" maxlength="500" style="width:100%; padding:14px; border:1.5px solid #eee; border-radius:12px; min-height:120px; outline:none;"></textarea>
     <div style="display:flex; gap:10px; margin-top:20px;">
-      <button onclick="submitReply()"
-        style="flex:2; padding:13px; background:var(--accent); color:#fff; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer;">
-        ✅ 등록
-      </button>
-      <button onclick="closeModal()"
-        style="flex:1; padding:13px; background:var(--bg); color:var(--text2); border:1.5px solid var(--border); border-radius:12px; font-size:15px; font-weight:600; cursor:pointer;">
-        취소
-      </button>
+      <button onclick="submitReply()" style="flex:2; padding:13px; background:#ff4d4f; color:#fff; border:none; border-radius:12px; font-weight:700; cursor:pointer;">✅ 등록</button>
+      <button onclick="closeModal()" style="flex:1; padding:13px; background:#f5f5f5; border:1px solid #ddd; border-radius:12px; cursor:pointer;">취소</button>
     </div>
   </div>
 </div>
