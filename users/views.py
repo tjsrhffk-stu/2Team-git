@@ -286,13 +286,17 @@ def logout_view(request):
 
 # -------------------------------------------------------
 # 마이페이지  ✅ A안(?tab=) 방식
+#   ✅ 수정사항(필요한 것만):
+#   1) 사장 전용 탭 추가: tab=owner_reservations 허용
+#   2) 사장 탭에서 "내 식당 예약 전체" 내려주기(owner_reservations_all)
+#   3) 지저분한 취소 내역 숨김: CANCELED는 exclude
 # -------------------------------------------------------
 @login_required
 def mypage_view(request):
     tab = request.GET.get("tab", "mypage").strip().lower()
 
-    # ✅ 템플릿은 tab=history를 사용 중이므로 history를 허용해야 함
-    allowed_tabs = {"mypage", "reservations", "history", "visited", "favorites", "reviews"}
+    # ✅ (수정1) 사장 탭 추가
+    allowed_tabs = {"mypage", "reservations", "owner_reservations", "history", "visited", "favorites", "reviews"}
     if tab not in allowed_tabs:
         tab = "mypage"
 
@@ -314,6 +318,7 @@ def mypage_view(request):
     # ✅ 사장(OWNER)이면 내 식당 목록 내려줌
     from restaurants.models import Restaurant
     my_restaurants = Restaurant.objects.none()
+
     try:
         is_owner = hasattr(request.user, "profile") and request.user.profile.user_type == "OWNER"
     except Exception:
@@ -323,8 +328,6 @@ def mypage_view(request):
         my_restaurants = Restaurant.objects.filter(owner=request.user).order_by("-id")
 
     # ✅ 방문한 맛집(= 내 리뷰 중 4점 이상만)
-    # - 내 것만: author=request.user
-    # - 같은 식당에 리뷰가 여러 개면 최신 리뷰(created_at 기준)를 사용
     history_min_rating = 4
 
     latest_review_qs = (
@@ -352,15 +355,68 @@ def mypage_view(request):
         for r in visited_qs
     ]
 
+    # =====================================================
+    # ✅ 예약 데이터
+    # - owner_reservations: 사장 마이페이지(tab=mypage)에서 최신 5개 미리보기
+    # - owner_reservations_all: (수정2) 사장 탭(tab=owner_reservations)에서 전체 목록
+    # - reservations: 일반회원 마이페이지(tab=reservations)에서 본인 예약 목록
+    # - (수정3) CANCELED 제외(취소는 예약뷰에서 delete로 처리할 예정이라도 안전하게 숨김)
+    # =====================================================
+    owner_reservations = []
+    owner_reservations_all = []  # ✅ 추가(전체 목록)
+    reservations = []
+
+    try:
+        from .reservation_models import Reservation
+    except Exception:
+        Reservation = None
+
+    if Reservation is not None:
+        # 사장: 내 식당 예약 최신 5개 (취소 제외)
+        if is_owner:
+            owner_reservations = (
+                Reservation.objects
+                .select_related("restaurant", "user")
+                .filter(restaurant__owner=request.user)
+                .exclude(status=Reservation.Status.CANCELED)
+                .order_by("-created_at")[:5]
+            )
+
+        # ✅ (수정2) 사장: 내 식당 예약 전체 목록 (취소 제외)
+        if is_owner and (tab == "owner_reservations"):
+            owner_reservations_all = (
+                Reservation.objects
+                .select_related("restaurant", "user")
+                .filter(restaurant__owner=request.user)
+                .exclude(status=Reservation.Status.CANCELED)
+                .order_by("-created_at")
+            )
+
+        # 일반회원(사장 아닌 경우): 내 예약 전체 (취소 제외)
+        if (not is_owner) and (tab == "reservations"):
+            reservations = (
+                Reservation.objects
+                .select_related("restaurant")
+                .filter(user=request.user)
+                .exclude(status=Reservation.Status.CANCELED)
+                .order_by("-created_at")
+            )
+
     context = {
         "active_tab": tab,
         "favorites": favorites,
         "favorite_count": favorite_count,
         "reviews": reviews,
-        "my_restaurants": my_restaurants,  # ✅ 추가
-        "is_owner": is_owner,              # ✅ 템플릿에서 사용 중
-        "history": history,                # ✅ 방문한 맛집
+
+        "my_restaurants": my_restaurants,
+        "is_owner": is_owner,
+
+        "history": history,
         "history_min_rating": history_min_rating,
+
+        "owner_reservations": owner_reservations,
+        "owner_reservations_all": owner_reservations_all,  # ✅ 추가
+        "reservations": reservations,
     }
     return render(request, "users/mypage.html", context)
 

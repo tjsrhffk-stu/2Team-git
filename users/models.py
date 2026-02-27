@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+# ✅ 예약(Reservation) 모델 등록 (models.py 밖에 분리해둔 파일을 Django가 인식하도록 import)
+from .reservation_models import Reservation  # noqa: E402,F401
 
 class Profile(models.Model):
     """공통 프로필(모든 사용자 공통)

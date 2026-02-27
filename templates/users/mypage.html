@@ -159,7 +159,6 @@
     white-space:nowrap;
   }
 
-  /* ✅ 보기/수정/삭제 버튼 높이/글자 크기 통일 */
   .btn-ghost, .btn-danger{
     min-height:40px;
     font-size:14px;
@@ -177,7 +176,6 @@
   .stars span{font-size:14px;opacity:.4;}
   .stars span.on{opacity:1;}
 
-  /* ✅ 사장 전용 섹션 스타일 */
   .owner-box{
     margin-top:18px;
     padding:18px;
@@ -192,6 +190,17 @@
   .owner-title{font-size:18px;font-weight:900;margin:0;}
   .owner-sub{margin:6px 0 0 0;opacity:.85;font-weight:800;font-size:13px;}
   .owner-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+  .mini-list{display:grid;gap:10px;margin-top:12px;}
+  .mini-item{
+    display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+    padding:12px 14px;border-radius:14px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .mini-left{min-width:0;}
+  .mini-title{font-weight:1000;margin:0 0 6px 0;font-size:14px;}
+  .mini-sub{opacity:.85;font-weight:800;font-size:13px;line-height:1.35;}
 </style>
 {% endblock %}
 
@@ -218,6 +227,13 @@
             <a class="{% if active_tab == 'reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reservations">
               예약 내역 <span>›</span>
             </a>
+
+            {% if is_owner %}
+              <a class="{% if active_tab == 'owner_reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=owner_reservations">
+                내 식당 예약현황 <span>›</span>
+              </a>
+            {% endif %}
+
             <a class="{% if active_tab == 'history' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=history">
               방문한 맛집 <span>›</span>
             </a>
@@ -240,11 +256,15 @@
           <div class="tabs">
             <a class="pill {% if active_tab == 'mypage' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=mypage">내 정보</a>
             <a class="pill {% if active_tab == 'reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reservations">예약 내역</a>
+
+            {% if is_owner %}
+              <a class="pill {% if active_tab == 'owner_reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=owner_reservations">내 식당 예약현황</a>
+            {% endif %}
+
             <a class="pill {% if active_tab == 'history' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=history">방문한 맛집</a>
             <a class="pill {% if active_tab == 'favorites' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=favorites">즐겨찾기</a>
             <a class="pill {% if active_tab == 'reviews' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reviews">내 리뷰</a>
           </div>
-
 
           {% if active_tab == 'mypage' and is_owner %}
             <div class="owner-box">
@@ -287,7 +307,6 @@
                       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
                         <a class="btn-ghost" href="{% url 'restaurants:detail' r.pk %}">보기</a>
                         <a class="btn-ghost" href="{% url 'restaurants:update' r.pk %}">수정</a>
-                        {# ✅ 삭제 버튼 제거 #}
                       </div>
                     </div>
                   {% endfor %}
@@ -298,6 +317,50 @@
                 {% endif %}
               </div>
             </div>
+
+            <div class="owner-box">
+              <div class="owner-head">
+                <div>
+                  <h2 class="owner-title">내 식당 예약현황</h2>
+                  <p class="owner-sub">내 식당에 들어온 예약을 빠르게 확인하고, 필요하면 취소 처리할 수 있어요.</p>
+                </div>
+                <div class="owner-actions">
+                  <a class="btn-ghost" href="{% url 'users:reservation_owner_list' %}">전체 예약 보기</a>
+                  <a class="btn-ghost" href="{% url 'users:mypage' %}?tab=owner_reservations">탭에서 전체 보기</a>
+                </div>
+              </div>
+
+              {% if owner_reservations %}
+                <div class="mini-list">
+                  {% for r in owner_reservations %}
+                    <div class="mini-item">
+                      <div class="mini-left">
+                        <p class="mini-title">
+                          {{ r.user.username }} · {{ r.restaurant.name }}
+                        </p>
+                        <div class="mini-sub">
+                          예약일시: <b>{{ r.reserved_at|date:"Y-m-d H:i" }}</b><br>
+                          인원: <b>{{ r.party_size }}</b>명
+                          {% if r.request_note %}
+                            <br>요청: {{ r.request_note }}
+                          {% endif %}
+                          <br>상태: <b>{{ r.get_status_display }}</b>
+                        </div>
+                      </div>
+
+                      <div class="actions" style="justify-content:flex-end;">
+                        <form method="post" action="{% url 'users:reservation_owner_cancel' r.id %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button class="btn-danger" type="submit">취소</button>
+                        </form>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="empty">아직 들어온 예약이 없어요.</div>
+              {% endif %}
+            </div>
           {% endif %}
 
           {% if active_tab == 'mypage' %}
@@ -306,37 +369,117 @@
                 여기서 예약/방문/즐겨찾기/리뷰 탭으로 내역을 확인할 수 있어요 🙂
               </div>
             </div>
-          {% elif active_tab == 'reservations' %}
+
+          {% elif active_tab == 'owner_reservations' %}
             <div class="list">
-              {% if reservations %}
-                {% for res in reservations %}
-                  <div class="card">
-                    <div class="thumb">
-                      {% if res.restaurant.thumbnail %}
-                        <img src="{{ res.restaurant.thumbnail.url }}" alt="{{ res.restaurant.name }}">
-                      {% else %}
-                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
-                      {% endif %}
+              {% if not is_owner %}
+                <div class="empty">사장 계정만 볼 수 있는 메뉴예요.</div>
+              {% else %}
+                <div class="owner-box" style="margin-top:0;">
+                  <div class="owner-head">
+                    <div>
+                      <h2 class="owner-title">내 식당 예약현황</h2>
+                      <p class="owner-sub">내 식당에 들어온 예약 전체 목록이에요.</p>
                     </div>
-                    <div class="meta">
-                      <h3>{{ res.restaurant.name }}</h3>
-                      <div class="sub">
-                        예약일: <b>{{ res.date }}</b> / 시간: <b>{{ res.time }}</b><br>
-                        인원: <b>{{ res.people }}</b>명
-                      </div>
-                    </div>
-                    <div class="actions">
-                      <a class="btn-ghost" href="{% url 'restaurants:detail' res.restaurant.pk %}">식당 보기</a>
+
+                    <div class="owner-actions">
+                      {# ✅ "마이페이지로" 버튼 제거됨 #}
+                      <a class="btn-ghost" href="{% url 'users:reservation_owner_list' %}">(별도페이지) 전체 예약</a>
                     </div>
                   </div>
-                {% endfor %}
+
+                  {% if owner_reservations_all %}
+                    <div class="list">
+                      {% for r in owner_reservations_all %}
+                        <div class="card">
+                          <div class="thumb">
+                            {% if r.restaurant.thumbnail %}
+                              <img src="{{ r.restaurant.thumbnail.url }}" alt="{{ r.restaurant.name }}">
+                            {% else %}
+                              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
+                            {% endif %}
+                          </div>
+
+                          <div class="meta">
+                            <h3>{{ r.restaurant.name }}</h3>
+                            <div class="sub">
+                              예약자: <b>{{ r.user.username }}</b><br>
+                              예약일시: <b>{{ r.reserved_at|date:"Y-m-d H:i" }}</b><br>
+                              인원: <b>{{ r.party_size }}</b>명
+                              {% if r.request_note %}
+                                <br>요청: {{ r.request_note }}
+                              {% endif %}
+                              <br>상태: <b>{{ r.get_status_display }}</b>
+                            </div>
+                          </div>
+
+                          <div class="actions">
+                            <form method="post" action="{% url 'users:reservation_owner_cancel' r.id %}" style="display:inline;">
+                              {% csrf_token %}
+                              <button class="btn-danger" type="submit">취소</button>
+                            </form>
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <div class="empty">아직 들어온 예약이 없어요.</div>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+
+          {% elif active_tab == 'reservations' %}
+            <div class="list">
+              {% if is_owner %}
+                <div class="empty">
+                  사장님은 <b>내 식당 예약현황</b>에서 최신 예약을 확인할 수 있어요.
+                  <div style="margin-top:12px;">
+                    <a class="btn-ghost" href="{% url 'users:reservation_owner_list' %}">전체 예약 보기</a>
+                    <a class="btn-ghost" href="{% url 'users:mypage' %}?tab=owner_reservations">탭에서 전체 보기</a>
+                  </div>
+                </div>
+
               {% else %}
-                <div class="empty">예약 내역이 없어요.</div>
+                {% if reservations %}
+                  {% for res in reservations %}
+                    {% if res.status != "CANCELED" %}
+                      <div class="card">
+                        <div class="thumb">
+                          {% if res.restaurant.thumbnail %}
+                            <img src="{{ res.restaurant.thumbnail.url }}" alt="{{ res.restaurant.name }}">
+                          {% else %}
+                            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
+                          {% endif %}
+                        </div>
+
+                        <div class="meta">
+                          <h3>{{ res.restaurant.name }}</h3>
+                          <div class="sub">
+                            예약일시: <b>{{ res.reserved_at|date:"Y-m-d H:i" }}</b><br>
+                            인원: <b>{{ res.party_size }}</b>명<br>
+                            상태: <b>{{ res.get_status_display }}</b>
+                          </div>
+                        </div>
+
+                        <div class="actions">
+                          <a class="btn-ghost" href="{% url 'restaurants:detail' res.restaurant.pk %}">식당 보기</a>
+                          <a class="btn-ghost" href="{% url 'users:reservation_edit' res.id %}">수정</a>
+                          <form method="post" action="{% url 'users:reservation_cancel' res.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button class="btn-danger" type="submit">취소</button>
+                          </form>
+                        </div>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  <div class="empty">예약 내역이 없어요.</div>
+                {% endif %}
               {% endif %}
             </div>
 
           {% elif active_tab == 'history' %}
-            <!-- ✅ 4점 이상만 ‘방문한 맛집’으로 표시 -->
             <div class="empty" style="margin-bottom:14px;">
               ⭐ 방문한 맛집은 <b>{{ history_min_rating }}점 이상</b> 리뷰를 남긴 식당만 표시돼요.
               <span style="opacity:.75;">(전체 리뷰는 ‘내 리뷰’ 탭에서 확인)</span>
