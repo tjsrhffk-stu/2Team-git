@@ -5,17 +5,14 @@ from django.contrib import messages
 from django.conf import settings
 from .models import Restaurant, Category, RestaurantImage
 
-# --- 수정 및 병합된 임포트 섹션 ---
 import os
 import environ
 
 # 메인 브랜치의 설정과 feature 브랜치의 environ 설정을 통합
 env = environ.Env()
-# .env 파일이 존재하는 경우 읽어옴 (settings.py에서 이미 처리했다면 생략 가능하지만 유지해도 무방)
 env_file = os.path.join(settings.BASE_DIR, '.env')
 if os.path.exists(env_file):
     environ.Env.read_env(env_file)
-# --------------------------------
 
 def _extract_form_data(post):
     """기존 팀원이 만든 폼 데이터 추출 함수 유지"""
@@ -23,7 +20,6 @@ def _extract_form_data(post):
     if hasattr(post, "get"):
         return {k: (post.get(k, "") or "") for k in keys}
     return {k: "" for k in keys}
-
 
 def _is_owner_user(user) -> bool:
     """기존 권한 판별 로직 유지"""
@@ -38,7 +34,6 @@ def _is_owner_user(user) -> bool:
         return True
     return False
 
-
 def restaurant_list(request):
     q = request.GET.get("q", "")
     restaurants = Restaurant.objects.all().annotate(review_count=Count('reviews')).order_by("-id")
@@ -47,7 +42,6 @@ def restaurant_list(request):
             Q(name__icontains=q) | Q(category__name__icontains=q) | Q(address__icontains=q)
         )
     return render(request, "restaurants/list.html", {"restaurants": restaurants, "q": q})
-
 
 def restaurant_map(request):
     """지도 탐색 뷰"""
@@ -59,11 +53,15 @@ def restaurant_map(request):
         )
     return render(request, "Maps_API.html", {"restaurants": restaurants, "q": q})
 
-
 def restaurant_detail(request, pk):
+    """상세 페이지 뷰"""
     restaurant = get_object_or_404(Restaurant, pk=pk)
 
-    # ✅ 정렬 처리
+    # ✅ 병합 1: 조회수 증가 로직 유지 (main 브랜치 내용)
+    restaurant.view_count += 1
+    restaurant.save()
+
+    # ✅ 병합 2: 정렬 처리 로직 유지 (hyunsang-1 브랜치 내용)
     sort = request.GET.get('sort', 'rating_high')
     all_reviews = restaurant.reviews.all()
     if sort == 'latest':
@@ -96,7 +94,6 @@ def restaurant_detail(request, pk):
     
     return render(request, "restaurants/detail.html", context)
 
-
 @login_required
 def restaurant_create(request):
     """음식점 등록 뷰"""
@@ -126,6 +123,8 @@ def restaurant_create(request):
             phone=request.POST.get("phone", "").strip(),
             description=request.POST.get("description", "").strip(),
             hours=request.POST.get("hours", "").strip(),
+            # ✅ 누락됐던 브레이크 타임 저장 복구!
+            break_time=request.POST.get("break_time", "").strip(),
             closed_days=request.POST.get("closed_days", "").strip(),
             website=request.POST.get("website", "").strip(),
             thumbnail=request.FILES.get("thumbnail")
@@ -142,10 +141,9 @@ def restaurant_create(request):
     categories = Category.objects.all()
     return render(request, template_name, {"mode": "create", "categories": categories, "form_data": _extract_form_data({})})
 
-
 @login_required
 def restaurant_update(request, pk):
-    """음식점 수정 뷰 - 기존 구조 유지"""
+    """음식점 수정 뷰"""
     restaurant = get_object_or_404(Restaurant, pk=pk)
     old_address = restaurant.address
 
@@ -162,6 +160,10 @@ def restaurant_update(request, pk):
         new_address = request.POST.get("address", "").strip()
         restaurant.description = request.POST.get("description", "").strip()
         restaurant.hours = request.POST.get("hours", "").strip()
+        
+        # ✅ 누락됐던 브레이크 타임 수정 복구!
+        restaurant.break_time = request.POST.get("break_time", "").strip()
+        
         restaurant.closed_days = request.POST.get("closed_days", "").strip()
         restaurant.website = request.POST.get("website", "").strip()
 
@@ -197,7 +199,6 @@ def restaurant_update(request, pk):
         "form_data": restaurant
     })
 
-
 @login_required
 def restaurant_delete(request, pk):
     """음식점 삭제 뷰"""
@@ -211,7 +212,6 @@ def restaurant_delete(request, pk):
         messages.success(request, "삭제되었습니다.")
         return redirect("restaurants:list")
     return render(request, "restaurants/confirm_delete.html", {"restaurant": restaurant})
-
 
 def restaurant_edit(request, pk):
     """기존 URL 호환용"""
