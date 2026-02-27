@@ -8,13 +8,8 @@ from .models import Restaurant, Category, RestaurantImage
 import os, environ
 from django.conf import settings
 
-# ✅ 추가된 부분: env 객체 초기화 (NameError 해결)
-env = environ.Env()
-environ.Env.read_env()
-
 def _extract_form_data(post):
     """기존 팀원이 만든 폼 데이터 추출 함수 유지"""
-    # ✅ break_time 키가 포함되어 있는지 확인
     keys = ["name", "category", "phone", "description", "address", "hours", "break_time", "closed_days", "website"]
     if hasattr(post, "get"):
         return {k: (post.get(k, "") or "") for k in keys}
@@ -108,8 +103,6 @@ def restaurant_create(request):
             phone=request.POST.get("phone", "").strip(),
             description=request.POST.get("description", "").strip(),
             hours=request.POST.get("hours", "").strip(),
-            # ✅ 추가: 브레이크 타임 저장
-            break_time=request.POST.get("break_time", "").strip(),
             closed_days=request.POST.get("closed_days", "").strip(),
             website=request.POST.get("website", "").strip(),
             thumbnail=request.FILES.get("thumbnail")
@@ -129,7 +122,7 @@ def restaurant_create(request):
 
 @login_required
 def restaurant_update(request, pk):
-    """음식점 수정 뷰"""
+    """음식점 수정 뷰 - 기존 구조 유지"""
     restaurant = get_object_or_404(Restaurant, pk=pk)
     old_address = restaurant.address
 
@@ -146,10 +139,6 @@ def restaurant_update(request, pk):
         new_address = request.POST.get("address", "").strip()
         restaurant.description = request.POST.get("description", "").strip()
         restaurant.hours = request.POST.get("hours", "").strip()
-        
-        # ✅ 추가: 브레이크 타임 수정 반영
-        restaurant.break_time = request.POST.get("break_time", "").strip()
-        
         restaurant.closed_days = request.POST.get("closed_days", "").strip()
         restaurant.website = request.POST.get("website", "").strip()
 
