@@ -349,7 +349,11 @@
                       </div>
 
                       <div class="actions" style="justify-content:flex-end;">
-                        <form method="post" action="{% url 'users:reservation_owner_cancel' r.id %}" style="display:inline;">
+                        <!-- ✅ 여기: 사장 미리보기 취소 confirm 추가 -->
+                        <form method="post"
+                              action="{% url 'users:reservation_owner_cancel' r.id %}"
+                              style="display:inline;"
+                              onsubmit="return confirm('정말 이 예약을 취소할까요? 취소하면 되돌릴 수 없어요.');">
                           {% csrf_token %}
                           <button class="btn-danger" type="submit">취소</button>
                         </form>
@@ -384,7 +388,7 @@
 
                     <div class="owner-actions">
                       {# ✅ "마이페이지로" 버튼 제거됨 #}
-                      <a class="btn-ghost" href="{% url 'users:reservation_owner_list' %}">(별도페이지) 전체 예약</a>
+                      <a class="btn-ghost" href="{% url 'users:reservation_owner_list' %}"> 전체 예약</a>
                     </div>
                   </div>
 
@@ -414,7 +418,11 @@
                           </div>
 
                           <div class="actions">
-                            <form method="post" action="{% url 'users:reservation_owner_cancel' r.id %}" style="display:inline;">
+                            <!-- ✅ 여기: 사장 탭 전체 예약 취소 confirm 추가 -->
+                            <form method="post"
+                                  action="{% url 'users:reservation_owner_cancel' r.id %}"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('정말 이 예약을 취소할까요? 취소하면 되돌릴 수 없어요.');">
                               {% csrf_token %}
                               <button class="btn-danger" type="submit">취소</button>
                             </form>
@@ -465,7 +473,12 @@
                         <div class="actions">
                           <a class="btn-ghost" href="{% url 'restaurants:detail' res.restaurant.pk %}">식당 보기</a>
                           <a class="btn-ghost" href="{% url 'users:reservation_edit' res.id %}">수정</a>
-                          <form method="post" action="{% url 'users:reservation_cancel' res.id %}" style="display:inline;">
+
+                          <!-- ✅ 여기: 일반 회원 예약내역 취소 confirm 추가 -->
+                          <form method="post"
+                                action="{% url 'users:reservation_cancel' res.id %}"
+                                style="display:inline;"
+                                onsubmit="return confirm('정말 이 예약을 취소할까요? 취소하면 되돌릴 수 없어요.');">
                             {% csrf_token %}
                             <button class="btn-danger" type="submit">취소</button>
                           </form>
