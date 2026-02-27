@@ -38,14 +38,23 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:20px;">
       <div>
         <span style="color:var(--accent); font-weight:700;">{{ restaurant.category.name|default:"음식점" }}</span>
+        
         <div style="display: flex; align-items: center; gap: 15px;">
-            <h1 style="font-size:40px; margin:10px 0;">{{ restaurant.name }}</h1>
-            {# 권한 로직 병합: 소유자, 스태프, 슈퍼유저 모두 수정 가능 #}
+            <h1 style="font-size:40px; margin:10px 0 5px 0;">{{ restaurant.name }}</h1>
             {% if user == restaurant.owner or user.is_staff or user.is_superuser %}
                 <a href="{% url 'restaurants:update' restaurant.pk %}" class="btn-edit">✏️ 정보 수정</a>
             {% endif %}
         </div>
-        <p style="color:#666;">📍 {{ restaurant.address }}</p>
+
+        {% if restaurant.website %}
+        <div style="margin-bottom: 8px;">
+            <a href="{{ restaurant.website }}" target="_blank" style="text-decoration: none; color: #ff4d4f; font-size: 14px; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
+                🔗 공식 웹사이트 방문하기
+            </a>
+        </div>
+        {% endif %}
+        
+        <p style="color:#666; margin: 0;">📍 {{ restaurant.address }}</p>
       </div>
       {% if user.is_authenticated and not user.owner_profile %}
       <a href="{% url 'reviews:create' restaurant.pk %}" class="btn btn-primary" style="padding:12px 24px; border-radius:12px; font-weight:600;">리뷰 작성</a>
@@ -187,7 +196,7 @@
           <p><strong style="color:#333;">☕ 브레이크 타임</strong><br>{{ restaurant.break_time }}</p>
           {% endif %}
           <p><strong style="color:#333;">📅 휴무일</strong><br>{{ restaurant.closed_days|default:"정보없음" }}</p>
-        </div>
+          </div>
         
         <div style="margin-top:30px;">
           <button class="btn-fav {% if is_favorite %}active{% endif %}" id="favBtn" onclick="toggleFav('{{ restaurant.pk }}', this)" style="width:100%; padding:15px; border:1.5px solid #ff4d4f; border-radius:14px; cursor:pointer; font-weight:700; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -195,7 +204,6 @@
           </button>
         </div>
 
-        {# 관리자 삭제 도구 (main 로직 준수) #}
         {% if user.is_staff or user.is_superuser %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
           <p style="color: #fa5252; font-size: 13px; font-weight: 700; margin-bottom: 8px;">운영자 도구 (폐업 관리)</p>
@@ -220,7 +228,6 @@
 {% block extra_js %}
 <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId={{ MAP_API_KEY }}"></script>
 <script>
-  // 📸 사진 교체 함수
   function changePhoto(element) {
     const mainImg = document.getElementById('viewMain');
     mainImg.style.opacity = '0';
@@ -232,7 +239,6 @@
     element.classList.add('active');
   }
 
-  // 찜하기 기능
   function toggleFav(id, btn) {
     const textSpan = btn.querySelector('#favText');
     fetch(`/favorites/toggle/${id}/`, {
@@ -255,7 +261,6 @@
     .catch(error => alert(error.message));
   }
 
-  // 최근 본 매장 저장 및 지도 로드
   document.addEventListener("DOMContentLoaded", function() {
     const storeData = {
       id: "{{ restaurant.pk }}",
@@ -284,7 +289,6 @@
     {% endif %}
   });
 
-  // 답글 모달 로직
   let currentReviewId = null;
   let currentMode = null;
 
