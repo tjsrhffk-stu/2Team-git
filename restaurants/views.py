@@ -5,15 +5,21 @@ from django.contrib import messages
 from django.conf import settings
 from .models import Restaurant, Category, RestaurantImage
 
+# --- 수정 및 병합된 임포트 섹션 ---
+import os
+import environ
 
-import os,environ
+# 메인 브랜치의 설정과 feature 브랜치의 environ 설정을 통합
 env = environ.Env()
-environ.Env.read_env()
-
+# .env 파일이 존재하는 경우 읽어옴 (settings.py에서 이미 처리했다면 생략 가능하지만 유지해도 무방)
+env_file = os.path.join(settings.BASE_DIR, '.env')
+if os.path.exists(env_file):
+    environ.Env.read_env(env_file)
+# --------------------------------
 
 def _extract_form_data(post):
     """기존 팀원이 만든 폼 데이터 추출 함수 유지"""
-    keys = ["name", "category", "phone", "description", "address", "hours", "closed_days", "website"]
+    keys = ["name", "category", "phone", "description", "address", "hours", "break_time", "closed_days", "website"]
     if hasattr(post, "get"):
         return {k: (post.get(k, "") or "") for k in keys}
     return {k: "" for k in keys}
@@ -67,12 +73,11 @@ def restaurant_detail(request, pk):
         pct = (count / total_reviews * 100) if total_reviews > 0 else 0
         rating_distribution.append({"star": i, "count": count, "pct": int(pct)})
     
-    # ✅ 수정 포인트: 환경 변수에서 키를 가져와 템플릿에 넘겨줌
     context = {
         "restaurant": restaurant,
         "reviews": reviews,
         "rating_distribution": rating_distribution,
-        "MAP_API_KEY": env('NAVER_CLIENT_ID'), 
+        "MAP_API_KEY": settings.NAVER_CLIENT_ID, 
     }
     
     return render(request, "restaurants/detail.html", context)
@@ -126,10 +131,8 @@ def restaurant_create(request):
 
 @login_required
 def restaurant_update(request, pk):
-    """음식점 수정 뷰 - 기존 구조를 유지하며 주소 변경 로직만 수정"""
+    """음식점 수정 뷰 - 기존 구조 유지"""
     restaurant = get_object_or_404(Restaurant, pk=pk)
-    
-    # [수정 포인트 1] 기존 주소를 미리 보관
     old_address = restaurant.address
 
     if not (_is_owner_user(request.user) and restaurant.owner == request.user) and \
@@ -142,10 +145,7 @@ def restaurant_update(request, pk):
     if request.method == "POST":
         restaurant.name = request.POST.get("name", "").strip()
         restaurant.phone = request.POST.get("phone", "").strip()
-        
-        # [수정 포인트 2] 주소 값을 먼저 가져옴
         new_address = request.POST.get("address", "").strip()
-        
         restaurant.description = request.POST.get("description", "").strip()
         restaurant.hours = request.POST.get("hours", "").strip()
         restaurant.closed_days = request.POST.get("closed_days", "").strip()
@@ -158,13 +158,9 @@ def restaurant_update(request, pk):
         if request.FILES.get("thumbnail"):
             restaurant.thumbnail = request.FILES.get("thumbnail")
 
-        # [수정 포인트 3] 무조건 None으로 만들지 않고, 주소가 바뀌었을 때만 초기화
         if old_address != new_address:
             restaurant.address = new_address
             restaurant.lat, restaurant.lng = None, None
-        else:
-            # 주소가 같으면 기존 lat, lng 유지
-            pass
 
         restaurant.save()
 

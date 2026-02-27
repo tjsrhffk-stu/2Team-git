@@ -1,4 +1,3 @@
-{# v3-patched-2026-02-26 #}
 {% extends 'base.html' %}
 {% load static %}
 
@@ -13,11 +12,19 @@
   .bar-fill { height: 100%; background: #F59E0B; transition: width 0.5s ease; }
   .btn-fav.active { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
   
-  /* 다중 이미지 갤러리 스타일 */
-  .image-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 30px; scrollbar-width: thin; }
-  .gallery-item { width: 150px; height: 150px; flex-shrink: 0; border-radius: 12px; object-fit: cover; border: 1px solid #eee; }
+  /* --- 이미지 갤러리 스타일 --- */
+  .image-gallery { display: flex; gap: 12px; overflow-x: auto; padding: 5px 5px 15px 5px; margin-bottom: 30px; scrollbar-width: thin; }
+  .gallery-item { 
+    width: 120px; height: 120px; flex-shrink: 0; border-radius: 12px; 
+    object-fit: cover; border: 2px solid transparent; cursor: pointer; 
+    transition: all 0.2s ease; opacity: 0.6;
+  }
+  .gallery-item:hover { opacity: 1; transform: translateY(-2px); }
+  .gallery-item.active { opacity: 1; border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
-  /* 관리자/수정 버튼 스타일 */
+  /* 메인 이미지 전환 애니메이션 */
+  #viewMain { transition: opacity 0.2s ease-in-out; }
+
   .btn-delete-admin { width: 100%; padding: 12px; background: #fa5252; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
   .btn-delete-admin:hover { background: #e03131; }
   .btn-edit { padding: 8px 16px; background: #f1f3f5; color: #495057; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s; }
@@ -31,39 +38,50 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:20px;">
       <div>
         <span style="color:var(--accent); font-weight:700;">{{ restaurant.category.name|default:"음식점" }}</span>
+        
         <div style="display: flex; align-items: center; gap: 15px;">
-            <h1 style="font-size:40px; margin:10px 0;">{{ restaurant.name }}</h1>
-            
-            {# 사장(owner) 또는 관리자(staff/superuser)만 수정 가능 #}
-            {% if user == restaurant.owner or user.is_staff or user.is_superuser or request.user == restaurant.owner or request.user.is_staff or request.user.is_superuser %}
+            <h1 style="font-size:40px; margin:10px 0 5px 0;">{{ restaurant.name }}</h1>
+            {% if user == restaurant.owner or user.is_staff or user.is_superuser %}
                 <a href="{% url 'restaurants:update' restaurant.pk %}" class="btn-edit">✏️ 정보 수정</a>
             {% endif %}
         </div>
-        <p style="color:#666;">📍 {{ restaurant.address }}</p>
+
+        {% if restaurant.website %}
+        <div style="margin-bottom: 8px;">
+            <a href="{{ restaurant.website }}" target="_blank" style="text-decoration: none; color: #ff4d4f; font-size: 14px; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
+                🔗 공식 웹사이트 방문하기
+            </a>
+        </div>
+        {% endif %}
+        
+        <p style="color:#666; margin: 0;">📍 {{ restaurant.address }}</p>
       </div>
-      {% if user.is_authenticated %}
-        <a href="{% url 'reviews:create' restaurant.pk %}" class="btn btn-primary" style="padding:12px 24px; border-radius:12px; font-weight:600;">리뷰 작성</a>
+      {% if user.is_authenticated and not user.owner_profile %}
+      <a href="{% url 'reviews:create' restaurant.pk %}" class="btn btn-primary" style="padding:12px 24px; border-radius:12px; font-weight:600;">리뷰 작성</a>
       {% endif %}
     </div>
   </div>
 
   <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:30px; margin-top:30px;">
     <div class="main-content" style="grid-column: span 2;">
-      <div style="width:100%; height:450px; border-radius:20px; overflow:hidden; margin-bottom:15px; border: 1px solid #eee;">
+      
+      <div style="width:100%; height:500px; border-radius:24px; overflow:hidden; margin-bottom:15px; border: 1px solid #eee; background: #f8f9fa;">
         {% if restaurant.thumbnail %}
-          <img src="{{ restaurant.thumbnail.url }}" style="width:100%; height:100%; object-fit:cover;" alt="식당 이미지">
+          <img id="viewMain" src="{{ restaurant.thumbnail.url }}" style="width:100%; height:100%; object-fit:cover;" alt="식당 이미지">
         {% else %}
-          <div style="width:100%; height:100%; background:#f5f5f5; display:flex; align-items:center; justify-content:center; font-size:40px;">🍽️</div>
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px;">🍽️</div>
         {% endif %}
       </div>
 
-      {% if restaurant.additional_images.all %}
       <div class="image-gallery">
+          {% if restaurant.thumbnail %}
+            <img src="{{ restaurant.thumbnail.url }}" class="gallery-item active" onclick="changePhoto(this)" alt="대표 이미지">
+          {% endif %}
+          
           {% for img_obj in restaurant.additional_images.all %}
-            <img src="{{ img_obj.image.url }}" class="gallery-item" alt="상세 이미지">
+            <img src="{{ img_obj.image.url }}" class="gallery-item" onclick="changePhoto(this)" alt="상세 이미지">
           {% endfor %}
       </div>
-      {% endif %}
 
       <div class="info-card">
         <h3 style="margin-bottom:20px; font-weight: 700;">매장 상세정보</h3>
@@ -94,10 +112,15 @@
         <p style="white-space:pre-wrap; margin-top:25px; line-height:1.8; color:#444;">{{ restaurant.description|default:"매장 소개 내용이 아직 등록되지 않았습니다." }}</p>
       </div>
 
-   <div class="filter-bar" style="margin-bottom: 20px; display: flex; gap: 8px; border: none; position: static;">
-        <a href="?sort=rating_high" class="chip {% if current_sort == 'rating_high' %}active{% endif %}">⭐ 별점 높은순</a>
-        <a href="?sort=latest" class="chip {% if current_sort == 'latest' %}active{% endif %}">🕐 최신순</a>
-        <a href="?sort=rating_low" class="chip {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+      <div class="sort-filter-container">
+        <div class="sort-filter-bar" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 24px;">
+          <span class="sort-label" style="font-size: 0.875rem; font-weight: 700; white-space: nowrap;">정렬 :</span>
+          <div class="sort-buttons" style="display: flex; gap: 8px; flex-wrap: nowrap;">
+            <a href="?sort=rating_high" class="sort-btn {% if current_sort == 'rating_high' or not current_sort %}active{% endif %}">⭐ 별점 높은순</a>
+            <a href="?sort=latest" class="sort-btn {% if current_sort == 'latest' %}active{% endif %}">🕒 최신순</a>
+            <a href="?sort=rating_low" class="sort-btn {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+          </div>
+        </div>
       </div>
 
       <div class="info-card">
@@ -113,14 +136,46 @@
               </span>
             </div>
             <p style="margin:10px 0; line-height:1.6; color:#333;">{{ review.content }}</p>
-            
             {% if review.image %}
-            <div style="margin: 15px 0;">
-                <img src="{{ review.image.url }}" style="max-width: 250px; border-radius: 12px; border: 1px solid #eee;" alt="리뷰 사진">
-            </div>
+              <div style="margin: 15px 0;">
+                  <img src="{{ review.image.url }}" style="max-width: 250px; border-radius: 12px; border: 1px solid #eee;" alt="리뷰 사진">
+              </div>
+            {% endif %}
+            <small style="color:#bbb;">{{ review.created_at|date:"Y.m.d" }}</small>
+
+            {% if user == review.author %}
+              <div style="display:flex; gap:8px; margin-top:10px;">
+                <a href="{% url 'reviews:edit' review.pk %}" style="font-size:13px; text-decoration:none; padding:4px 10px; border:1px solid #ddd; border-radius:8px; color:#666;">✏️ 수정</a>
+                <form method="post" action="{% url 'reviews:delete' review.pk %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" onclick="return confirm('리뷰를 삭제할까요?')" style="font-size:13px; color:#EF4444; background:none; border:1px solid #FECACA; border-radius:8px; padding:4px 10px; cursor:pointer;">🗑️ 삭제</button>
+                </form>
+              </div>
             {% endif %}
 
-            <small style="color:#bbb;">{{ review.created_at|date:"Y.m.d" }}</small>
+            {% if review.reply %}
+              <div style="margin-top:14px; margin-left:20px; padding:14px 18px; background:#fff8f5; border-left:3px solid #ff4d4f; border-radius:0 12px 12px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <strong style="font-size:14px; color:#ff4d4f;">🏪 사장님 답글</strong>
+                  <small style="color:#bbb;">{{ review.reply.created_at|date:"Y.m.d" }}</small>
+                </div>
+                <p style="font-size:14px; line-height:1.6; color:#444; margin:0;">{{ review.reply.content }}</p>
+
+                {% if user == restaurant.owner %}
+                  <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button onclick="openEditModal({{ review.pk }}, '{{ review.reply.content|escapejs }}')" style="font-size:12px; color:#666; background:none; border:1px solid #ddd; border-radius:8px; padding:4px 10px; cursor:pointer;">✏️ 수정</button>
+                    <form method="post" action="{% url 'reviews:reply_delete' review.pk %}" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" onclick="return confirm('답글을 삭제할까요?')" style="font-size:12px; color:#EF4444; background:none; border:1px solid #FECACA; border-radius:8px; padding:4px 10px; cursor:pointer;">🗑️ 삭제</button>
+                    </form>
+                  </div>
+                {% endif %}
+              </div>
+            {% elif user == restaurant.owner %}
+              <div style="margin-top:12px; margin-left:20px;">
+                <button onclick="openCreateModal({{ review.pk }})" style="font-size:13px; color:#ff4d4f; background:none; border:1px solid #ff4d4f; border-radius:8px; padding:6px 14px; cursor:pointer;">💬 답글 달기</button>
+              </div>
+            {% endif %}
           </div>
         {% empty %}
           <div style="text-align:center; padding:60px 0; color:#ccc;">
@@ -137,43 +192,32 @@
         <div style="display:grid; gap:15px; font-size:15px; color:#555;">
           <p><strong style="color:#333;">📞 전화번호</strong><br>{{ restaurant.phone|default:"정보없음" }}</p>
           <p><strong style="color:#333;">⏰ 영업시간</strong><br>{{ restaurant.hours|default:"정보없음" }}</p>
-        </div>
+          {% if restaurant.break_time %}
+          <p><strong style="color:#333;">☕ 브레이크 타임</strong><br>{{ restaurant.break_time }}</p>
+          {% endif %}
+          <p><strong style="color:#333;">📅 휴무일</strong><br>{{ restaurant.closed_days|default:"정보없음" }}</p>
+          </div>
         
         <div style="margin-top:30px;">
-          <button class="btn-fav {% if is_favorite %}active{% endif %}" 
-                  id="favBtn" onclick="toggleFav('{{ restaurant.pk }}', this)" 
-                  style="width:100%; padding:15px; border:1.5px solid #ff4d4f; border-radius:14px; cursor:pointer; font-weight:700; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <button class="btn-fav {% if is_favorite %}active{% endif %}" id="favBtn" onclick="toggleFav('{{ restaurant.pk }}', this)" style="width:100%; padding:15px; border:1.5px solid #ff4d4f; border-radius:14px; cursor:pointer; font-weight:700; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <span id="favText">{% if is_favorite %}❤️ 저장됨{% else %}🤍 저장하기{% endif %}</span>
           </button>
         </div>
 
-        {# ✅ 관리자 도구 #}
-        {% if user.is_staff or user.is_superuser or request.user.is_staff or request.user.is_superuser %}
+        {% if user.is_staff or user.is_superuser %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-          <p style="color: #fa5252; font-size: 13px; font-weight: 700; margin-bottom: 8px;">
-            운영자 도구 (폐업 관리)
-          </p>
-
-          {# ✅ 줄바꿈 버그 해결 (백틱 사용) #}
-          <form method="post" action="/restaurants/{{ restaurant.pk }}/delete/"
-                onsubmit="return confirm(`관리자 권한으로 삭제를 진행하시겠습니까?
-이 작업은 되돌릴 수 없습니다.`);">
+          <p style="color: #fa5252; font-size: 13px; font-weight: 700; margin-bottom: 8px;">운영자 도구 (폐업 관리)</p>
+          <form method="post" action="{% url 'restaurants:delete' restaurant.pk %}" onsubmit="return confirm('관리자 권한으로 삭제를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');">
             {% csrf_token %}
-            <button type="submit" class="btn-delete-admin">
-              🗑️ 식당 삭제하기
-            </button>
+            <button type="submit" class="btn-delete-admin">🗑️ 식당 삭제하기</button>
           </form>
         </div>
         {% endif %}
 
-        {# 📍 추가된 지도 영역 (사이드바 하단 빈 공간) #}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
             <h4 style="margin-bottom:15px; font-weight: 700;">📍 위치 안내</h4>
             <div id="detail-map" style="width:100%; height:250px; border-radius:12px; border: 1px solid #eee; background: #f9f9f9;"></div>
-            <a href="https://map.naver.com/v5/search/{{ restaurant.address|urlencode }}" target="_blank" 
-               style="display: block; margin-top: 10px; font-size: 12px; color: #ff4d4f; text-decoration: none; font-weight: 600;">
-               큰 지도로 보기/길찾기 →
-            </a>
+            <a href="https://map.naver.com/v5/search/{{ restaurant.address|urlencode }}" target="_blank" style="display: block; margin-top: 10px; font-size: 12px; color: #ff4d4f; text-decoration: none; font-weight: 600;">큰 지도로 보기/길찾기 →</a>
         </div>
       </div>
     </div>
@@ -182,11 +226,19 @@
 {% endblock %}
 
 {% block extra_js %}
-{# 네이버 지도 API 추가 #}
 <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId={{ MAP_API_KEY }}"></script>
-
 <script>
-  // 1. 즐겨찾기 함수 (기존 유지)
+  function changePhoto(element) {
+    const mainImg = document.getElementById('viewMain');
+    mainImg.style.opacity = '0';
+    setTimeout(() => {
+      mainImg.src = element.src;
+      mainImg.style.opacity = '1';
+    }, 200);
+    document.querySelectorAll('.gallery-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+  }
+
   function toggleFav(id, btn) {
     const textSpan = btn.querySelector('#favText');
     fetch(`/favorites/toggle/${id}/`, {
@@ -210,7 +262,6 @@
   }
 
   document.addEventListener("DOMContentLoaded", function() {
-    // 2. 최근 본 맛집 저장 (기존 유지)
     const storeData = {
       id: "{{ restaurant.pk }}",
       name: "{{ restaurant.name }}",
@@ -224,16 +275,9 @@
     if (recentStores.length > 10) recentStores.pop();
     localStorage.setItem('recentStores', JSON.stringify(recentStores));
 
-    // 3. 상세페이지 지도 로딩 (추가)
     {% if restaurant.lat and restaurant.lng %}
     var mapPos = new naver.maps.LatLng({{ restaurant.lat }}, {{ restaurant.lng }});
-    var mapOptions = {
-        center: mapPos,
-        zoom: 16,
-        zoomControl: true,
-        zoomControlOptions: { position: naver.maps.Position.RIGHT_BOTTOM }
-    };
-    var map = new naver.maps.Map('detail-map', mapOptions);
+    var map = new naver.maps.Map('detail-map', { center: mapPos, zoom: 16 });
     new naver.maps.Marker({
         position: mapPos,
         map: map,
@@ -242,10 +286,54 @@
             anchor: new naver.maps.Point(8, 8)
         }
     });
-    {% else %}
-    document.getElementById('detail-map').innerHTML = 
-        '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#999; font-size:12px;">좌표 정보가 없습니다.</div>';
     {% endif %}
   });
+
+  let currentReviewId = null;
+  let currentMode = null;
+
+  function openCreateModal(reviewId) {
+    currentReviewId = reviewId;
+    currentMode = 'create';
+    document.getElementById('replyModalTitle').textContent = '💬 답글 작성';
+    document.getElementById('replyContent').value = '';
+    document.getElementById('replyModal').style.display = 'flex';
+  }
+
+  function openEditModal(reviewId, existingContent) {
+    currentReviewId = reviewId;
+    currentMode = 'edit';
+    document.getElementById('replyModalTitle').textContent = '✏️ 답글 수정';
+    document.getElementById('replyContent').value = existingContent;
+    document.getElementById('replyModal').style.display = 'flex';
+  }
+
+  function closeModal() { document.getElementById('replyModal').style.display = 'none'; }
+
+  function submitReply() {
+    const content = document.getElementById('replyContent').value.trim();
+    if (!content) return alert('내용을 입력해주세요.');
+    const url = currentMode === 'create' ? `/reviews/${currentReviewId}/reply/` : `/reviews/${currentReviewId}/reply/edit/`;
+    const form = document.createElement('form');
+    form.method = 'POST'; form.action = url;
+    const csrf = document.createElement('input'); csrf.type = 'hidden'; csrf.name = 'csrfmiddlewaretoken'; csrf.value = '{{ csrf_token }}';
+    const contentInput = document.createElement('input'); contentInput.type = 'hidden'; contentInput.name = 'content'; contentInput.value = content;
+    form.appendChild(csrf); form.appendChild(contentInput);
+    document.body.appendChild(form); form.submit();
+  }
 </script>
+
+<div id="replyModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:white; border-radius:20px; padding:32px; width:100%; max-width:500px; margin:0 20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <strong id="replyModalTitle" style="font-size:18px;">💬 답글 작성</strong>
+      <button onclick="closeModal()" style="font-size:20px; background:none; border:none; cursor:pointer;">✕</button>
+    </div>
+    <textarea id="replyContent" maxlength="500" style="width:100%; padding:14px; border:1.5px solid #eee; border-radius:12px; min-height:120px; outline:none;"></textarea>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button onclick="submitReply()" style="flex:2; padding:13px; background:#ff4d4f; color:#fff; border:none; border-radius:12px; font-weight:700; cursor:pointer;">✅ 등록</button>
+      <button onclick="closeModal()" style="flex:1; padding:13px; background:#f5f5f5; border:1px solid #ddd; border-radius:12px; cursor:pointer;">취소</button>
+    </div>
+  </div>
+</div>
 {% endblock %}

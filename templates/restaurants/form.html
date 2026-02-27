@@ -84,16 +84,23 @@
           <label>영업시간</label>
           <div class="input-wrap">
             <input type="text" name="hours" class="form-input" placeholder="09:00 - 22:00"
-                   value="{{ restaurant.hours|default:form_data.hours|default:'' }}">
+                  value="{{ restaurant.hours|default:form_data.hours|default:'' }}">
             <span class="icon">🕐</span>
           </div>
         </div>
-
+        <div class="form-group">
+          <label>브레이크 타임</label>
+          <div class="input-wrap">
+            <input type="text" name="break_time" class="form-input" placeholder="15:00 - 17:00"
+                  value="{{ restaurant.break_time|default:form_data.break_time|default:'' }}">
+            <span class="icon">☕</span>
+          </div>
+        </div>
         <div class="form-group">
           <label>휴무일</label>
           <div class="input-wrap">
             <input type="text" name="closed_days" class="form-input" placeholder="매주 월요일"
-                   value="{{ restaurant.closed_days|default:form_data.closed_days|default:'' }}">
+                  value="{{ restaurant.closed_days|default:form_data.closed_days|default:'' }}">
             <span class="icon">📅</span>
           </div>
         </div>

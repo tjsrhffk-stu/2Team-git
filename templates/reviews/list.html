@@ -135,7 +135,6 @@
   .action-btn.delete:hover { background: #FEE2E2; }
   [data-theme="dark"] .action-btn.delete { background: rgba(127,29,29,0.15); }
 
-  /* photo -> image 변경 */
   .card-image {
     background: var(--surface2, #F2EFE9); position: relative;
     display: flex; align-items: center; justify-content: center;
@@ -172,98 +171,184 @@
 
 <div class="page-header">
   <div class="page-header-inner">
-    <h1 class="page-title">✍️ 전체 리뷰</h1>
-    <p class="page-subtitle">LocalEats 회원들의 솔직한 맛집 후기를 확인해보세요</p>
-    <div class="stats-row">
-      <div class="stat-badge">📝 총 <strong>{{ reviews|length }}</strong>개의 리뷰</div>
-      {% if user.is_authenticated %}
-        <a href="{% url 'restaurants:list' %}" class="btn-write">✍️ 리뷰 작성하러 가기</a>
-      {% else %}
-        <a href="{% url 'users:login' %}" class="btn-write">🔑 로그인하고 리뷰 쓰기</a>
-      {% endif %}
-    </div>
+    {% if is_owner %}
+      <h1 class="page-title">💬 나의 답글</h1>
+      <div class="stats-row">
+        <div class="stat-badge">💬 총 <strong>{{ replies|length }}</strong>개의 답글</div>
+      </div>
+    {% elif is_mypage %}
+      <h1 class="page-title">👤 나의 리뷰</h1>
+      <div class="stats-row">
+        <div class="stat-badge">📝 총 <strong>{{ reviews|length }}</strong>개의 리뷰</div>
+      </div>
+    {% else %}
+      <h1 class="page-title">✍️ 전체 리뷰</h1>
+      <p class="page-subtitle">LocalEats 회원들의 솔직한 맛집 후기를 확인해보세요</p>
+      <div class="stats-row">
+        <div class="stat-badge">📝 총 <strong>{{ reviews|length }}</strong>개의 리뷰</div>
+        {% if user.is_authenticated %}
+          <a href="{% url 'restaurants:list' %}" class="btn-write">✍️ 리뷰 작성하러 가기</a>
+        {% else %}
+          <a href="{% url 'users:login' %}" class="btn-write">🔑 로그인하고 리뷰 쓰기</a>
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
 </div>
 
-<div class="filter-bar">
-  <div class="filter-bar-inner">
-    <span class="filter-label">정렬 :</span>
-    <a href="?sort=latest"      class="chip {% if not request.GET.sort or request.GET.sort == 'latest' %}active{% endif %}">🕐 최신순</a>
-    <a href="?sort=rating_high" class="chip {% if request.GET.sort == 'rating_high' %}active{% endif %}">⭐ 별점 높은순</a>
-    <a href="?sort=rating_low"  class="chip {% if request.GET.sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
+<div class="sort-filter-bar">
+  <span class="sort-label">정렬 :</span>
+  <div class="sort-buttons">
+    <a href="?sort=rating_high" class="sort-btn {% if current_sort == 'rating_high' or not current_sort %}active{% endif %}">
+      ⭐ 별점 높은순
+    </a>
+    
+    <a href="?sort=latest" class="sort-btn {% if current_sort == 'latest' %}active{% endif %}">
+      🕒 최신순
+    </a>
+    
+    <a href="?sort=rating_low" class="sort-btn {% if current_sort == 'rating_low' %}active{% endif %}">
+      💔 별점 낮은순
+    </a>
   </div>
 </div>
 
 <div class="reviews-body">
-  {% if reviews %}
-  <div class="reviews-list">
-    {% for review in reviews %}
-    <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
 
-      <div class="card-content">
-        <a href="{% url 'restaurants:detail' pk=review.restaurant.pk %}" class="card-restaurant">
-          <div class="restaurant-thumb">
-            {% if review.restaurant.thumbnail %}
-              <img src="{{ review.restaurant.thumbnail.url }}" alt="{{ review.restaurant.name }}">
-            {% else %}
-              🍽️
-            {% endif %}
-          </div>
-          <div>
-            <div class="restaurant-name">{{ review.restaurant.name }}</div>
-            <div class="restaurant-category">{{ review.restaurant.category|default:"기타" }}</div>
-          </div>
-        </a>
-
-        <div class="rating-row">
-          <div class="stars">
-            {% for i in "12345" %}
-              {% if forloop.counter <= review.rating %}<span class="on">★</span>
-              {% else %}<span class="off">★</span>{% endif %}
-            {% endfor %}
-          </div>
-          <span class="rating-tag">{{ review.rating }}점</span>
-        </div>
-
-        <p class="review-text">{{ review.content }}</p>
-
-        <div class="author-row">
-          <div class="author-info">
-            <div class="author-avatar">{{ review.author.username|first|upper }}</div>
-            <div>
-              <div class="author-name">{{ review.author.username }}</div>
-              <div class="review-date">{{ review.created_at|date:"Y년 m월 d일" }}</div>
+  {% if is_owner %}
+    {% if replies %}
+    <div class="reviews-list">
+      {% for reply in replies %}
+      <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
+        <div class="card-content">
+          <a href="{% url 'restaurants:detail' pk=reply.review.restaurant.pk %}" class="card-restaurant">
+            <div class="restaurant-thumb">
+              {% if reply.review.restaurant.thumbnail %}
+                <img src="{{ reply.review.restaurant.thumbnail.url }}" alt="{{ reply.review.restaurant.name }}">
+              {% else %}🍽️{% endif %}
             </div>
+            <div>
+              <div class="restaurant-name">{{ reply.review.restaurant.name }}</div>
+              <div class="restaurant-category">{{ reply.review.restaurant.category|default:"기타" }}</div>
+            </div>
+          </a>
+
+          <div style="padding:12px 16px; background:var(--bg); border:1px solid var(--border); border-radius:10px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <strong style="font-size:13px;">👤 {{ reply.review.author.username }}</strong>
+              <span style="color:#F59E0B; font-size:13px;">
+                {% for i in "12345" %}{% if forloop.counter <= reply.review.rating %}★{% else %}☆{% endif %}{% endfor %}
+              </span>
+            </div>
+            <p style="font-size:13px; color:var(--text2); margin:0; line-height:1.5;">{{ reply.review.content }}</p>
           </div>
-          {% if user == review.author %}
-          <div class="action-btns">
-            <a href="{% url 'reviews:edit' review_id=review.pk %}" class="action-btn">✏️ 수정</a>
-            <button class="action-btn delete" onclick="deleteReview({{ review.pk }})">🗑️ 삭제</button>
+
+          <div style="padding:12px 16px; background:#fff8f5; border-left:3px solid var(--accent); border-radius:0 10px 10px 0;">
+            <strong style="font-size:13px; color:var(--accent);">🏪 내 답글</strong>
+            <p style="font-size:14px; line-height:1.6; color:#444; margin:6px 0 0;">{{ reply.content }}</p>
           </div>
+
+          <div class="author-row" style="margin-top:12px;">
+            <div class="review-date">{{ reply.created_at|date:"Y년 m월 d일" }}</div>
+          </div>
+        </div>
+        <div class="card-image">
+          {% if reply.review.restaurant.thumbnail %}
+            <img src="{{ reply.review.restaurant.thumbnail.url }}" alt="식당 이미지">
+          {% else %}
+            <span class="no-image">🏪</span>
           {% endif %}
         </div>
       </div>
-
-      <div class="card-image">
-        {% if review.image %}
-          <img src="{{ review.image.url }}" alt="리뷰 이미지">
-        {% else %}
-          <span class="no-image">📷</span>
-        {% endif %}
-      </div>
-
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">💬</div>
+      <h2 class="empty-title">아직 답글이 없어요</h2>
+      <p class="empty-desc">손님 리뷰에 답글을 남겨보세요!</p>
+      <a href="{% url 'restaurants:list' %}" class="btn-explore">🗺️ 음식점 둘러보기</a>
+    </div>
+    {% endif %}
 
   {% else %}
-  <div class="empty-state">
-    <div class="empty-icon">💬</div>
-    <h2 class="empty-title">아직 리뷰가 없어요</h2>
-    <p class="empty-desc">맛집을 방문하고 첫 번째 리뷰를 남겨보세요!<br>솔직한 후기가 다른 분들에게 큰 도움이 됩니다.</p>
-    <a href="{% url 'restaurants:list' %}" class="btn-explore">🗺️ 음식점 둘러보기</a>
-  </div>
+    {% if reviews %}
+    <div class="reviews-list">
+      {% for review in reviews %}
+      <div class="review-card" style="animation-delay: {{ forloop.counter0 }}0ms">
+        <div class="card-content">
+          <a href="{% url 'restaurants:detail' pk=review.restaurant.pk %}" class="card-restaurant">
+            <div class="restaurant-thumb">
+              {% if review.restaurant.thumbnail %}
+                <img src="{{ review.restaurant.thumbnail.url }}" alt="{{ review.restaurant.name }}">
+              {% else %}🍽️{% endif %}
+            </div>
+            <div>
+              <div class="restaurant-name">{{ review.restaurant.name }}</div>
+              <div class="restaurant-category">{{ review.restaurant.category|default:"기타" }}</div>
+            </div>
+          </a>
+
+          <div class="rating-row">
+            <div class="stars">
+              {% for i in "12345" %}
+                {% if forloop.counter <= review.rating %}<span class="on">★</span>
+                {% else %}<span class="off">★</span>{% endif %}
+              {% endfor %}
+            </div>
+            <span class="rating-tag">{{ review.rating }}점</span>
+          </div>
+
+          <p class="review-text">{{ review.content }}</p>
+
+          <div class="author-row">
+            <div class="author-info">
+              <div class="author-avatar">{{ review.author.username|first|upper }}</div>
+              <div>
+                <div class="author-name">{{ review.author.username }}</div>
+                <div class="review-date">{{ review.created_at|date:"Y년 m월 d일" }}</div>
+              </div>
+            </div>
+            {% if user == review.author %}
+            <div class="action-btns">
+              <a href="{% url 'reviews:edit' review_id=review.pk %}" class="action-btn">✏️ 수정</a>
+              <button class="action-btn delete" onclick="deleteReview({{ review.pk }})">🗑️ 삭제</button>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if review.reply %}
+            <div style="margin-top:14px; padding:14px 18px; background:#fff8f5; border-left:3px solid var(--accent); border-radius:0 12px 12px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <strong style="font-size:13px; color:var(--accent);">🏪 사장님 답글</strong>
+                <small style="color:#bbb;">{{ review.reply.created_at|date:"Y.m.d" }}</small>
+              </div>
+              <p style="font-size:14px; line-height:1.6; color:#444; margin:0;">{{ review.reply.content }}</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="card-image">
+          {% if review.image %}
+            <img src="{{ review.image.url }}" alt="리뷰 이미지">
+          {% else %}
+            <span class="no-image">📷</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">💬</div>
+      <h2 class="empty-title">아직 리뷰가 없어요</h2>
+      <p class="empty-desc">맛집을 방문하고 첫 번째 리뷰를 남겨보세요!<br>솔직한 후기가 다른 분들에게 큰 도움이 됩니다.</p>
+      <a href="{% url 'restaurants:list' %}" class="btn-explore">🗺️ 음식점 둘러보기</a>
+    </div>
+    {% endif %}
+
   {% endif %}
+
 </div>
 
 {% endblock %}
