@@ -40,9 +40,8 @@ def _is_owner_user(user) -> bool:
 
 
 def restaurant_list(request):
-    """음식점 목록 뷰"""
     q = request.GET.get("q", "")
-    restaurants = Restaurant.objects.all().order_by("-id")
+    restaurants = Restaurant.objects.all().annotate(review_count=Count('reviews')).order_by("-id")
     if q:
         restaurants = restaurants.filter(
             Q(name__icontains=q) | Q(category__name__icontains=q) | Q(address__icontains=q)
@@ -62,21 +61,36 @@ def restaurant_map(request):
 
 
 def restaurant_detail(request, pk):
-    """상세 페이지 뷰 - 환경 변수 키 전달 추가"""
     restaurant = get_object_or_404(Restaurant, pk=pk)
-    reviews = restaurant.reviews.all().order_by("-created_at")
-    total_reviews = reviews.count()
+
+    # ✅ 정렬 처리
+    sort = request.GET.get('sort', 'rating_high')
+    all_reviews = restaurant.reviews.all()
+    if sort == 'latest':
+        reviews = all_reviews.order_by('-created_at')
+    elif sort == 'rating_low':
+        reviews = all_reviews.order_by('rating', '-created_at')
+    else:
+        reviews = all_reviews.order_by('-rating', '-created_at')
+
+    total_reviews = all_reviews.count()
     
     rating_distribution = []
     for i in range(5, 0, -1):
-        count = reviews.filter(rating=i).count()
+        count = all_reviews.filter(rating=i).count()
         pct = (count / total_reviews * 100) if total_reviews > 0 else 0
         rating_distribution.append({"star": i, "count": count, "pct": int(pct)})
     
+    is_favorite = False
+    if request.user.is_authenticated:
+        is_favorite = restaurant.favorited_by.filter(user=request.user).exists()
+
     context = {
         "restaurant": restaurant,
         "reviews": reviews,
         "rating_distribution": rating_distribution,
+        "current_sort": sort,
+        "is_favorite": is_favorite,
         "MAP_API_KEY": settings.NAVER_CLIENT_ID, 
     }
     

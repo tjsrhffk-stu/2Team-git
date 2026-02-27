@@ -199,17 +199,9 @@
 <div class="sort-filter-bar">
   <span class="sort-label">정렬 :</span>
   <div class="sort-buttons">
-    <a href="?sort=rating_high" class="sort-btn {% if current_sort == 'rating_high' or not current_sort %}active{% endif %}">
-      ⭐ 별점 높은순
-    </a>
-    
-    <a href="?sort=latest" class="sort-btn {% if current_sort == 'latest' %}active{% endif %}">
-      🕒 최신순
-    </a>
-    
-    <a href="?sort=rating_low" class="sort-btn {% if current_sort == 'rating_low' %}active{% endif %}">
-      💔 별점 낮은순
-    </a>
+  <a href="?sort=rating_high" class="chip {% if current_sort == 'rating_high' or not current_sort %}active{% endif %}">⭐ 별점 높은순</a>
+  <a href="?sort=latest"      class="chip {% if current_sort == 'latest' %}active{% endif %}">🕐 최신순</a>
+  <a href="?sort=rating_low"  class="chip {% if current_sort == 'rating_low' %}active{% endif %}">💔 별점 낮은순</a>
   </div>
 </div>
 
