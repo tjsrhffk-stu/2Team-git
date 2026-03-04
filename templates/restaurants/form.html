@@ -115,6 +115,20 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label>가격대</label>
+        <div class="input-wrap">
+          <select name="price_range" class="form-input">
+            <option value="">선택 안함</option>
+            <option value="cheap"   {% if restaurant.price_range == 'cheap'   %}selected{% endif %}>1만원 이하</option>
+            <option value="mid"     {% if restaurant.price_range == 'mid'     %}selected{% endif %}>1~2만원</option>
+            <option value="high"    {% if restaurant.price_range == 'high'    %}selected{% endif %}>2~3만원</option>
+            <option value="premium" {% if restaurant.price_range == 'premium' %}selected{% endif %}>3만원 이상</option>
+          </select>
+          <span class="icon">💰</span>
+        </div>
+      </div>
+
       <div class="form-section-title">📷 사진 관리</div>
 
       <div class="form-group">

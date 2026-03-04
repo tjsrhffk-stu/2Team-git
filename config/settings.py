@@ -16,17 +16,20 @@ import os, environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+# ── 환경변수 로드 (.env 파일) ─────────────────────────────
+env = environ.Env(
+    DEBUG=(bool, False),
+    ALLOWED_HOSTS=(list, ['127.0.0.1', 'localhost']),
+)
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0ru$&h^$z(_3nmnp-mq$tw2$&+09bkjypsw$9ogn3f+7uedrx-'
+SECRET_KEY = env('SECRET_KEY', default='django-insecure-0ru$&h^$z(_3nmnp-mq$tw2$&+09bkjypsw$9ogn3f+7uedrx-')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 
 # Application definition
@@ -70,7 +73,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'users.context_processors.user_flags',
-
+                'core.context_processors.notifications',
             ],
         },
     },
@@ -81,13 +84,32 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# .env에 DB_ENGINE=django.db.backends.postgresql 설정 시 PostgreSQL 사용
+# 미설정 시 SQLite (개발용) 사용
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+_db_engine = env('DB_ENGINE', default='django.db.backends.sqlite3')
+
+if _db_engine == 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': _db_engine,
+            'NAME':     env('DB_NAME'),
+            'USER':     env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST':     env('DB_HOST', default='localhost'),
+            'PORT':     env('DB_PORT', default='5432'),
+            'OPTIONS': {
+                'connect_timeout': 10,
+            },
+        }
+    }
 
 
 # Password validation
@@ -130,29 +152,22 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ✅ 실제 이메일 발송용 (SMTP)
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"      # 예: Gmail
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+# ── 이메일 ───────────────────────────────────────────────
+# DEBUG=True → 터미널 출력 / False → 실제 Gmail 발송
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND   = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST      = 'smtp.gmail.com'
+    EMAIL_PORT      = 587
+    EMAIL_USE_TLS   = True
+    EMAIL_HOST_USER     = env('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+    DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
 
-# 실제 테스트 시 아래 문자열을 본인의 정보로 변경하세요.
-EMAIL_HOST_USER = "내이메일@gmail.com"
-EMAIL_HOST_PASSWORD = "앱비밀번호"  # 일반 비번 아님!
+SITE_URL = env('SITE_URL', default='http://127.0.0.1:8000')
 
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-# reset 링크 만들 때 쓰는 값(너희 코드에서 settings.SITE_URL 쓰는 경우)
-SITE_URL = "http://127.0.0.1:8000"  # 로컬 테스트
-
-# -------------------------------------------------------
-# 개발 중 이메일 테스트 (실제 발송 없이 터미널에 출력)
-# 위 SMTP 설정 대신 아래로 교체하면 됩니다
-# -------------------------------------------------------
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-env = environ.Env(DEBUG=(bool,False))
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))  # .env 파일 읽기
-
-NAVER_CLIENT_ID = env('NAVER_CLIENT_ID')
-NAVER_CLIENT_SECRET = env('NAVER_CLIENT_SECRET')
+# ── 외부 API 키 ──────────────────────────────────────────
+NAVER_CLIENT_ID     = env('NAVER_CLIENT_ID', default='')
+NAVER_CLIENT_SECRET = env('NAVER_CLIENT_SECRET', default='')
+KAKAO_REST_API_KEY  = env('KAKAO_REST_API_KEY', default='')

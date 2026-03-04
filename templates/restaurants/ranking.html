@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}베스트 맛집 랭킹 — LocalEats{% endblock %}
+
+{% block extra_css %}
+<style>
+  .rank-wrap { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+  .rank-header { margin-bottom: 32px; }
+  .rank-title { font-size: 1.75rem; font-weight: 900; color: var(--text); letter-spacing: -.03em; margin-bottom: 6px; }
+  .rank-sub { font-size: .9rem; color: var(--text2); }
+
+  .rank-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .rank-row {
+    display: grid;
+    grid-template-columns: 48px 72px 1fr auto;
+    gap: 16px; align-items: center;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 14px 18px;
+    text-decoration: none; color: inherit;
+    box-shadow: var(--shadow-sm);
+    transition: all .2s;
+  }
+  .rank-row:hover { transform: translateX(4px); border-color: var(--accent); box-shadow: var(--shadow); }
+
+  /* Top 3 highlight */
+  .rank-row.top1 { border-color: #F59E0B; background: linear-gradient(135deg, #FFFBEB, var(--surface)); }
+  .rank-row.top2 { border-color: #94A3B8; background: linear-gradient(135deg, #F8FAFC, var(--surface)); }
+  .rank-row.top3 { border-color: #CD7C38; background: linear-gradient(135deg, #FFF7F0, var(--surface)); }
+
+  .rank-num {
+    font-size: 1.4rem; font-weight: 900; text-align: center;
+    color: var(--text3);
+  }
+  .rank-num.gold   { color: #F59E0B; }
+  .rank-num.silver { color: #94A3B8; }
+  .rank-num.bronze { color: #CD7C38; }
+
+  .rank-thumb {
+    width: 72px; height: 56px; border-radius: 10px;
+    background: var(--surface2); overflow: hidden; border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .rank-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rank-thumb-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+
+  .rank-info h3 { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .rank-info .rank-meta { font-size: .8125rem; color: var(--text2); display: flex; gap: 10px; flex-wrap: wrap; }
+  .rank-info .rank-cat {
+    background: var(--accent-lt); color: var(--accent);
+    padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700;
+  }
+
+  .rank-score { text-align: right; flex-shrink: 0; }
+  .rank-score .score-num { font-size: 1.25rem; font-weight: 900; color: var(--gold); }
+  .rank-score .score-cnt { font-size: .75rem; color: var(--text3); margin-top: 2px; }
+
+  @media (max-width: 600px) {
+    .rank-row { grid-template-columns: 36px 56px 1fr auto; gap: 10px; padding: 12px 14px; }
+    .rank-thumb { width: 56px; height: 46px; }
+    .rank-num { font-size: 1.1rem; }
+    .rank-info h3 { font-size: .9rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rank-wrap">
+  <div class="rank-header">
+    <h1 class="rank-title">베스트 맛집 랭킹</h1>
+    <p class="rank-sub">별점과 리뷰 수를 기반으로 선정한 TOP {{ restaurants|length }} 맛집이에요</p>
+  </div>
+
+  <div class="rank-list">
+    {% for r in restaurants %}
+    <a href="{% url 'restaurants:detail' r.pk %}" class="rank-row {% if forloop.counter == 1 %}top1{% elif forloop.counter == 2 %}top2{% elif forloop.counter == 3 %}top3{% endif %}">
+
+      <!-- 순위 -->
+      <div class="rank-num {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">
+        {% if forloop.counter == 1 %}🥇
+        {% elif forloop.counter == 2 %}🥈
+        {% elif forloop.counter == 3 %}🥉
+        {% else %}{{ forloop.counter }}{% endif %}
+      </div>
+
+      <!-- 썸네일 -->
+      <div class="rank-thumb">
+        {% if r.thumbnail %}
+          <img src="{{ r.thumbnail.url }}" alt="{{ r.name }}">
+        {% else %}
+          <div class="rank-thumb-ph">🍽</div>
+        {% endif %}
+      </div>
+
+      <!-- 정보 -->
+      <div class="rank-info">
+        <h3>{{ r.name }}</h3>
+        <div class="rank-meta">
+          <span class="rank-cat">{{ r.category.name|default:"음식점" }}</span>
+          <span>리뷰 {{ r.review_count }}개</span>
+          <span style="color:var(--text3);font-size:.75rem;">{{ r.address|truncatechars:22 }}</span>
+        </div>
+      </div>
+
+      <!-- 별점 -->
+      <div class="rank-score">
+        <div class="score-num">★ {{ r.avg_r|floatformat:1 }}</div>
+        <div class="score-cnt">조회 {{ r.view_count|default:0 }}</div>
+      </div>
+
+    </a>
+    {% empty %}
+    <div style="text-align:center;padding:80px 0;color:var(--text3);">
+      <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+      <p>아직 리뷰가 충분한 식당이 없어요</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

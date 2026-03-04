@@ -1,0 +1,22 @@
+[
+  {"model": "restaurants.restaurant", "pk": 2,  "fields": {"thumbnail": "restaurants/thumbs/r2.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 3,  "fields": {"thumbnail": "restaurants/thumbs/r3.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 4,  "fields": {"thumbnail": "restaurants/thumbs/r4.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 5,  "fields": {"thumbnail": "restaurants/thumbs/r5.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 6,  "fields": {"thumbnail": "restaurants/thumbs/r6.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 7,  "fields": {"thumbnail": "restaurants/thumbs/r7.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 8,  "fields": {"thumbnail": "restaurants/thumbs/r8.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 9,  "fields": {"thumbnail": "restaurants/thumbs/r9.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 10, "fields": {"thumbnail": "restaurants/thumbs/r10.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 11, "fields": {"thumbnail": "restaurants/thumbs/r11.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 12, "fields": {"thumbnail": "restaurants/thumbs/r12.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 13, "fields": {"thumbnail": "restaurants/thumbs/r13.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 14, "fields": {"thumbnail": "restaurants/thumbs/r14.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 15, "fields": {"thumbnail": "restaurants/thumbs/r15.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 16, "fields": {"thumbnail": "restaurants/thumbs/r16.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 17, "fields": {"thumbnail": "restaurants/thumbs/r17.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 18, "fields": {"thumbnail": "restaurants/thumbs/r18.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 19, "fields": {"thumbnail": "restaurants/thumbs/r19.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 20, "fields": {"thumbnail": "restaurants/thumbs/r20.jpg"}},
+  {"model": "restaurants.restaurant", "pk": 21, "fields": {"thumbnail": "restaurants/thumbs/r21.jpg"}}
+]

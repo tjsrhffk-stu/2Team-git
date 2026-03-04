@@ -13,5 +13,11 @@ urlpatterns = [
     path("<int:review_id>/reply/", views.reply_create, name="reply_create"),
     path("<int:review_id>/reply/edit/", views.reply_edit, name="reply_edit"),
     path("<int:review_id>/reply/delete/", views.reply_delete, name="reply_delete"),
+
+    # 좋아요 토글 (AJAX POST)
+    path("<int:review_id>/like/", views.review_like_toggle, name="like"),
+
+    # 신고 (AJAX POST)
+    path("<int:review_id>/report/", views.report_review, name="report"),
 ]
 
