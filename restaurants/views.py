@@ -24,17 +24,13 @@ def _extract_form_data(post):
     return {k: "" for k in keys}
 
 def _is_owner_user(user) -> bool:
-    """기존 권한 판별 로직 유지"""
+    """사장 판별 기준을 profile.user_type == 'OWNER' 으로 통일"""
     if not getattr(user, "is_authenticated", False):
         return False
     if getattr(user, "is_superuser", False):
         return True
-    if hasattr(user, "owner_profile") or getattr(user, "is_staff", False):
-        return True
     profile = getattr(user, "profile", None)
-    if profile and getattr(profile, "user_type", None) == "OWNER":
-        return True
-    return False
+    return profile is not None and getattr(profile, "user_type", None) == "OWNER"
 
 # 태그명 → 카테고리명 매핑 (식당에 태그 미할당 시 카테고리 폴백)
 TAG_CATEGORY_MAP = {

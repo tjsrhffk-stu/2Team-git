@@ -15,7 +15,8 @@ from .models import Review, ReviewReply, ReviewLike, ReviewReport
 def create_review(request, restaurant_id):
     restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
     # ✅ 사장님 계정은 리뷰 작성 불가
-    if hasattr(request.user, 'owner_profile'):
+    _profile = getattr(request.user, "profile", None)
+    if _profile and getattr(_profile, "user_type", None) == "OWNER":
         messages.error(request, "사장님 계정은 리뷰를 작성할 수 없어요.")
         return redirect("restaurants:detail", pk=restaurant.pk)
     # 1. 정렬 기준 가져오기 (기본값을 'rating_high'로 설정)
@@ -140,7 +141,8 @@ def my_reviews(request):
     sort = request.GET.get('sort', 'rating_high')  # 정렬 값 읽기 (기본값: 별점 높은순)
 
     # 1. 사장님(OWNER)인 경우
-    if hasattr(request.user, 'owner_profile'):
+    _profile = getattr(request.user, "profile", None)
+    if _profile and getattr(_profile, "user_type", None) == "OWNER":
         # 🚨 순서 중요: 데이터부터 먼저 가져오고!
         replies = ReviewReply.objects.filter(
             author=request.user
