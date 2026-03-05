@@ -140,9 +140,44 @@
     text-decoration: none; color: inherit; display: block;
     animation: fadeUp 0.5s ease both;
   }
+<<<<<<< Updated upstream
   .restaurant-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--accent); }
   .card-img {
     height: 180px; background: var(--bg2); position: relative;
+=======
+  .cat-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 20px 12px;
+    text-align: center; text-decoration: none; color: var(--text);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    transition: all .2s;
+  }
+  .cat-card:hover {
+    border-color: var(--accent); background: var(--accent-lt);
+    transform: translateY(-2px); box-shadow: var(--shadow-sm);
+  }
+  .cat-icon { font-size: 2rem; }
+  .cat-name { font-size: .8125rem; font-weight: 700; color: var(--text2); }
+  .cat-card:hover .cat-name { color: var(--accent); }
+
+  /* ── RESTAURANT CARDS ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .r-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    text-decoration: none; color: inherit;
+    display: block; box-shadow: var(--shadow-sm);
+    transition: all .22s;
+  }
+  .r-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: #D0D0D0; }
+  .r-card-img {
+    height: 180px; background: var(--surface2);
+    position: relative; overflow: hidden;
+>>>>>>> Stashed changes
     display: flex; align-items: center; justify-content: center;
     font-size: 56px; overflow: hidden;
   }
@@ -314,6 +349,133 @@
     {% endfor %}
     {% endfor %}
   </div>
+<<<<<<< Updated upstream
+=======
+</div>
+
+<!-- ── 푸드스토리 / 기사 ── -->
+{% if food_stories %}
+<div class="section">
+  <div class="section-head">
+    <h2 class="section-title">📰 푸드스토리</h2>
+    <span style="font-size:.875rem;color:var(--text3);">맛집 트렌드 &amp; 음식 이야기</span>
+  </div>
+  <!-- 가로 스크롤 카드 열 -->
+  <div style="display:flex;gap:16px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-ms-overflow-style:none;">
+    {% for story in food_stories %}
+    <a href="{{ story.external_url|default:'#' }}"
+       {% if story.external_url %}target="_blank" rel="noopener"{% endif %}
+       style="flex:0 0 260px;background:var(--surface);border:1px solid var(--border);
+              border-radius:16px;overflow:hidden;text-decoration:none;
+              transition:transform .2s,box-shadow .2s;display:block;"
+       onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow)'"
+       onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="height:160px;background:var(--surface2);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;font-size:3rem;">
+        {% if story.thumbnail %}
+          <img src="{{ story.thumbnail.url }}" alt="{{ story.title }}" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          📰
+        {% endif %}
+        {% if story.badge %}
+          <span style="position:absolute;top:10px;left:10px;background:var(--accent);color:#fff;
+                       font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:100px;letter-spacing:.04em;">
+            {{ story.badge }}
+          </span>
+        {% endif %}
+      </div>
+      <div style="padding:14px 16px 16px;">
+        {% if story.subtitle %}
+          <div style="font-size:.75rem;color:var(--accent);font-weight:700;margin-bottom:5px;">{{ story.subtitle }}</div>
+        {% endif %}
+        <div style="font-size:.9375rem;font-weight:800;color:var(--text);line-height:1.4;
+                    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          {{ story.title }}
+        </div>
+        <div style="font-size:.775rem;color:var(--text3);margin-top:8px;">{{ story.created_at|date:"Y.m.d" }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── 테마 큐레이션 ── -->
+{% if theme_sections %}
+<div style="background:var(--surface2);padding-top:48px;padding-bottom:48px;width:100%;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
+    <h2 class="section-title" style="margin-bottom:8px;">테마별 맛집 모음</h2>
+    <p style="font-size:.9rem;color:var(--text3);margin-bottom:32px;">상황에 맞는 맛집을 골라드려요</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;">
+      {% for theme in theme_sections %}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-sm);">
+        <div style="padding:20px 20px 16px;">
+          <div style="font-size:1.0625rem;font-weight:900;color:var(--text);margin-bottom:4px;">{{ theme.label }}</div>
+          <div style="font-size:.825rem;color:var(--text3);">{{ theme.desc }}</div>
+        </div>
+        <div style="padding:0 20px 16px;display:flex;flex-direction:column;gap:8px;">
+          {% for r in theme.restaurants %}
+          <a href="/restaurants/{{ r.pk }}/" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:8px;border-radius:10px;transition:background .2s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+            {% if r.thumbnail %}<img src="{{ r.thumbnail.url }}" alt="" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+            {% else %}<div style="width:40px;height:40px;border-radius:8px;background:var(--surface2);flex-shrink:0;"></div>{% endif %}
+            <div style="min-width:0;">
+              <div style="font-size:.9rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.name }}</div>
+              <div style="font-size:.775rem;color:var(--text3);">★ {{ r.avg_rating|floatformat:1 }} · {{ r.category.name|default:"음식점" }}</div>
+            </div>
+          </a>
+          {% empty %}
+          <p style="font-size:.85rem;color:var(--text3);padding:8px;">아직 등록된 맛집이 없어요</p>
+          {% endfor %}
+        </div>
+        <div style="padding:0 20px 20px;">
+          <a href="{{ theme.link }}" style="display:block;text-align:center;padding:10px;background:var(--accent-lt);color:var(--accent);border-radius:10px;font-size:.85rem;font-weight:700;text-decoration:none;">더 보기 →</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── 최신 리뷰 피드 ── -->
+{% if recent_reviews %}
+<div class="section">
+  <div class="section-head">
+    <h2 class="section-title">생생한 최신 리뷰</h2>
+    <a href="/reviews/" class="section-more">전체 보기 →</a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+    {% for review in recent_reviews %}
+    <a href="/restaurants/{{ review.restaurant.pk }}/" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;text-decoration:none;display:block;transition:all .2s;box-shadow:var(--shadow-sm);" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='var(--shadow)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow-sm)'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        {% if review.restaurant.thumbnail %}<img src="{{ review.restaurant.thumbnail.url }}" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+        {% else %}<div style="width:36px;height:36px;border-radius:8px;background:var(--surface2);flex-shrink:0;"></div>{% endif %}
+        <div style="min-width:0;">
+          <div style="font-size:.875rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ review.restaurant.name }}</div>
+          <div style="font-size:.75rem;color:var(--text3);">{{ review.author.username }} · {{ review.created_at|date:"m/d" }}</div>
+        </div>
+        <div style="margin-left:auto;color:var(--gold);font-size:.875rem;font-weight:700;flex-shrink:0;">★ {{ review.rating }}</div>
+      </div>
+      {% if review.image %}
+      <img src="{{ review.image.url }}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:10px;margin-bottom:10px;border:1px solid var(--border);">
+      {% endif %}
+      <p style="font-size:.875rem;line-height:1.6;color:var(--text2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ review.content }}</p>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── CTA ── -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-badge">✍️ 리뷰 커뮤니티</div>
+    <h2 class="cta-title">당신의 경험을<br>나눠주세요</h2>
+    <p class="cta-desc">솔직한 리뷰 한 줄이<br>누군가의 오늘 점심을 바꿀 수 있어요.</p>
+    <a href="{% if user.is_authenticated %}/restaurants/{% else %}/users/login/{% endif %}" class="cta-btn">
+      리뷰 쓰러 가기 →
+    </a>
+  </div>
+>>>>>>> Stashed changes
 </section>
 
 <!-- CATEGORIES -->

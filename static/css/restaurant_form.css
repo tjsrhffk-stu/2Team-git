@@ -3,7 +3,7 @@
 .page-wrap { max-width: 720px; margin: 0 auto; animation: fadeUp 0.5s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
-.page-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; margin-bottom: 8px; }
+.page-title { font-family: 'Noto Sans KR', 'DM Sans', sans-serif; font-size: 28px; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 8px; }
 .page-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 36px; }
 
 .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px; box-shadow: var(--shadow); }
@@ -17,13 +17,13 @@
 /* 입력창 & 아이콘 로직 */
 .input-wrap { position: relative; }
 .input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; transition: all 0.2s ease; opacity: 0.7; z-index: 2; }
-.form-input { width: 100%; padding: 13px 16px 13px 42px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333 !important; font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.form-input { width: 100%; padding: 13px 16px 13px 42px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333 !important; font-family: inherit; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .form-input:placeholder-shown { padding-left: 42px; }
 .form-input:focus, .form-input:not(:placeholder-shown) { padding-left: 16px; }
 .form-input:focus + .icon, .form-input:not(:placeholder-shown) + .icon { opacity: 0; transform: translateY(-50%) translateX(-15px); }
 
-.form-select { width: 100%; padding: 13px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; font-family: 'DM Sans', sans-serif; cursor: pointer; }
-.form-textarea { width: 100%; padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; min-height: 100px; }
+.form-select { width: 100%; padding: 13px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; font-family: inherit; cursor: pointer; }
+.form-textarea { width: 100%; padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; color: #333; min-height: 100px; font-family: inherit; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 /* 업로드 영역 & 미리보기 */

@@ -22,17 +22,13 @@ def _extract_form_data(post):
     return {k: "" for k in keys}
 
 def _is_owner_user(user) -> bool:
-    """기존 권한 판별 로직 유지"""
+    """사장 판별 - profile.user_type == "OWNER" 하나로 통일 (is_staff는 관리자이지 사장이 아님)"""
     if not getattr(user, "is_authenticated", False):
         return False
     if getattr(user, "is_superuser", False):
         return True
-    if hasattr(user, "owner_profile") or getattr(user, "is_staff", False):
-        return True
     profile = getattr(user, "profile", None)
-    if profile and getattr(profile, "user_type", None) == "OWNER":
-        return True
-    return False
+    return profile is not None and getattr(profile, "user_type", None) == "OWNER"
 
 def restaurant_list(request):
     q = request.GET.get("q", "")

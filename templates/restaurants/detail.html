@@ -33,6 +33,7 @@
 {% endblock %}
 
 {% block content %}
+<<<<<<< Updated upstream
 <div class="detail-container">
   <div class="info-card" style="border:none; border-bottom:1px solid #eee; border-radius:0;">
     <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:20px;">
@@ -43,6 +44,221 @@
             <h1 style="font-size:40px; margin:10px 0 5px 0;">{{ restaurant.name }}</h1>
             {% if user == restaurant.owner or user.is_staff or user.is_superuser %}
                 <a href="{% url 'restaurants:update' restaurant.pk %}" class="btn-edit">✏️ 정보 수정</a>
+=======
+<div class="detail-wrap">
+
+  <!-- Breadcrumb -->
+  <div class="detail-top">
+    <div class="detail-breadcrumb">
+      <a href="/">홈</a> › <a href="{% url 'restaurants:list' %}">맛집 찾기</a> › <span>{{ restaurant.name }}</span>
+    </div>
+
+    <div class="detail-category">{{ restaurant.category.name|default:"음식점" }}</div>
+
+    <!-- 태그 -->
+    {% if tags %}
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+      {% for tag in tags %}
+        <span style="background:var(--surface2);border:1.5px solid var(--border);border-radius:100px;padding:4px 12px;font-size:.8rem;font-weight:700;color:var(--text2);">{{ tag.emoji }} {{ tag.name }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="detail-name-row">
+      <h1 class="detail-name">{{ restaurant.name }}</h1>
+      {% if user == restaurant.owner or user.is_staff or user.is_superuser %}
+        <a href="{% url 'restaurants:update' restaurant.pk %}" class="btn-edit-sm">✏️ 정보 수정</a>
+      {% endif %}
+    </div>
+
+    <div class="detail-meta">
+      <span>{{ restaurant.address }}</span>
+      {% if restaurant.website %}
+        <a href="{{ restaurant.website }}" target="_blank" style="color:var(--accent); font-weight:600;">공식 웹사이트</a>
+      {% endif %}
+    </div>
+
+    <div class="detail-actions">
+      {% if user.is_authenticated %}
+        <a href="{% url 'users:reservation_create' restaurant.id %}" class="btn-action btn-action-reserve">
+          예약하기
+        </a>
+      {% endif %}
+      {% if user.is_authenticated and not is_owner %}
+        <a href="{% url 'reviews:create' restaurant.pk %}" class="btn-action btn-action-review">
+          리뷰 작성
+        </a>
+      {% endif %}
+      <!-- 공유 버튼 -->
+      <button onclick="shareRestaurant()" class="btn-action btn-action-reserve">
+        🔗 링크 복사
+      </button>
+    </div>
+  </div>
+  <!-- 공유 토스트 -->
+  <div id="shareToast" style="display:none;position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:12px 24px;border-radius:100px;font-size:.875rem;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.25);">
+    링크가 복사됐어요!
+  </div>
+
+  <!-- Main grid -->
+  <div class="detail-grid">
+
+    <!-- Left: Gallery + Info + Reviews -->
+    <div>
+      <!-- Gallery -->
+      <div class="gallery-main">
+        {% if restaurant.thumbnail %}
+          <img id="viewMain" src="{{ restaurant.thumbnail.url }}" alt="{{ restaurant.name }}">
+        {% else %}
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;">🍽️</div>
+        {% endif %}
+      </div>
+
+      <div class="gallery-thumbs">
+        {% if restaurant.thumbnail %}
+          <img src="{{ restaurant.thumbnail.url }}" class="g-thumb active" onclick="switchPhoto(this)" alt="">
+        {% endif %}
+        {% for img_obj in restaurant.additional_images.all %}
+          <img src="{{ img_obj.image.url }}" class="g-thumb" onclick="switchPhoto(this)" alt="">
+        {% endfor %}
+      </div>
+
+      <!-- ── 메뉴판 ── -->
+      <div class="info-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+          <div class="info-card-title" style="margin-bottom:0;">🍽️ 메뉴</div>
+          {% if user == restaurant.owner or user.is_staff %}
+            <button onclick="document.getElementById('menuAddForm').classList.toggle('hidden')" class="review-action-btn" style="color:var(--accent);border-color:var(--accent);">+ 메뉴 추가</button>
+          {% endif %}
+        </div>
+
+        {% if user == restaurant.owner or user.is_staff %}
+        <div id="menuAddForm" class="hidden" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
+          <form method="POST" action="{% url 'restaurants:menu_add' restaurant.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+              <div>
+                <label style="font-size:.8rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;">메뉴명 *</label>
+                <input type="text" name="name" required placeholder="예: 짬뽕" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-family:inherit;font-size:.9rem;color:var(--text);outline:none;">
+              </div>
+              <div>
+                <label style="font-size:.8rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;">가격 (원)</label>
+                <input type="number" name="price" placeholder="12000" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-family:inherit;font-size:.9rem;color:var(--text);outline:none;">
+              </div>
+              <div>
+                <label style="font-size:.8rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;">카테고리</label>
+                <select name="category" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-family:inherit;font-size:.9rem;color:var(--text);outline:none;">
+                  <option value="main">메인</option>
+                  <option value="side">사이드</option>
+                  <option value="drink">음료</option>
+                  <option value="dessert">디저트</option>
+                  <option value="set">세트</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:.8rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;">사진</label>
+                <input type="file" name="image" accept="image/*" style="font-size:.85rem;">
+              </div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <label style="font-size:.8rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;">설명</label>
+              <input type="text" name="description" placeholder="간단한 설명 (선택)" maxlength="200" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-family:inherit;font-size:.9rem;color:var(--text);outline:none;">
+            </div>
+            <button type="submit" style="padding:10px 22px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;">✅ 추가하기</button>
+          </form>
+        </div>
+        {% endif %}
+
+        {% if menu_by_category %}
+          {% for cat_name, items in menu_by_category.items %}
+          <div style="margin-bottom:20px;">
+            <div style="font-size:.75rem;font-weight:800;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">{{ cat_name }}</div>
+            {% for item in items %}
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px dashed var(--border);">
+              {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1px solid var(--border);">
+              {% else %}
+                <div style="width:60px;height:60px;border-radius:10px;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;">🍽️</div>
+              {% endif %}
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:800;font-size:.9375rem;color:var(--text);">{{ item.name }}</div>
+                {% if item.description %}<div style="font-size:.8125rem;color:var(--text3);margin-top:2px;">{{ item.description }}</div>{% endif %}
+                <div style="font-size:.9375rem;font-weight:800;color:var(--accent);margin-top:4px;">{{ item.price|floatformat:0 }}원</div>
+              </div>
+              {% if user == restaurant.owner or user.is_staff %}
+              <form method="POST" action="{% url 'restaurants:menu_delete' restaurant.pk item.pk %}" style="display:inline;" onsubmit="return confirm('메뉴를 삭제할까요?')">
+                {% csrf_token %}
+                <button type="submit" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:1rem;" title="삭제">✕</button>
+              </form>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:32px 0;color:var(--text3);">
+            <div style="font-size:2rem;margin-bottom:8px;">📋</div>
+            <p style="font-size:.9rem;">아직 등록된 메뉴가 없어요.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Rating + Description -->
+      <div class="info-card">
+        <div class="info-card-title">매장 상세정보</div>
+
+        <div class="rating-summary">
+          <div class="rating-big">
+            <span class="rating-num-big">{{ restaurant.avg_rating|floatformat:1|default:"0.0" }}</span>
+            <span class="rating-stars-big">
+              {% with avg=restaurant.avg_rating|default:0|floatformat:0 %}
+                {% for i in "12345" %}{% if forloop.counter <= avg|add:0 %}★{% else %}☆{% endif %}{% endfor %}
+              {% endwith %}
+            </span>
+          </div>
+          <div class="rating-bars">
+            {% for item in rating_distribution %}
+            <div class="bar-row">
+              <span class="bar-label">{{ item.star }}</span>
+              <div class="bar-bg"><div class="bar-fill" style="width:{{ item.pct|default:0 }}%"></div></div>
+              <span class="bar-count">{{ item.count|default:0 }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <p class="detail-desc">{{ restaurant.description|default:"매장 소개가 아직 등록되지 않았습니다." }}</p>
+      </div>
+
+      <!-- Reviews -->
+      <div class="info-card">
+        <!-- Sort bar -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+          <div class="info-card-title" style="margin-bottom:0;">리뷰 ({{ reviews|length }})</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="?sort=rating_high" class="sort-btn {% if current_sort == 'rating_high' or not current_sort %}active{% endif %}">별점 높은순</a>
+            <a href="?sort=latest"      class="sort-btn {% if current_sort == 'latest' %}active{% endif %}">최신순</a>
+            <a href="?sort=rating_low"  class="sort-btn {% if current_sort == 'rating_low' %}active{% endif %}">별점 낮은순</a>
+          </div>
+        </div>
+
+        {% for review in reviews %}
+          <div class="review-item">
+            <div class="review-header">
+              <div>
+                <div class="review-author">{{ review.author.username }}</div>
+                <div class="review-date">{{ review.created_at|date:"Y.m.d" }}</div>
+              </div>
+              <div class="review-stars">
+                {% with r=review.rating|default:0|floatformat:0 %}
+                  {% for i in "12345" %}{% if forloop.counter <= r|add:0 %}★{% else %}<span style="color:var(--border);">★</span>{% endif %}{% endfor %}
+                {% endwith %}
+              </div>
+            </div>
+            <p class="review-content">{{ review.content }}</p>
+            {% if review.image %}
+              <img src="{{ review.image.url }}" class="review-img" alt="리뷰 이미지">
+>>>>>>> Stashed changes
             {% endif %}
         </div>
 
