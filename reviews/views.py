@@ -1,11 +1,13 @@
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 
 from restaurants.models import Restaurant
 from .forms import ReviewForm
-from .models import Review, ReviewReply
+from .models import Review, ReviewReply, ReviewLike, ReviewReport
 
 
 # 리뷰 작성
@@ -159,21 +161,39 @@ def my_reviews(request):
         })
 
     # 2. 일반 유저인 경우
-    # 🚨 여기도 순서 중요: 데이터부터 먼저 가져오고!
+    from django.db.models import Avg, Sum, Count
+    from restaurants.models import Restaurant
+
     reviews = Review.objects.filter(author=request.user).select_related("restaurant", "reply")
 
-    # 그 다음에 정렬하기!
     if sort == 'latest':
         reviews = reviews.order_by('-created_at')
     elif sort == 'rating_low':
         reviews = reviews.order_by('rating', '-created_at')
-    else: # rating_high (기본값)
+    else:
         reviews = reviews.order_by('-rating', '-created_at')
+
+    # 통계 (likes는 ManyToMany이므로 annotate → aggregate로 합산)
+    avg_stat    = reviews.aggregate(avg_rating=Avg('rating'))
+    avg_rating  = round(avg_stat['avg_rating'], 1) if avg_stat['avg_rating'] else None
+    total_likes = reviews.annotate(_lc=Count('likes')).aggregate(total=Sum('_lc'))['total'] or 0
+
+    # 빈 상태일 때: 아직 안 쓴 인기 식당 추천
+    visited_ids = list(reviews.values_list('restaurant_id', flat=True))
+    suggested = (
+        Restaurant.objects
+        .exclude(id__in=visited_ids)
+        .annotate(rc=Count('reviews'))
+        .order_by('-rc', '-id')[:4]
+    )
 
     return render(request, "reviews/list.html", {
         "reviews": reviews,
         "is_mypage": True,
         "current_sort": sort,
+        "avg_rating": avg_rating,
+        "total_likes": total_likes,
+        "suggested_restaurants": suggested,
     })
 
 
@@ -206,11 +226,34 @@ def reply_create(request, review_id):
             author=request.user,
             content=content
         )
+        # ── 알림: 리뷰 작성자에게 답글 알림 ──
+        from core.models import Notification
+        Notification.objects.create(
+            recipient=review.author,
+            message=f"'{restaurant.name}' 사장님이 회원님의 리뷰에 답글을 남겼어요.",
+            url=f"/restaurants/{restaurant.pk}/",
+        )
         messages.success(request, "답글이 등록됐어요! ✅")
         return redirect("restaurants:detail", pk=restaurant.pk)
 
     # GET 요청은 그냥 detail로 돌려보냄 (모달 방식이라 필요없음)
     return redirect("restaurants:detail", pk=restaurant.pk)
+
+
+# -------------------------------------------------------
+# ✅ 리뷰 좋아요 토글 (AJAX)
+# -------------------------------------------------------
+@login_required
+@require_POST
+def review_like_toggle(request, review_id):
+    review = get_object_or_404(Review, pk=review_id)
+    like, created = ReviewLike.objects.get_or_create(review=review, user=request.user)
+    if not created:
+        like.delete()
+        liked = False
+    else:
+        liked = True
+    return JsonResponse({"liked": liked, "count": review.likes.count()})
 
 
 # -------------------------------------------------------
@@ -270,3 +313,27 @@ def reply_delete(request, review_id):
         return redirect("restaurants:detail", pk=restaurant.pk)
 
     return redirect("restaurants:detail", pk=restaurant.pk)
+
+
+# -------------------------------------------------------
+# ✅ 리뷰 신고
+# -------------------------------------------------------
+@login_required
+@require_POST
+def report_review(request, review_id):
+    review = get_object_or_404(Review, pk=review_id)
+
+    # 본인 리뷰 신고 불가
+    if review.author == request.user:
+        return JsonResponse({"ok": False, "msg": "본인 리뷰는 신고할 수 없어요."})
+
+    reason = request.POST.get("reason", "other")
+    _, created = ReviewReport.objects.get_or_create(
+        review=review,
+        reporter=request.user,
+        defaults={"reason": reason},
+    )
+    if created:
+        return JsonResponse({"ok": True, "msg": "신고가 접수됐어요. 검토 후 조치할게요."})
+    else:
+        return JsonResponse({"ok": False, "msg": "이미 신고한 리뷰예요."})

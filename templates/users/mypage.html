@@ -3,596 +3,560 @@
 
 {% block extra_css %}
 <style>
-  /* ✅ 마이페이지 영역만 다크 테마 강제 (base.html의 밝은 테마 영향 차단) */
-  .mypage-bg{
-    min-height: calc(100vh - 90px);
-    padding: 28px 18px;
-    color: #f3eee9;
-    background:
-      radial-gradient(1200px 600px at 20% 10%, rgba(214,125,70,.25), transparent 60%),
-      radial-gradient(900px 500px at 80% 30%, rgba(255,255,255,.08), transparent 55%),
-      linear-gradient(135deg, #1a1411, #0f0c0a 55%, #14100e);
+  .mypage-wrap { max-width: 1280px; margin: 0 auto; padding: 36px 24px 80px; }
+  .mypage-grid {
+    display: grid; grid-template-columns: 260px 1fr;
+    gap: 24px; align-items: start;
   }
-  .mypage-bg a{color: inherit;}
-  .mypage-shell{max-width:1200px;margin:0 auto;padding:0;}
-  .mypage-grid{display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start;}
-  @media (max-width: 980px){ .mypage-grid{grid-template-columns:1fr;} }
+  @media (max-width: 860px) { .mypage-grid { grid-template-columns: 1fr; } }
 
-  .panel{
-    background: rgba(20,16,14,.78);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 22px;
-    box-shadow: 0 14px 40px rgba(0,0,0,.28);
-    backdrop-filter: blur(6px);
-  }
-  .panel-inner{padding:22px;}
-
-  .side-profile{display:flex;gap:14px;align-items:center;margin-bottom:18px;}
-  .avatar{
-    width:56px;height:56px;border-radius:50%;
-    background: rgba(255,255,255,.14);
-    display:flex;align-items:center;justify-content:center;
-    font-weight:900;
-  }
-  .side-name{font-weight:900;font-size:18px;margin:0;}
-  .side-email{opacity:.8;margin:2px 0 0 0;font-size:13px;}
-
-  .side-menu{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
-  .side-menu a{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:12px 14px;border-radius:14px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.08);
-    text-decoration:none;
-    font-weight:800;
-    transition:.2s;
-  }
-  .side-menu a:hover{background: rgba(255,255,255,.10);}
-  .side-menu a.active{
-    background: rgba(214,125,70,.18);
-    border-color: rgba(214,125,70,.30);
+  /* ── Sidebar ── */
+  .mp-sidebar { position: sticky; top: 80px; }
+  .mp-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-sm);
   }
 
-  .hero{
-    padding: 22px;
+  /* Profile header */
+  .mp-profile {
+    padding: 24px; display: flex; gap: 14px; align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .mp-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--accent-lt); border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 900; color: var(--accent); flex-shrink: 0;
+  }
+  .mp-name { font-size: 1rem; font-weight: 800; color: var(--text); }
+  .mp-email { font-size: .8125rem; color: var(--text2); margin-top: 2px; }
+
+  .mp-nav { padding: 10px; display: flex; flex-direction: column; gap: 2px; }
+  .mp-nav-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px; border-radius: 10px;
+    font-size: .9rem; font-weight: 600; color: var(--text2);
+    text-decoration: none; transition: all .18s;
+  }
+  .mp-nav-item:hover { background: var(--surface2); color: var(--text); }
+  .mp-nav-item.active {
+    background: var(--accent-lt); color: var(--accent); font-weight: 800;
+  }
+  .mp-nav-item .nav-arrow { font-size: .75rem; color: var(--text3); }
+
+  /* ── Main content ── */
+  .mp-main { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Top hero card */
+  .mp-hero {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 28px;
+    box-shadow: var(--shadow-sm);
+  }
+  .mp-hero-title { font-size: 1.375rem; font-weight: 900; color: var(--text); letter-spacing: -.02em; margin-bottom: 4px; }
+  .mp-hero-sub { font-size: .9rem; color: var(--text2); margin-bottom: 20px; }
+
+  /* Tab pills */
+  .tab-pills {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .tab-pill {
+    padding: 8px 16px; border-radius: 100px;
+    font-size: .8125rem; font-weight: 700;
+    background: var(--surface2); color: var(--text2);
+    border: 1.5px solid var(--border);
+    text-decoration: none; transition: all .18s;
+  }
+  .tab-pill:hover { border-color: var(--text); color: var(--text); }
+  .tab-pill.active { background: var(--text); color: var(--surface); border-color: var(--text); }
+
+  /* Content card */
+  .mp-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 24px; box-shadow: var(--shadow-sm);
+  }
+  .mp-card-title {
+    font-size: 1rem; font-weight: 800; color: var(--text);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+  }
+  .mp-card-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* Item list */
+  .item-list { display: flex; flex-direction: column; gap: 12px; }
+  .item-row {
+    display: grid; grid-template-columns: 84px 1fr auto;
+    gap: 14px; align-items: center;
+    padding: 14px; border-radius: 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    transition: border-color .18s;
+  }
+  .item-row:hover { border-color: #D0D0D0; }
+  @media (max-width: 640px) {
+    .item-row { grid-template-columns: 72px 1fr; }
+    .item-row .item-actions { grid-column: 1/-1; justify-content: flex-start; }
+  }
+  .item-thumb {
+    width: 84px; height: 64px; border-radius: 10px;
+    background: var(--border); overflow: hidden; flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .item-thumb-placeholder {
+    width: 100%; height: 100%; display: flex; align-items: center;
+    justify-content: center; font-size: 1.5rem;
+  }
+  .item-meta h3 { font-size: .9375rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .item-meta .item-sub { font-size: .8125rem; color: var(--text2); line-height: 1.5; }
+  .item-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+
+  /* Buttons */
+  .ia-btn {
+    padding: 8px 14px; border-radius: 8px;
+    font-size: .8125rem; font-weight: 700; font-family: inherit;
+    border: 1.5px solid var(--border); background: var(--surface);
+    color: var(--text2); cursor: pointer; transition: all .18s;
+    text-decoration: none; white-space: nowrap;
+    display: inline-flex; align-items: center;
+  }
+  .ia-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ia-btn.primary {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .ia-btn.primary:hover { background: var(--accent-hv); }
+  .ia-btn.danger {
+    border-color: #FECACA; color: #EF4444; background: #FEF2F2;
+  }
+  .ia-btn.danger:hover { background: #EF4444; color: #fff; border-color: #EF4444; }
+
+  /* Owner box */
+  .owner-box {
+    padding: 20px; border-radius: 12px;
+    background: var(--surface2); border: 1px solid var(--border);
     margin-bottom: 18px;
-    position: relative;
-    overflow:hidden;
   }
-  .hero:before{
-    content:"";
-    position:absolute;inset:-30px;
-    background: radial-gradient(500px 300px at 30% 20%, rgba(214,125,70,.26), transparent 55%);
-    filter: blur(2px);
+  .owner-box-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
   }
-  .hero > *{position:relative;}
-  .hero-title{margin:0;font-size:22px;font-weight:1000;letter-spacing:-.2px;}
-  .hero-sub{margin:8px 0 0 0;opacity:.85;font-weight:700;}
+  .owner-box-title { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .owner-box-sub { font-size: .8125rem; color: var(--text2); }
 
-  .tabs{display:flex;gap:10px;flex-wrap:wrap;margin: 14px 0 18px;}
-  .pill{
-    padding:10px 12px;border-radius:999px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.08);
-    text-decoration:none;
-    font-weight:900;
-    font-size:13px;
-    transition:.2s;
-  }
-  .pill:hover{background: rgba(255,255,255,.10);}
-  .pill.active{
-    background: rgba(214,125,70,.18);
-    border-color: rgba(214,125,70,.30);
+  /* Stars */
+  .stars-inline { display: inline-flex; gap: 1px; }
+  .stars-inline .s { font-size: 13px; color: #DDD; }
+  .stars-inline .s.on { color: var(--gold); }
+
+  /* Empty */
+  .empty-card {
+    padding: 24px; border-radius: 12px;
+    background: var(--surface2); border: 1.5px dashed var(--border);
+    font-size: .9rem; color: var(--text2); font-weight: 500;
+    text-align: center;
   }
 
-  .list{display:grid;gap:14px;}
-  .card{
-    display:grid;
-    grid-template-columns: 96px 1fr auto;
-    gap:14px;
-    align-items:center;
-    padding:14px;
-    border-radius:18px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.08);
+  /* Status badge */
+  .status-badge {
+    display: inline-block; padding: 2px 10px; border-radius: 100px;
+    font-size: .75rem; font-weight: 700;
   }
-  @media (max-width: 720px){
-    .card{grid-template-columns: 76px 1fr; grid-template-rows:auto auto; }
-    .card .actions{grid-column: 1 / -1; justify-content:flex-start;}
-  }
-  .thumb{
-    width:96px;height:72px;border-radius:14px;
-    background: rgba(255,255,255,.10);
-    overflow:hidden;
-    border: 1px solid rgba(255,255,255,.10);
-  }
-  .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-
-  .meta h3{margin:0;font-size:16px;font-weight:1000;letter-spacing:-.1px;}
-  .meta .sub{margin-top:6px;opacity:.85;font-weight:800;font-size:13px;}
-  .meta .sub small{opacity:.85;font-weight:800;}
-
-  .actions{display:flex;gap:10px;align-items:center;justify-content:flex-end;}
-  .btn-cta{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:12px 14px;
-    border-radius:14px;
-    background: rgba(214,125,70,.18);
-    border:1px solid rgba(214,125,70,.35);
-    color:#ffe9db;
-    text-decoration:none;
-    font-weight:1000;
-    transition:.2s;
-    white-space:nowrap;
-  }
-  .btn-cta:hover{background: rgba(214,125,70,.24);}
-  .btn-ghost{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:10px 14px;
-    border-radius:14px;
-    background: rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.12);
-    color:#f3eee9;
-    text-decoration:none;
-    font-weight:900;
-    transition:.2s;
-    white-space:nowrap;
-  }
-  .btn-ghost:hover{background: rgba(255,255,255,.14);}
-
-  .btn-danger{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:10px 14px;
-    border-radius:14px;
-    background: rgba(255,70,70,.14);
-    border:1px solid rgba(255,70,70,.25);
-    color:#ffd7d7;
-    text-decoration:none;
-    font-weight:900;
-    cursor:pointer;
-    white-space:nowrap;
-  }
-
-  .btn-ghost, .btn-danger{
-    min-height:40px;
-    font-size:14px;
-    line-height:1;
-  }
-
-  .empty{
-    padding:26px;border-radius:18px;
-    background: rgba(255,255,255,.06);
-    border:1px dashed rgba(255,255,255,.18);
-    opacity:.92;font-weight:800;
-  }
-
-  .stars{display:inline-flex;gap:2px;vertical-align:middle;margin-right:8px;}
-  .stars span{font-size:14px;opacity:.4;}
-  .stars span.on{opacity:1;}
-
-  .owner-box{
-    margin-top:18px;
-    padding:18px;
-    border-radius:18px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.10);
-  }
-  .owner-head{
-    display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-    margin-bottom:14px;
-  }
-  .owner-title{font-size:18px;font-weight:900;margin:0;}
-  .owner-sub{margin:6px 0 0 0;opacity:.85;font-weight:800;font-size:13px;}
-  .owner-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-
-  .mini-list{display:grid;gap:10px;margin-top:12px;}
-  .mini-item{
-    display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
-    padding:12px 14px;border-radius:14px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.08);
-  }
-  .mini-left{min-width:0;}
-  .mini-title{font-weight:1000;margin:0 0 6px 0;font-size:14px;}
-  .mini-sub{opacity:.85;font-weight:800;font-size:13px;line-height:1.35;}
+  .status-pending  { background: #FEF3C7; color: #92400E; }
+  .status-ok       { background: #DCFCE7; color: #166534; }
+  .status-canceled { background: #FEE2E2; color: #991B1B; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="mypage-bg">
-  <div class="mypage-shell">
-    <div class="mypage-grid">
+<div class="mypage-wrap">
+  <div class="mypage-grid">
 
-      <!-- 좌측 프로필 -->
-      <aside class="panel">
-        <div class="panel-inner">
-          <div class="side-profile">
-            <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
-            <div>
-              <p class="side-name">{{ user.username }}</p>
-              <p class="side-email">{{ user.email }}</p>
+    <!-- ── Sidebar ── -->
+    <aside class="mp-sidebar">
+      <div class="mp-panel">
+        <div class="mp-profile">
+          <div class="mp-avatar">{{ user.username|slice:":1"|upper }}</div>
+          <div>
+            <div class="mp-name">{{ user.username }}</div>
+            <div class="mp-email">{{ user.email }}</div>
+          </div>
+        </div>
+        <nav class="mp-nav">
+          <a href="{% url 'users:mypage' %}?tab=mypage"
+             class="mp-nav-item {% if active_tab == 'mypage' %}active{% endif %}">
+            🏠 내 정보 <span class="nav-arrow">›</span>
+          </a>
+          <a href="{% url 'users:mypage' %}?tab=reservations"
+             class="mp-nav-item {% if active_tab == 'reservations' %}active{% endif %}">
+            🗓️ 예약 내역 <span class="nav-arrow">›</span>
+          </a>
+          {% if is_owner %}
+          <a href="{% url 'users:mypage' %}?tab=owner_reservations"
+             class="mp-nav-item {% if active_tab == 'owner_reservations' %}active{% endif %}">
+            🏪 내 식당 예약현황 <span class="nav-arrow">›</span>
+          </a>
+          {% endif %}
+          <a href="{% url 'users:mypage' %}?tab=history"
+             class="mp-nav-item {% if active_tab == 'history' %}active{% endif %}">
+            📍 방문한 맛집 <span class="nav-arrow">›</span>
+          </a>
+          <a href="{% url 'users:mypage' %}?tab=favorites"
+             class="mp-nav-item {% if active_tab == 'favorites' %}active{% endif %}">
+            ❤️ 즐겨찾기 <span class="nav-arrow">›</span>
+          </a>
+          <a href="{% url 'users:mypage' %}?tab=reviews"
+             class="mp-nav-item {% if active_tab == 'reviews' %}active{% endif %}">
+            ✏️ 내 리뷰 <span class="nav-arrow">›</span>
+          </a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="mp-main">
+
+      <!-- Hero / Tab header -->
+      <div class="mp-hero">
+        <div class="mp-hero-title">마이페이지</div>
+        <div class="mp-hero-sub">내 활동과 정보를 한 곳에서 관리하세요.</div>
+        <div class="tab-pills">
+          <a href="{% url 'users:mypage' %}?tab=mypage"             class="tab-pill {% if active_tab == 'mypage' %}active{% endif %}">내 정보</a>
+          <a href="{% url 'users:mypage' %}?tab=reservations"       class="tab-pill {% if active_tab == 'reservations' %}active{% endif %}">예약 내역</a>
+          {% if is_owner %}
+          <a href="{% url 'users:mypage' %}?tab=owner_reservations" class="tab-pill {% if active_tab == 'owner_reservations' %}active{% endif %}">내 식당 예약현황</a>
+          {% endif %}
+          <a href="{% url 'users:mypage' %}?tab=history"            class="tab-pill {% if active_tab == 'history' %}active{% endif %}">방문한 맛집</a>
+          <a href="{% url 'users:mypage' %}?tab=favorites"          class="tab-pill {% if active_tab == 'favorites' %}active{% endif %}">즐겨찾기</a>
+          <a href="{% url 'users:mypage' %}?tab=reviews"            class="tab-pill {% if active_tab == 'reviews' %}active{% endif %}">내 리뷰</a>
+        </div>
+      </div>
+
+      <!-- ── 내 정보 탭 ── -->
+      {% if active_tab == 'mypage' %}
+
+        <!-- 활동 요약 카드 -->
+        <div class="mp-card">
+          <div class="mp-card-title">나의 활동 요약</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:{% if category_stats %}24px{% else %}0{% endif %};">
+            <div style="text-align:center;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+              <div style="font-size:1.75rem;font-weight:900;color:var(--accent);">{{ total_review_count }}</div>
+              <div style="font-size:.8rem;color:var(--text2);margin-top:4px;font-weight:600;">작성한 리뷰</div>
+            </div>
+            <div style="text-align:center;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+              <div style="font-size:1.75rem;font-weight:900;color:var(--accent);">{{ favorite_count }}</div>
+              <div style="font-size:.8rem;color:var(--text2);margin-top:4px;font-weight:600;">즐겨찾기</div>
+            </div>
+            <div style="text-align:center;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+              <div style="font-size:1.75rem;font-weight:900;color:var(--gold);">★ {{ avg_my_rating|floatformat:1 }}</div>
+              <div style="font-size:.8rem;color:var(--text2);margin-top:4px;font-weight:600;">평균 별점</div>
             </div>
           </div>
 
-          <nav class="side-menu">
-            <a class="{% if active_tab == 'mypage' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=mypage">
-              내 정보 <span>›</span>
-            </a>
-            <a class="{% if active_tab == 'reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reservations">
-              예약 내역 <span>›</span>
-            </a>
-
-            {% if is_owner %}
-              <a class="{% if active_tab == 'owner_reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=owner_reservations">
-                내 식당 예약현황 <span>›</span>
-              </a>
-            {% endif %}
-
-            <a class="{% if active_tab == 'history' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=history">
-              방문한 맛집 <span>›</span>
-            </a>
-            <a class="{% if active_tab == 'favorites' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=favorites">
-              즐겨찾기 <span>›</span>
-            </a>
-            <a class="{% if active_tab == 'reviews' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reviews">
-              내 리뷰 <span>›</span>
-            </a>
-          </nav>
+          {% if category_stats %}
+          <div style="font-size:.875rem;font-weight:800;color:var(--text);margin-bottom:12px;">자주 방문한 카테고리</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            {% with max_cnt=category_stats.0.cnt %}
+            {% for stat in category_stats %}
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:60px;font-size:.8rem;font-weight:700;color:var(--text2);text-align:right;flex-shrink:0;">{{ stat.restaurant__category__name|default:"기타" }}</div>
+              <div style="flex:1;height:10px;background:var(--surface2);border-radius:100px;overflow:hidden;">
+                <div style="height:100%;background:var(--accent);border-radius:100px;width:{% widthratio stat.cnt max_cnt 100 %}%;transition:width .6s ease;"></div>
+              </div>
+              <div style="font-size:.8rem;color:var(--text3);width:32px;text-align:right;flex-shrink:0;">{{ stat.cnt }}회</div>
+            </div>
+            {% endfor %}
+            {% endwith %}
+          </div>
+          {% endif %}
         </div>
-      </aside>
 
-      <!-- 우측 컨텐츠 -->
-      <main>
-        <section class="panel hero">
-          <h1 class="hero-title">마이페이지</h1>
-          <p class="hero-sub">내 활동과 정보를 한 곳에서 관리해요.</p>
-
-          <div class="tabs">
-            <a class="pill {% if active_tab == 'mypage' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=mypage">내 정보</a>
-            <a class="pill {% if active_tab == 'reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reservations">예약 내역</a>
-
-            {% if is_owner %}
-              <a class="pill {% if active_tab == 'owner_reservations' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=owner_reservations">내 식당 예약현황</a>
+        {% if is_owner %}
+          <!-- 사장 대시보드 -->
+          <div class="mp-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+              <div class="mp-card-title" style="margin-bottom:0;">🏪 사장님 대시보드</div>
+              <a href="{% url 'restaurants:create' %}" class="ia-btn primary">+ 식당 등록</a>
+            </div>
+            <p style="font-size:.875rem;color:var(--text2);margin-bottom:16px;">내가 등록한 식당을 추가·수정하고 바로 확인할 수 있어요.</p>
+            {% if my_restaurants %}
+              <div class="item-list">
+                {% for r in my_restaurants %}
+                  <div class="item-row">
+                    <div class="item-thumb">
+                      {% if r.thumbnail %}<img src="{{ r.thumbnail.url }}" alt="{{ r.name }}">
+                      {% else %}<div class="item-thumb-placeholder">🏪</div>{% endif %}
+                    </div>
+                    <div class="item-meta">
+                      <h3>{{ r.name }}</h3>
+                      <div class="item-sub">{{ r.address }}</div>
+                    </div>
+                    <div class="item-actions">
+                      <a href="{% url 'restaurants:detail' r.pk %}" class="ia-btn">보기</a>
+                      <a href="{% url 'restaurants:update' r.pk %}" class="ia-btn">수정</a>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="empty-card">아직 등록한 식당이 없어요. <b>+ 식당 등록</b> 버튼으로 시작해보세요!</div>
             {% endif %}
-
-            <a class="pill {% if active_tab == 'history' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=history">방문한 맛집</a>
-            <a class="pill {% if active_tab == 'favorites' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=favorites">즐겨찾기</a>
-            <a class="pill {% if active_tab == 'reviews' %}active{% endif %}" href="{% url 'users:mypage' %}?tab=reviews">내 리뷰</a>
           </div>
 
-          {% if active_tab == 'mypage' and is_owner %}
-            <div class="owner-box">
-              <div class="owner-head">
-                <div>
-                  <h2 class="owner-title">사장님 대시보드</h2>
-                  <p class="owner-sub">내가 등록한 식당을 여기서 추가/수정하고 바로 확인할 수 있어요.</p>
-                </div>
-
-                <div class="owner-actions">
-                  {% if my_restaurants|length == 0 %}
-                    <a class="btn-cta" style="font-size:15px;padding:14px 18px;" href="{% url 'restaurants:create' %}">
-                      + 식당 등록하기
-                    </a>
-                  {% else %}
-                    <a class="btn-cta" href="{% url 'restaurants:create' %}">+ 추가 등록</a>
-                  {% endif %}
-                </div>
+          <!-- 사장 최근 예약 현황 -->
+          <div class="mp-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+              <div class="mp-card-title" style="margin-bottom:0;">📋 최근 예약 현황</div>
+              <div class="mp-card-actions">
+                <a href="{% url 'users:reservation_owner_list' %}" class="ia-btn">전체 예약 보기</a>
               </div>
-
-              <div class="list" style="margin-top:0;">
-                {% if my_restaurants and my_restaurants|length > 0 %}
-                  {% for r in my_restaurants %}
-                    <div class="card">
-                      <div class="thumb">
-                        {% if r.thumbnail %}
-                          <img src="{{ r.thumbnail.url }}" alt="{{ r.name }}">
-                        {% else %}
-                          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
+            </div>
+            {% if owner_reservations %}
+              <div class="item-list">
+                {% for r in owner_reservations %}
+                  <div class="item-row">
+                    <div class="item-thumb">
+                      {% if r.restaurant.thumbnail %}<img src="{{ r.restaurant.thumbnail.url }}" alt="">
+                      {% else %}<div class="item-thumb-placeholder">🏪</div>{% endif %}
+                    </div>
+                    <div class="item-meta">
+                      <h3>{{ r.user.username }} · {{ r.restaurant.name }}</h3>
+                      <div class="item-sub">
+                        예약: {{ r.reserved_at|date:"Y-m-d H:i" }} · {{ r.party_size }}명
+                        {% if r.request_note %} · {{ r.request_note }}{% endif %}
+                      </div>
+                      <div style="margin-top:4px;">
+                        {% if r.status == 'REQUESTED' %}<span style="background:#FEF3C7;color:#92400E;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">⏳ 신청중</span>
+                        {% elif r.status == 'CONFIRMED' %}<span style="background:#D1FAE5;color:#065F46;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">✅ 확정</span>
+                        {% elif r.status == 'REJECTED' %}<span style="background:#FEE2E2;color:#991B1B;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">❌ 거절됨</span>
                         {% endif %}
                       </div>
-
-                      <div class="meta">
-                        <h3>{{ r.name }}</h3>
-                        <div class="sub">
-                          {{ r.address }}
-                        </div>
-                      </div>
-
-                      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-                        <a class="btn-ghost" href="{% url 'restaurants:detail' r.pk %}">보기</a>
-                        <a class="btn-ghost" href="{% url 'restaurants:update' r.pk %}">수정</a>
-                      </div>
                     </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="empty">
-                    아직 등록한 식당이 없어요. 위의 <b>식당 등록하기</b> 버튼으로 등록해보세요 🙂
-                  </div>
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="owner-box">
-              <div class="owner-head">
-                <div>
-                  <h2 class="owner-title">내 식당 예약현황</h2>
-                  <p class="owner-sub">내 식당에 들어온 예약을 빠르게 확인하고, 필요하면 취소 처리할 수 있어요.</p>
-                </div>
-                <div class="owner-actions">
-                  <a class="btn-ghost" href="{% url 'users:reservation_owner_list' %}">전체 예약 보기</a>
-                  <a class="btn-ghost" href="{% url 'users:mypage' %}?tab=owner_reservations">탭에서 전체 보기</a>
-                </div>
-              </div>
-
-              {% if owner_reservations %}
-                <div class="mini-list">
-                  {% for r in owner_reservations %}
-                    <div class="mini-item">
-                      <div class="mini-left">
-                        <p class="mini-title">
-                          {{ r.user.username }} · {{ r.restaurant.name }}
-                        </p>
-                        <div class="mini-sub">
-                          예약일시: <b>{{ r.reserved_at|date:"Y-m-d H:i" }}</b><br>
-                          인원: <b>{{ r.party_size }}</b>명
-                          {% if r.request_note %}
-                            <br>요청: {{ r.request_note }}
-                          {% endif %}
-                          <br>상태: <b>{{ r.get_status_display }}</b>
-                        </div>
-                      </div>
-
-                      <div class="actions" style="justify-content:flex-end;">
-                        <!-- ✅ 여기: 사장 미리보기 취소 confirm 추가 -->
-                        <form method="post"
-                              action="{% url 'users:reservation_owner_cancel' r.id %}"
-                              style="display:inline;"
-                              onsubmit="return confirm('정말 이 예약을 취소할까요? 취소하면 되돌릴 수 없어요.');">
-                          {% csrf_token %}
-                          <button class="btn-danger" type="submit">취소</button>
-                        </form>
-                      </div>
-                    </div>
-                  {% endfor %}
-                </div>
-              {% else %}
-                <div class="empty">아직 들어온 예약이 없어요.</div>
-              {% endif %}
-            </div>
-          {% endif %}
-
-          {% if active_tab == 'mypage' %}
-            <div class="list">
-              <div class="empty">
-                여기서 예약/방문/즐겨찾기/리뷰 탭으로 내역을 확인할 수 있어요 🙂
-              </div>
-            </div>
-
-          {% elif active_tab == 'owner_reservations' %}
-            <div class="list">
-              {% if not is_owner %}
-                <div class="empty">사장 계정만 볼 수 있는 메뉴예요.</div>
-              {% else %}
-                <div class="owner-box" style="margin-top:0;">
-                  <div class="owner-head">
-                    <div>
-                      <h2 class="owner-title">내 식당 예약현황</h2>
-                      <p class="owner-sub">내 식당에 들어온 예약 전체 목록이에요.</p>
-                    </div>
-
-                    <div class="owner-actions">
-                      {# ✅ "마이페이지로" 버튼 제거됨 #}
-                      <a class="btn-ghost" href="{% url 'users:reservation_owner_list' %}"> 전체 예약</a>
+                    <div class="item-actions" style="flex-wrap:wrap;">
+                      {% if r.status == 'REQUESTED' %}
+                      <form method="post" action="{% url 'users:reservation_confirm' r.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="ia-btn" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7;">✅ 확정</button>
+                      </form>
+                      <form method="post" action="{% url 'users:reservation_reject' r.id %}"
+                            onsubmit="return confirm('예약을 거절할까요?');" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="ia-btn danger">❌ 거절</button>
+                      </form>
+                      {% elif r.status == 'CONFIRMED' %}
+                      <form method="post" action="{% url 'users:reservation_owner_cancel' r.id %}"
+                            onsubmit="return confirm('이 예약을 취소할까요?');">
+                        {% csrf_token %}
+                        <button type="submit" class="ia-btn danger">취소</button>
+                      </form>
+                      {% endif %}
                     </div>
                   </div>
-
-                  {% if owner_reservations_all %}
-                    <div class="list">
-                      {% for r in owner_reservations_all %}
-                        <div class="card">
-                          <div class="thumb">
-                            {% if r.restaurant.thumbnail %}
-                              <img src="{{ r.restaurant.thumbnail.url }}" alt="{{ r.restaurant.name }}">
-                            {% else %}
-                              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
-                            {% endif %}
-                          </div>
-
-                          <div class="meta">
-                            <h3>{{ r.restaurant.name }}</h3>
-                            <div class="sub">
-                              예약자: <b>{{ r.user.username }}</b><br>
-                              예약일시: <b>{{ r.reserved_at|date:"Y-m-d H:i" }}</b><br>
-                              인원: <b>{{ r.party_size }}</b>명
-                              {% if r.request_note %}
-                                <br>요청: {{ r.request_note }}
-                              {% endif %}
-                              <br>상태: <b>{{ r.get_status_display }}</b>
-                            </div>
-                          </div>
-
-                          <div class="actions">
-                            <!-- ✅ 여기: 사장 탭 전체 예약 취소 confirm 추가 -->
-                            <form method="post"
-                                  action="{% url 'users:reservation_owner_cancel' r.id %}"
-                                  style="display:inline;"
-                                  onsubmit="return confirm('정말 이 예약을 취소할까요? 취소하면 되돌릴 수 없어요.');">
-                              {% csrf_token %}
-                              <button class="btn-danger" type="submit">취소</button>
-                            </form>
-                          </div>
-                        </div>
-                      {% endfor %}
-                    </div>
-                  {% else %}
-                    <div class="empty">아직 들어온 예약이 없어요.</div>
-                  {% endif %}
-                </div>
-              {% endif %}
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="empty-card">아직 들어온 예약이 없어요.</div>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="mp-card">
+            <div class="empty-card" style="text-align:left;">
+              예약 내역, 방문한 맛집, 즐겨찾기, 리뷰 탭을 눌러 내 활동을 확인하세요 🙂
             </div>
+          </div>
+        {% endif %}
 
-          {% elif active_tab == 'reservations' %}
-            <div class="list">
-              {% if is_owner %}
-                <div class="empty">
-                  사장님은 <b>내 식당 예약현황</b>에서 최신 예약을 확인할 수 있어요.
-                  <div style="margin-top:12px;">
-                    <a class="btn-ghost" href="{% url 'users:reservation_owner_list' %}">전체 예약 보기</a>
-                    <a class="btn-ghost" href="{% url 'users:mypage' %}?tab=owner_reservations">탭에서 전체 보기</a>
+      <!-- ── 내 식당 예약현황 탭 ── -->
+      {% elif active_tab == 'owner_reservations' %}
+        <div class="mp-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+            <div class="mp-card-title" style="margin-bottom:0;">🏪 내 식당 전체 예약현황</div>
+            <a href="{% url 'users:reservation_owner_list' %}" class="ia-btn">전체 예약</a>
+          </div>
+          {% if not is_owner %}
+            <div class="empty-card">사장 계정만 볼 수 있는 메뉴예요.</div>
+          {% elif owner_reservations_all %}
+            <div class="item-list">
+              {% for r in owner_reservations_all %}
+                <div class="item-row">
+                  <div class="item-thumb">
+                    {% if r.restaurant.thumbnail %}<img src="{{ r.restaurant.thumbnail.url }}" alt="">
+                    {% else %}<div class="item-thumb-placeholder">🏪</div>{% endif %}
                   </div>
-                </div>
-
-              {% else %}
-                {% if reservations %}
-                  {% for res in reservations %}
-                    {% if res.status != "CANCELED" %}
-                      <div class="card">
-                        <div class="thumb">
-                          {% if res.restaurant.thumbnail %}
-                            <img src="{{ res.restaurant.thumbnail.url }}" alt="{{ res.restaurant.name }}">
-                          {% else %}
-                            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
-                          {% endif %}
-                        </div>
-
-                        <div class="meta">
-                          <h3>{{ res.restaurant.name }}</h3>
-                          <div class="sub">
-                            예약일시: <b>{{ res.reserved_at|date:"Y-m-d H:i" }}</b><br>
-                            인원: <b>{{ res.party_size }}</b>명<br>
-                            상태: <b>{{ res.get_status_display }}</b>
-                          </div>
-                        </div>
-
-                        <div class="actions">
-                          <a class="btn-ghost" href="{% url 'restaurants:detail' res.restaurant.pk %}">식당 보기</a>
-                          <a class="btn-ghost" href="{% url 'users:reservation_edit' res.id %}">수정</a>
-
-                          <!-- ✅ 여기: 일반 회원 예약내역 취소 confirm 추가 -->
-                          <form method="post"
-                                action="{% url 'users:reservation_cancel' res.id %}"
-                                style="display:inline;"
-                                onsubmit="return confirm('정말 이 예약을 취소할까요? 취소하면 되돌릴 수 없어요.');">
-                            {% csrf_token %}
-                            <button class="btn-danger" type="submit">취소</button>
-                          </form>
-                        </div>
-                      </div>
+                  <div class="item-meta">
+                    <h3>{{ r.restaurant.name }}</h3>
+                    <div class="item-sub">
+                      예약자: <b>{{ r.user.username }}</b> · {{ r.reserved_at|date:"Y-m-d H:i" }} · {{ r.party_size }}명
+                      {% if r.request_note %} · {{ r.request_note }}{% endif %}
+                    </div>
+                    <div style="margin-top:4px;">
+                      {% if r.status == 'REQUESTED' %}<span style="background:#FEF3C7;color:#92400E;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">⏳ 신청중</span>
+                      {% elif r.status == 'CONFIRMED' %}<span style="background:#D1FAE5;color:#065F46;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">✅ 확정</span>
+                      {% elif r.status == 'REJECTED' %}<span style="background:#FEE2E2;color:#991B1B;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">❌ 거절됨</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="item-actions" style="flex-wrap:wrap;">
+                    {% if r.status == 'REQUESTED' %}
+                    <form method="post" action="{% url 'users:reservation_confirm' r.id %}" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="ia-btn" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7;">✅ 확정</button>
+                    </form>
+                    <form method="post" action="{% url 'users:reservation_reject' r.id %}"
+                          onsubmit="return confirm('예약을 거절할까요?');" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="ia-btn danger">❌ 거절</button>
+                    </form>
+                    {% elif r.status == 'CONFIRMED' %}
+                    <form method="post" action="{% url 'users:reservation_owner_cancel' r.id %}"
+                          onsubmit="return confirm('이 예약을 취소할까요?');">
+                      {% csrf_token %}
+                      <button type="submit" class="ia-btn danger">취소</button>
+                    </form>
                     {% endif %}
-                  {% endfor %}
-                {% else %}
-                  <div class="empty">예약 내역이 없어요.</div>
-                {% endif %}
-              {% endif %}
-            </div>
-
-          {% elif active_tab == 'history' %}
-            <div class="empty" style="margin-bottom:14px;">
-              ⭐ 방문한 맛집은 <b>{{ history_min_rating }}점 이상</b> 리뷰를 남긴 식당만 표시돼요.
-              <span style="opacity:.75;">(전체 리뷰는 ‘내 리뷰’ 탭에서 확인)</span>
-            </div>
-
-            <div class="list">
-              {% if history %}
-                {% for h in history %}
-                  <div class="card">
-                    <div class="thumb">
-                      {% if h.restaurant.thumbnail %}
-                        <img src="{{ h.restaurant.thumbnail.url }}" alt="{{ h.restaurant.name }}">
-                      {% else %}
-                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
-                      {% endif %}
-                    </div>
-                    <div class="meta">
-                      <h3>{{ h.restaurant.name }}</h3>
-                      <div class="sub">
-                        방문일: <b>{{ h.visited_at|date:"Y-m-d" }}</b><br>
-                        내 별점: <b>★ {{ h.my_rating }}</b>/5
-                      </div>
-                    </div>
-                    <div class="actions">
-                      <a class="btn-ghost" href="{% url 'restaurants:detail' h.restaurant.pk %}">식당 보기</a>
-                    </div>
                   </div>
-                {% endfor %}
-              {% else %}
-                <div class="empty">방문한 맛집 내역이 없어요.</div>
-              {% endif %}
+                </div>
+              {% endfor %}
             </div>
-
-          {% elif active_tab == 'favorites' %}
-            <div class="list">
-              {% if favorites %}
-                {% for fav in favorites %}
-                  <div class="card">
-                    <div class="thumb">
-                      {% if fav.restaurant.thumbnail %}
-                        <img src="{{ fav.restaurant.thumbnail.url }}" alt="{{ fav.restaurant.name }}">
-                      {% else %}
-                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
-                      {% endif %}
-                    </div>
-                    <div class="meta">
-                      <h3>{{ fav.restaurant.name }}</h3>
-                      <div class="sub">
-                        {{ fav.restaurant.address }}
-                      </div>
-                    </div>
-                    <div class="actions">
-                      <a class="btn-ghost" href="{% url 'restaurants:detail' fav.restaurant.pk %}">식당 보기</a>
-                    </div>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <div class="empty">즐겨찾기한 식당이 없어요.</div>
-              {% endif %}
-            </div>
-
-          {% elif active_tab == 'reviews' %}
-            <div class="list">
-              {% if reviews %}
-                {% for rv in reviews %}
-                  <div class="card">
-                    <div class="thumb">
-                      {% if rv.restaurant.thumbnail %}
-                        <img src="{{ rv.restaurant.thumbnail.url }}" alt="{{ rv.restaurant.name }}">
-                      {% else %}
-                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.7;font-weight:900;">No Image</div>
-                      {% endif %}
-                    </div>
-                    <div class="meta">
-                      <h3>{{ rv.restaurant.name }}</h3>
-                      <div class="sub">
-                        <div class="stars">
-                          {% for i in "12345" %}
-                            <span class="{% if forloop.counter <= rv.rating %}on{% endif %}">★</span>
-                          {% endfor %}
-                        </div>
-                        <b>{{ rv.rating }}</b>/5 · {{ rv.created_at|date:"Y-m-d" }}<br>
-                        {{ rv.content|default:"(내용 없음)" }}
-                      </div>
-                    </div>
-                    <div class="actions">
-                      <a class="btn-ghost" href="{% url 'restaurants:detail' rv.restaurant.pk %}">식당 보기</a>
-                    </div>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <div class="empty">작성한 리뷰가 없어요.</div>
-              {% endif %}
-            </div>
+          {% else %}
+            <div class="empty-card">아직 들어온 예약이 없어요.</div>
           {% endif %}
+        </div>
 
-        </section>
-      </main>
+      <!-- ── 예약 내역 탭 ── -->
+      {% elif active_tab == 'reservations' %}
+        <div class="mp-card">
+          <div class="mp-card-title">🗓️ 내 예약 내역</div>
+          {% if is_owner %}
+            <div class="empty-card">
+              사장님은 <b>내 식당 예약현황</b>에서 최신 예약을 확인할 수 있어요.
+              <div style="margin-top:12px;">
+                <a href="{% url 'users:reservation_owner_list' %}" class="ia-btn">전체 예약 보기</a>
+              </div>
+            </div>
+          {% elif reservations %}
+            <div class="item-list">
+              {% for res in reservations %}
+                {% if res.status != "CANCELED" %}
+                  <div class="item-row">
+                    <div class="item-thumb">
+                      {% if res.restaurant.thumbnail %}<img src="{{ res.restaurant.thumbnail.url }}" alt="">
+                      {% else %}<div class="item-thumb-placeholder">🏪</div>{% endif %}
+                    </div>
+                    <div class="item-meta">
+                      <h3>{{ res.restaurant.name }}</h3>
+                      <div class="item-sub">
+                        {{ res.reserved_at|date:"Y-m-d H:i" }} · {{ res.party_size }}명 · {{ res.get_status_display }}
+                      </div>
+                    </div>
+                    <div class="item-actions">
+                      <a href="{% url 'restaurants:detail' res.restaurant.pk %}" class="ia-btn">식당 보기</a>
+                      <a href="{% url 'users:reservation_edit' res.id %}" class="ia-btn">수정</a>
+                      <form method="post" action="{% url 'users:reservation_cancel' res.id %}"
+                            onsubmit="return confirm('예약을 취소할까요?');">
+                        {% csrf_token %}
+                        <button type="submit" class="ia-btn danger">취소</button>
+                      </form>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-card">예약 내역이 없어요.</div>
+          {% endif %}
+        </div>
 
-    </div>
+      <!-- ── 방문한 맛집 탭 ── -->
+      {% elif active_tab == 'history' %}
+        <div class="mp-card">
+          <div class="mp-card-title">📍 방문한 맛집</div>
+          <div class="empty-card" style="text-align:left;margin-bottom:16px;">
+            ⭐ <b>{{ history_min_rating }}점 이상</b> 리뷰를 남긴 식당만 표시돼요.
+            <span style="color:var(--text3);font-size:.8125rem;">(전체 리뷰는 '내 리뷰' 탭에서 확인)</span>
+          </div>
+          {% if history %}
+            <div class="item-list">
+              {% for h in history %}
+                <div class="item-row">
+                  <div class="item-thumb">
+                    {% if h.restaurant.thumbnail %}<img src="{{ h.restaurant.thumbnail.url }}" alt="">
+                    {% else %}<div class="item-thumb-placeholder">🍽️</div>{% endif %}
+                  </div>
+                  <div class="item-meta">
+                    <h3>{{ h.restaurant.name }}</h3>
+                    <div class="item-sub">방문일: {{ h.visited_at|date:"Y-m-d" }} · 내 별점: ★ {{ h.my_rating }}/5</div>
+                  </div>
+                  <div class="item-actions">
+                    <a href="{% url 'restaurants:detail' h.restaurant.pk %}" class="ia-btn">식당 보기</a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-card">방문한 맛집 내역이 없어요.</div>
+          {% endif %}
+        </div>
+
+      <!-- ── 즐겨찾기 탭 ── -->
+      {% elif active_tab == 'favorites' %}
+        <div class="mp-card">
+          <div class="mp-card-title">❤️ 즐겨찾기한 식당</div>
+          {% if favorites %}
+            <div class="item-list">
+              {% for fav in favorites %}
+                <div class="item-row">
+                  <div class="item-thumb">
+                    {% if fav.restaurant.thumbnail %}<img src="{{ fav.restaurant.thumbnail.url }}" alt="">
+                    {% else %}<div class="item-thumb-placeholder">🍽️</div>{% endif %}
+                  </div>
+                  <div class="item-meta">
+                    <h3>{{ fav.restaurant.name }}</h3>
+                    <div class="item-sub">{{ fav.restaurant.address }}</div>
+                  </div>
+                  <div class="item-actions">
+                    <a href="{% url 'restaurants:detail' fav.restaurant.pk %}" class="ia-btn">식당 보기</a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-card">즐겨찾기한 식당이 없어요.</div>
+          {% endif %}
+        </div>
+
+      <!-- ── 내 리뷰 탭 ── -->
+      {% elif active_tab == 'reviews' %}
+        <div class="mp-card">
+          <div class="mp-card-title">✏️ 내가 쓴 리뷰</div>
+          {% if reviews %}
+            <div class="item-list">
+              {% for rv in reviews %}
+                <div class="item-row">
+                  <div class="item-thumb">
+                    {% if rv.restaurant.thumbnail %}<img src="{{ rv.restaurant.thumbnail.url }}" alt="">
+                    {% else %}<div class="item-thumb-placeholder">🍽️</div>{% endif %}
+                  </div>
+                  <div class="item-meta">
+                    <h3>{{ rv.restaurant.name }}</h3>
+                    <div class="item-sub">
+                      <span class="stars-inline">
+                        {% for i in "12345" %}<span class="s {% if forloop.counter <= rv.rating %}on{% endif %}">★</span>{% endfor %}
+                      </span>
+                      {{ rv.rating }}/5 · {{ rv.created_at|date:"Y-m-d" }}<br>
+                      {{ rv.content|truncatechars:60|default:"(내용 없음)" }}
+                    </div>
+                  </div>
+                  <div class="item-actions">
+                    <a href="{% url 'restaurants:detail' rv.restaurant.pk %}" class="ia-btn">식당 보기</a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-card">작성한 리뷰가 없어요.</div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    </main>
   </div>
 </div>
 {% endblock %}

@@ -4,157 +4,289 @@
 
 {% block extra_css %}
 <style>
-    .btn-filter {
-        padding: 8px 18px;
-        border-radius: 25px;
-        border: 1px solid #eee;
-        background: #f8f9fa;
-        cursor: pointer;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: 0.2s all ease;
-        color: #666;
-    }
-    .btn-filter.active {
-        background: var(--text);
-        color: white;
-        border-color: var(--text);
-    }
+  /* ── Layout ── */
+  .fav-wrapper {
+    max-width: 1200px; margin: 40px auto;
+    display: flex; gap: 40px; padding: 0 20px;
+  }
+  .sidebar { width: 220px; flex-shrink: 0; }
+  .sidebar-section-title {
+    font-size: .75rem; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--text3);
+    padding-bottom: 10px; margin-bottom: 4px;
+  }
+  .sidebar-menu { list-style: none; padding: 0; margin: 0; position: sticky; top: 100px; }
+  .sidebar-item {
+    display: block; padding: 11px 12px; border-radius: 8px;
+    font-size: .9375rem; font-weight: 500; color: var(--text2);
+    text-decoration: none; transition: all .15s;
+  }
+  .sidebar-item:hover { background: #f5f5f7; color: var(--text); }
+  .sidebar-item.active { background: #f5f5f7; color: var(--text); font-weight: 700; }
+
+  /* ── Header ── */
+  .recent-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+  }
+  .recent-title { font-size: 1.75rem; font-weight: 800; color: var(--text); }
+  .recent-subtitle { font-size: .9375rem; color: var(--text3); margin-top: 2px; }
+  .btn-clear-all {
+    padding: 10px 16px; border-radius: 10px;
+    border: 1.5px solid #e0e0e8; font-size: .875rem;
+    background: #fff; cursor: pointer; color: #e74c3c;
+    font-weight: 600; transition: all .15s;
+  }
+  .btn-clear-all:hover { background: #fdf2f2; border-color: #e74c3c; }
+
+  /* ── Toolbar ── */
+  .recent-toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .recent-search {
+    flex: 1; min-width: 180px;
+    padding: 10px 16px; border-radius: 10px;
+    border: 1.5px solid #e0e0e8; font-size: .9375rem;
+    outline: none; transition: border-color .2s; background: #fff;
+  }
+  .recent-search:focus { border-color: var(--accent); }
+
+  /* ── Filter chips ── */
+  .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .chip {
+    padding: 7px 16px; border-radius: 20px;
+    border: 1.5px solid #e0e0e8; background: #fff;
+    font-size: .875rem; font-weight: 500; color: var(--text2);
+    cursor: pointer; transition: all .15s;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  /* ── Grid & Cards ── */
+  .recent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 22px;
+  }
+  .r-card {
+    background: #fff; border: 1.5px solid #eee;
+    border-radius: 14px; overflow: hidden;
+    transition: transform .2s, box-shadow .2s; position: relative;
+  }
+  .r-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.07); }
+
+  .card-thumb {
+    height: 175px; position: relative;
+    background: #f3f3f5; overflow: hidden; cursor: pointer;
+  }
+  .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .card-thumb-empty {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; color: #ccc;
+  }
+
+  /* 방문 시간 배지 */
+  .visit-time {
+    position: absolute; bottom: 10px; left: 10px;
+    background: rgba(0,0,0,.55); color: #fff;
+    font-size: .72rem; font-weight: 600; padding: 4px 9px;
+    border-radius: 6px; backdrop-filter: blur(4px);
+  }
+
+  /* 삭제 버튼 */
+  .btn-remove {
+    position: absolute; top: 10px; right: 10px;
+    width: 30px; height: 30px; border-radius: 50%;
+    border: none; background: rgba(255,255,255,.92);
+    color: #999; font-size: 1rem; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.15); transition: all .15s; z-index: 10;
+    font-weight: 700;
+  }
+  .btn-remove:hover { background: #e74c3c; color: #fff; }
+
+  .card-body { padding: 14px 16px 16px; }
+  .card-cat {
+    display: inline-block; font-size: .75rem; font-weight: 700;
+    color: var(--accent); background: rgba(211,102,51,.08);
+    padding: 3px 8px; border-radius: 5px; margin-bottom: 8px;
+  }
+  .card-name { font-size: 1.0625rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .card-addr {
+    font-size: .8125rem; color: var(--text3); margin-bottom: 12px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .btn-detail {
+    display: block; padding: 9px; border-radius: 9px;
+    font-size: .875rem; font-weight: 600; text-decoration: none;
+    text-align: center; border: 1.5px solid #e0e0e8;
+    color: var(--text) !important; background: #fff;
+    transition: all .15s;
+  }
+  .btn-detail:hover { background: var(--accent); color: #fff !important; border-color: var(--accent); }
+
+  /* ── Empty state ── */
+  .empty-state { text-align: center; padding: 80px 0; }
+  .empty-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: #f3f3f5; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 20px;
+    font-size: 1.75rem; color: #ccc;
+  }
+  .empty-msg { font-size: 1rem; color: var(--text2); font-weight: 500; margin-bottom: 20px; }
+  .btn-go {
+    display: inline-block; padding: 10px 24px; border-radius: 10px;
+    background: var(--accent); color: #fff; font-weight: 600;
+    text-decoration: none; font-size: .9375rem; transition: opacity .15s;
+  }
+  .btn-go:hover { opacity: .88; color: #fff; }
+
+  @media (max-width: 900px) { .sidebar { display: none; } .fav-wrapper { padding: 0 16px; } }
+  @media (max-width: 600px) { .recent-grid { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page fade-up">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-        <h2 style="font-family:'Instrument Serif', serif; font-size:2.5rem; color:var(--text); margin: 0;">🕒 최근 본 맛집</h2>
-        <button onclick="clearAllRecent()" class="btn" style="background-color: var(--accent); color: white; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600;">
-            전체 기록 삭제
-        </button>
+<div class="fav-wrapper">
+
+  <!-- ── 사이드바 ── -->
+  <aside class="sidebar">
+    <p class="sidebar-section-title">나의 활동</p>
+    <ul class="sidebar-menu">
+      <li><a href="{% url 'favorites:list' %}"     class="sidebar-item">즐겨찾기 맛집</a></li>
+      <li><a href="{% url 'favorites:recent' %}"   class="sidebar-item active">최근 본 맛집</a></li>
+      <li><a href="{% url 'reviews:my_reviews' %}" class="sidebar-item">내가 쓴 리뷰</a></li>
+    </ul>
+  </aside>
+
+  <!-- ── 메인 ── -->
+  <main style="flex:1; min-width:0;">
+
+    <div class="recent-header">
+      <div>
+        <h1 class="recent-title">최근 본 맛집</h1>
+        <p class="recent-subtitle">최근에 방문한 맛집 기록이에요</p>
+      </div>
+      <button class="btn-clear-all" onclick="clearAllRecent()">전체 기록 삭제</button>
     </div>
 
-<div style="margin-bottom: 20px;">
-    <input type="text" id="recent-search" oninput="searchRecent()" 
-          placeholder="이름이나 주소로 맛집 검색..." 
-          style="width: 100%; padding: 12px 20px; border-radius: 12px; border: 1px solid #ddd; font-size: 1rem; outline: none; transition: 0.3s;">
-</div>
-
-    <div class="filter-group" style="margin-bottom: 24px; display: flex; gap: 10px; flex-wrap: wrap;">
-        <button onclick="filterRecent('전체')" class="btn-filter active">전체</button>
-        <button onclick="filterRecent('한식')" class="btn-filter">한식</button>
-        <button onclick="filterRecent('일식')" class="btn-filter">일식</button>
-        <button onclick="filterRecent('중식')" class="btn-filter">중식</button>
-        <button onclick="filterRecent('양식')" class="btn-filter">양식</button>
-        <button onclick="filterRecent('카페')" class="btn-filter">카페</button>
+    <!-- 검색 -->
+    <div class="recent-toolbar">
+      <input type="text" id="recent-search" class="recent-search"
+             placeholder="식당 이름, 주소 검색..."
+             oninput="searchRecent()">
     </div>
 
-    <div id="recent-list-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px;">
+    <!-- 카테고리 필터 -->
+    <div class="filter-chips">
+      <button class="chip active" onclick="filterRecent(this, '전체')">전체</button>
+      <button class="chip" onclick="filterRecent(this, '한식')">한식</button>
+      <button class="chip" onclick="filterRecent(this, '일식')">일식</button>
+      <button class="chip" onclick="filterRecent(this, '중식')">중식</button>
+      <button class="chip" onclick="filterRecent(this, '양식')">양식</button>
+      <button class="chip" onclick="filterRecent(this, '카페')">카페</button>
     </div>
 
-    <div id="empty-message" style="display:none; text-align:center; padding:100px 0;">
-        <p style="font-size:4rem; margin-bottom:16px;">🔍</p>
-        <p style="color:var(--text2);">최근에 확인한 맛집이 아직 없습니다.</p>
-        <a href="/restaurants/" class="btn btn-primary" style="margin-top:24px;">맛집 보러가기</a>
+    <!-- 카드 컨테이너 (JS로 채움) -->
+    <div id="recent-grid" class="recent-grid"></div>
+
+    <!-- 빈 상태 -->
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <div class="empty-icon">○</div>
+      <p class="empty-msg">최근에 확인한 맛집이 없어요</p>
+      <a href="/restaurants/" class="btn-go">맛집 둘러보기</a>
     </div>
+
+  </main>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const recentStores = JSON.parse(localStorage.getItem('recentStores')) || [];
-    const container = document.getElementById('recent-list-container');
-    const emptyMessage = document.getElementById('empty-message');
+let allStores = [];
+let activeCategory = '전체';
 
-    if (recentStores.length === 0) {
-        if (emptyMessage) emptyMessage.style.display = 'block';
-        return;
-    }
-
-    if (container) {
-        recentStores.forEach(s => {
-            const visitTime = s.timestamp ? new Date(s.timestamp).toLocaleString('ko-KR', {
-                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            }) : "기록 없음";
-
-            const cardHtml = `
-                <div class="card shadow" id="recent-card-${s.id}" style="position: relative;">
-                    <button onclick="removeRecent('${s.id}')" 
-                            style="position: absolute; top: 12px; right: 12px; z-index: 10; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1;">
-                        &times;
-                    </button>
-                    <div style="position: absolute; top: 12px; left: 12px; z-index: 10; background: rgba(255,255,255,0.9); color: #333; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        🕒 ${visitTime}
-                    </div>
-                    <div style="height:200px; overflow:hidden; background:#eee;">
-                        <img src="${s.img}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                    </div>
-                    <div style="padding:20px;">
-                        <span style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase;">${s.category}</span>
-                        <h3 style="margin:8px 0 12px; font-size:1.25rem; color:var(--text);">${s.name}</h3>
-                        <p style="font-size:0.875rem; color:var(--text2); margin-bottom:20px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">
-                            📍 ${s.address}
-                        </p>
-                        <a href="/restaurants/${s.id}/" class="btn btn-outline" style="width:100%; justify-content:center;">상세보기</a>
-                    </div>
-                </div>`;
-            container.innerHTML += cardHtml;
-        });
-    }
+document.addEventListener('DOMContentLoaded', function () {
+  allStores = JSON.parse(localStorage.getItem('recentStores') || '[]');
+  if (allStores.length === 0) {
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+  renderCards(allStores);
 });
 
+function renderCards(stores) {
+  const grid = document.getElementById('recent-grid');
+  grid.innerHTML = '';
+
+  if (stores.length === 0) {
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+  document.getElementById('empty-state').style.display = 'none';
+
+  stores.forEach(s => {
+    const visitTime = s.timestamp
+      ? new Date(s.timestamp).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : '';
+
+    const imgHtml = s.img
+      ? `<img src="${s.img}" onerror="this.parentElement.innerHTML='<div class=\\'card-thumb-empty\\'>—</div>'">`
+      : `<div class="card-thumb-empty">—</div>`;
+
+    const card = document.createElement('div');
+    card.className = 'r-card';
+    card.id = `recent-card-${s.id}`;
+    card.dataset.name = (s.name || '').toLowerCase();
+    card.dataset.addr = (s.address || '').toLowerCase();
+    card.dataset.category = s.category || '';
+    card.innerHTML = `
+      <div class="card-thumb" onclick="location.href='/restaurants/${s.id}/'">
+        ${imgHtml}
+        ${visitTime ? `<span class="visit-time">${visitTime}</span>` : ''}
+        <button class="btn-remove" onclick="event.stopPropagation(); removeRecent('${s.id}')" title="기록 삭제">×</button>
+      </div>
+      <div class="card-body">
+        <span class="card-cat">${s.category || '음식점'}</span>
+        <div class="card-name">${s.name || ''}</div>
+        <div class="card-addr">${s.address || ''}</div>
+        <a href="/restaurants/${s.id}/" class="btn-detail">상세보기</a>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function filterRecent(btn, category) {
+  activeCategory = category;
+  document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function searchRecent() { applyFilter(); }
+
+function applyFilter() {
+  const query = document.getElementById('recent-search').value.toLowerCase();
+  document.querySelectorAll('.r-card').forEach(card => {
+    const matchQ   = !query || card.dataset.name.includes(query) || card.dataset.addr.includes(query);
+    const matchCat = activeCategory === '전체' || card.dataset.category === activeCategory;
+    card.style.display = (matchQ && matchCat) ? '' : 'none';
+  });
+}
+
 function removeRecent(storeId) {
-    if(!confirm("이 방문 기록을 삭제하시겠습니까?")) return;
-    let recentStores = JSON.parse(localStorage.getItem('recentStores')) || [];
-    recentStores = recentStores.filter(item => item.id != storeId);
-    localStorage.setItem('recentStores', JSON.stringify(recentStores));
-    const card = document.getElementById(`recent-card-${storeId}`);
-    if (card) {
-        card.style.opacity = '0';
-        setTimeout(() => {
-            card.remove();
-            if (recentStores.length === 0) location.reload();
-        }, 300);
-    }
+  if (!confirm('이 방문 기록을 삭제할까요?')) return;
+  allStores = allStores.filter(s => String(s.id) !== String(storeId));
+  localStorage.setItem('recentStores', JSON.stringify(allStores));
+  const card = document.getElementById(`recent-card-${storeId}`);
+  if (card) {
+    card.style.transition = 'opacity .3s, transform .3s';
+    card.style.opacity = '0'; card.style.transform = 'scale(0.95)';
+    setTimeout(() => { card.remove(); if (allStores.length === 0) location.reload(); }, 320);
+  }
 }
 
 function clearAllRecent() {
-    if (!confirm("정말로 모든 방문 기록을 삭제하시겠습니까?")) return;
-    localStorage.removeItem('recentStores');
-    const container = document.getElementById('recent-list-container');
-    if (container) {
-        container.style.opacity = '0';
-        setTimeout(() => { location.reload(); }, 500);
-    }
+  if (!confirm('모든 방문 기록을 삭제할까요?')) return;
+  localStorage.removeItem('recentStores');
+  location.reload();
 }
-
-function filterRecent(category) {
-    const cards = document.querySelectorAll('.card.shadow'); 
-    const buttons = document.querySelectorAll('.btn-filter');
-    buttons.forEach(btn => {
-        if(btn.innerText === category) btn.classList.add('active');
-        else btn.classList.remove('active');
-    });
-    cards.forEach(card => {
-        const cardCategory = card.querySelector('span').innerText.trim();
-        card.style.display = (category === '전체' || cardCategory === category) ? 'block' : 'none';
-    });
-}
-
-// 실시간 검색 로직
-function searchRecent() {
-    const query = document.getElementById('recent-search').value.toLowerCase(); // 검색어 소문자 변환
-    const cards = document.querySelectorAll('.card.shadow');
-
-    cards.forEach(card => {
-        const name = card.querySelector('h3').innerText.toLowerCase(); // 식당 이름
-        const address = card.querySelector('p').innerText.toLowerCase(); // 주소 정보
-
-        // 이름이나 주소에 검색어가 포함되어 있는지 확인 (패킷 필터링 원리)
-        if (name.includes(query) || address.includes(query)) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
-    });
-}
-
 </script>
 {% endblock %}

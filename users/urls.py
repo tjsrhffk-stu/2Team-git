@@ -31,9 +31,11 @@ urlpatterns = [
     path("reservations/<int:reservation_id>/edit/", reservation_views.reservation_edit, name="reservation_edit"),
     path("reservations/<int:reservation_id>/cancel/", reservation_views.reservation_cancel_by_customer, name="reservation_cancel"),
 
-    # 사장: 내 식당 예약 목록 / 취소(사장)
+    # 사장: 내 식당 예약 목록 / 취소(사장) / 확정 / 거절
     path("reservations/owner/", reservation_views.reservation_owner_list, name="reservation_owner_list"),
     path("reservations/<int:reservation_id>/owner-cancel/", reservation_views.reservation_cancel_by_owner, name="reservation_owner_cancel"),
+    path("reservations/<int:reservation_id>/confirm/", reservation_views.reservation_confirm, name="reservation_confirm"),
+    path("reservations/<int:reservation_id>/reject/", reservation_views.reservation_reject, name="reservation_reject"),
 
     # -----------------------------
     # 회원 탈퇴

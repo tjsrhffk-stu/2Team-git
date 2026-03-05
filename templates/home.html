@@ -3,254 +3,303 @@
 
 {% block extra_css %}
 <style>
+  body { background: var(--bg); }
   main { padding: 0 !important; max-width: none !important; }
 
-  /* HERO */
+  /* ── HERO (쿠팡이츠 스타일: 밝고 깔끔한 배경 + 중앙 검색) ── */
   .hero {
-    position: relative; overflow: hidden;
-    background: var(--text);
-    min-height: 580px;
-    display: flex; align-items: center;
+    background: linear-gradient(135deg, #FFF5F0 0%, #FFF0E8 50%, #FDEEE5 100%);
+    padding: 70px 24px 60px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
   }
-  .hero-bg {
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, #1A1510 0%, #2A1E14 50%, #1A1510 100%);
+  [data-theme="dark"] .hero {
+    background: linear-gradient(135deg, #1E1610 0%, #1A1410 50%, #1C1511 100%);
   }
-  .hero-pattern {
-    position: absolute; inset: 0; opacity: 0.04;
-    background-image: radial-gradient(circle, #fff 1px, transparent 1px);
-    background-size: 32px 32px;
-  }
-  .hero-accent {
-    position: absolute; top: -100px; right: -100px;
-    width: 500px; height: 500px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(212,82,26,0.3) 0%, transparent 70%);
-    animation: pulse 6s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.1); opacity: 0.5; } }
-
-  .hero-inner {
-    max-width: 1200px; margin: 0 auto; padding: 80px 24px;
-    position: relative; z-index: 1;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
-  }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(212,82,26,0.2); border: 1px solid rgba(212,82,26,0.4);
-    color: #E8A080; font-size: 12px; font-weight: 600; letter-spacing: 1.5px;
-    text-transform: uppercase; padding: 6px 14px; border-radius: 100px;
-    margin-bottom: 24px;
-    animation: fadeUp 0.6s ease both;
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(212,98,42,.12); border: 1px solid rgba(212,98,42,.25);
+    color: var(--accent); font-size: .75rem; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 100px;
+    margin-bottom: 20px;
+    animation: fadeUp .5s ease both;
   }
   .hero-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(40px, 5vw, 64px); font-weight: 700;
-    color: #F0EDE8; line-height: 1.1; margin-bottom: 20px;
-    animation: fadeUp 0.6s 0.1s ease both;
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 900; color: var(--text);
+    line-height: 1.15; margin-bottom: 14px;
+    letter-spacing: -.03em;
+    animation: fadeUp .5s .08s ease both;
   }
   .hero-title em { color: var(--accent); font-style: normal; }
-  .hero-desc {
-    color: #9A938A; font-size: 17px; line-height: 1.7; margin-bottom: 36px;
-    animation: fadeUp 0.6s 0.2s ease both;
+  .hero-sub {
+    font-size: 1.0625rem; color: var(--text2);
+    margin-bottom: 36px; line-height: 1.6;
+    animation: fadeUp .5s .16s ease both;
   }
-  .hero-actions {
-    display: flex; gap: 12px; flex-wrap: wrap;
-    animation: fadeUp 0.6s 0.3s ease both;
-  }
-  .btn-hero {
-    padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 600;
-    text-decoration: none; transition: all 0.25s;
-    display: inline-flex; align-items: center; gap: 8px;
-  }
-  .btn-hero-primary { background: var(--accent); color: #fff; }
-  .btn-hero-primary:hover { background: #B8431A; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(212,82,26,0.35); }
-  .btn-hero-ghost { background: rgba(255,255,255,0.08); color: #C8C0B8; border: 1px solid rgba(255,255,255,0.12); }
-  .btn-hero-ghost:hover { background: rgba(255,255,255,0.14); color: #F0EDE8; }
 
-  /* HERO SEARCH */
+  /* Big Search Bar */
   .hero-search {
-    animation: fadeUp 0.6s 0.15s ease both;
+    max-width: 620px; margin: 0 auto 28px;
+    animation: fadeUp .5s .2s ease both;
   }
-  .search-card {
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px; padding: 28px; backdrop-filter: blur(12px);
+  .search-box {
+    display: flex; align-items: center; gap: 0;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s;
   }
-  .search-card h3 { color: #F0EDE8; font-size: 18px; margin-bottom: 20px; font-weight: 600; }
-  .search-input-wrap { position: relative; margin-bottom: 14px; }
-  .search-input-wrap input {
-    width: 100%; padding: 14px 18px 14px 44px;
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 12px; color: #F0EDE8; font-size: 15px; font-family: 'DM Sans', sans-serif;
-    outline: none; transition: all 0.2s;
+  .search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 4px 24px rgba(212,98,42,.15);
   }
-  .search-input-wrap input::placeholder { color: #6B6560; }
-  .search-input-wrap input:focus { background: rgba(255,255,255,0.12); border-color: var(--accent); }
-  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; }
-  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-  .filter-chip {
-    padding: 7px 14px; border-radius: 100px; font-size: 13px; font-weight: 500;
-    background: rgba(255,255,255,0.06); color: #9A938A;
-    border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.2s;
+  .search-box-icon { padding: 0 14px; font-size: 1.2rem; flex-shrink: 0; color: var(--text3); }
+  .search-box input {
+    flex: 1; padding: 16px 0 16px 18px;
+    background: transparent; border: none;
+    font-size: 1rem; color: var(--text);
+    outline: none; font-family: inherit;
   }
-  .filter-chip:hover, .filter-chip.active {
-    background: rgba(212,82,26,0.2); color: #E8A080; border-color: rgba(212,82,26,0.4);
+  .search-box input::placeholder { color: var(--text3); }
+  .search-box-btn {
+    padding: 12px 24px; margin: 6px; border-radius: 10px;
+    background: var(--accent); color: #fff;
+    font-size: .9375rem; font-weight: 700; font-family: inherit;
+    transition: background .2s;
   }
-  .search-btn {
-    width: 100%; padding: 13px; background: var(--accent); color: #fff;
-    border: none; border-radius: 12px; font-size: 15px; font-weight: 600;
-    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
-  }
-  .search-btn:hover { background: #B8431A; }
+  .search-box-btn:hover { background: var(--accent-hv); }
 
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  /* Category chips in hero */
+  .hero-cats {
+    display: flex; justify-content: center; gap: 8px;
+    flex-wrap: wrap;
+    animation: fadeUp .5s .28s ease both;
+  }
+  .hero-cat {
+    padding: 7px 16px; border-radius: 100px;
+    font-size: .8125rem; font-weight: 600;
+    background: var(--surface); color: var(--text2);
+    border: 1.5px solid var(--border);
+    cursor: pointer; transition: all .2s;
+  }
+  .hero-cat:hover, .hero-cat.active {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
 
-  /* STATS */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+
+  /* ── STATS ── */
   .stats-bar {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
   }
   .stats-inner {
-    max-width: 1200px; margin: 0 auto;
-    display: flex; justify-content: center; gap: 64px; flex-wrap: wrap;
+    max-width: 1280px; margin: 0 auto;
+    display: flex; justify-content: center; gap: 56px; flex-wrap: wrap;
   }
   .stat { text-align: center; }
-  .stat-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 32px; font-weight: 700; color: var(--accent);
-    display: block;
-  }
-  .stat-label { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .stat-num { display: block; font-size: 1.75rem; font-weight: 900; color: var(--accent); letter-spacing: -.03em; }
+  .stat-label { font-size: .75rem; color: var(--text2); font-weight: 500; margin-top: 1px; }
 
-  /* SECTIONS */
-  .section { max-width: 1200px; margin: 0 auto; padding: 64px 24px; }
-  .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 36px; }
+  /* ── CATEGORY SECTION ── */
+  .section { max-width: 1280px; margin: 0 auto; padding: 52px 24px; }
+  .section + .section { padding-top: 0; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px;
+  }
   .section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 32px; font-weight: 700; color: var(--text);
+    font-size: 1.375rem; font-weight: 900; color: var(--text); letter-spacing: -.02em;
   }
-  .section-link { font-size: 14px; color: var(--accent); text-decoration: none; font-weight: 600; }
-  .section-link:hover { text-decoration: underline; }
+  .section-more {
+    font-size: .875rem; font-weight: 600; color: var(--accent);
+    transition: opacity .2s;
+  }
+  .section-more:hover { opacity: .75; }
 
-  /* RESTAURANT CARDS */
-  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-  .restaurant-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-    box-shadow: var(--shadow); transition: all var(--transition);
-    text-decoration: none; color: inherit; display: block;
-    animation: fadeUp 0.5s ease both;
+  /* Category grid */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 12px;
   }
-  .restaurant-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--accent); }
-  .card-img {
-    height: 180px; background: var(--bg2); position: relative;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 56px; overflow: hidden;
-  }
-  .card-img-overlay {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 60%);
-  }
-  .card-badge {
-    position: absolute; top: 12px; left: 12px;
-    background: var(--accent); color: #fff;
-    font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px;
-    letter-spacing: 0.5px;
-  }
-  .card-body { padding: 20px; }
-  .card-name {
-    font-size: 17px; font-weight: 600; margin-bottom: 6px;
-    color: var(--text);
-  }
-  .card-meta { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
-  .card-stars { display: flex; align-items: center; gap: 6px; }
-  .stars { display: flex; gap: 2px; }
-  .stars span { font-size: 15px; }
-  .stars .on { color: var(--star-on); }
-  .stars .off { color: var(--star-off); }
-  .card-count { font-size: 13px; color: var(--text2); }
-
-  /* CATEGORIES */
-  .categories { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px; }
-  .cat-item {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 24px 16px;
+  .cat-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 20px 12px;
     text-align: center; text-decoration: none; color: var(--text);
-    transition: all var(--transition);
-    display: flex; flex-direction: column; gap: 10px; align-items: center;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    transition: all .2s;
   }
-  .cat-item:hover { border-color: var(--accent); background: var(--accent-light); transform: translateY(-2px); }
-  .cat-icon { font-size: 36px; }
-  .cat-name { font-size: 13px; font-weight: 600; }
+  .cat-card:hover {
+    border-color: var(--accent); background: var(--accent-lt);
+    transform: translateY(-2px); box-shadow: var(--shadow-sm);
+  }
+  .cat-icon { font-size: 2rem; }
+  .cat-name { font-size: .8125rem; font-weight: 700; color: var(--text2); }
+  .cat-card:hover .cat-name { color: var(--accent); }
 
-  /* CTA */
-  .cta-section {
-    background: var(--text);
-    padding: 80px 24px; text-align: center;
+  /* ── RESTAURANT CARDS ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
   }
-  .cta-inner { max-width: 560px; margin: 0 auto; }
-  .cta-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 40px; font-weight: 700; color: #F0EDE8;
-    margin-bottom: 16px;
+  .r-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    text-decoration: none; color: inherit;
+    display: block; box-shadow: var(--shadow-sm);
+    transition: all .22s;
   }
-  .cta-desc { color: #9A938A; font-size: 16px; margin-bottom: 32px; line-height: 1.6; }
-  .cta-btn {
-    display: inline-block; padding: 16px 36px;
+  .r-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: #D0D0D0; }
+  .r-card-img {
+    height: 180px; background: var(--surface2);
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+  }
+  .r-card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  .r-card-img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.28) 0%, transparent 55%);
+  }
+  .r-card-badge {
+    position: absolute; top: 10px; left: 10px;
     background: var(--accent); color: #fff;
-    border-radius: 14px; font-size: 16px; font-weight: 600;
-    text-decoration: none; transition: all 0.25s;
+    font-size: .6875rem; font-weight: 800; padding: 3px 10px;
+    border-radius: 100px; letter-spacing: .3px;
   }
-  .cta-btn:hover { background: #B8431A; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(212,82,26,0.4); }
+  .r-card-cat {
+    position: absolute; bottom: 10px; left: 10px;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
+    color: #fff; font-size: .6875rem; font-weight: 700;
+    padding: 3px 10px; border-radius: 100px;
+  }
+  .r-card-body { padding: 16px 18px 18px; }
+  .r-card-name { font-size: 1rem; font-weight: 800; margin-bottom: 4px; color: var(--text); }
+  .r-card-addr { font-size: .8125rem; color: var(--text2); margin-bottom: 10px; }
+  .r-card-rating { display: flex; align-items: center; gap: 6px; }
+  .r-rating-num { font-size: .9375rem; font-weight: 800; color: var(--gold); }
+  .r-review-cnt { font-size: .8125rem; color: var(--text3); }
 
-  @media (max-width: 768px) {
-    .hero-inner { grid-template-columns: 1fr; gap: 40px; }
-    .stats-inner { gap: 32px; }
+  /* ── SECTION BG ALT ── */
+  .section-alt { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+  /* ── CTA SECTION ── */
+  .cta-section {
+    padding: 72px 24px;
+    text-align: center;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .cta-inner { max-width: 480px; margin: 0 auto; }
+  .cta-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--accent-lt); border: 1.5px solid rgba(212,98,42,.2);
+    color: var(--accent); font-size: .75rem; font-weight: 700;
+    padding: 4px 14px; border-radius: 100px; margin-bottom: 18px;
+  }
+  .cta-title {
+    font-size: clamp(24px, 3.5vw, 36px); font-weight: 900;
+    color: var(--text); margin-bottom: 12px; line-height: 1.25; letter-spacing: -.03em;
+  }
+  .cta-desc { color: var(--text2); font-size: .9375rem; margin-bottom: 28px; line-height: 1.7; }
+  .cta-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 32px; background: var(--accent); color: #fff;
+    border-radius: 10px; font-size: .9375rem; font-weight: 700;
+    transition: all .2s;
+  }
+  .cta-btn:hover { background: var(--accent-hv); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,98,42,.3); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .cat-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .hero { padding: 48px 16px 40px; }
+    .cat-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .stats-inner { gap: 28px; }
+    .section { padding: 36px 16px; }
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 400px) {
+    .cat-grid { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- HERO -->
+
+<!-- ── HERO ── -->
 <section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-pattern"></div>
-  <div class="hero-accent"></div>
-  <div class="hero-inner">
-    <div>
-      <div class="hero-badge">🍽️ &nbsp;맛집 리뷰 플랫폼</div>
-      <h1 class="hero-title">진짜 <em>맛집</em>을<br>찾아드립니다</h1>
-      <p class="hero-desc">이웃들의 솔직한 리뷰로<br>당신만의 단골집을 발견하세요.</p>
-      <div class="hero-actions">
-        <a href="/map" class="btn-hero btn-hero-primary">📍 지도에서 맛집 찾기</a>
-        <a href="/restaurants/" class="btn-hero btn-hero-primary">🗺️ 음식점 둘러보기</a>
-        <a href="/users/signup/" class="btn-hero btn-hero-ghost">✍️ 리뷰 작성하기</a>
-      </div>
+  <div class="hero-eyebrow"> &nbsp;맛집 리뷰 플랫폼</div>
+  <h1 class="hero-title">진짜 <em>맛집</em>을<br>찾아드립니다</h1>
+  <p class="hero-sub">이웃들의 솔직한 리뷰로 당신만의 단골집을 발견하세요</p>
+
+  <!-- 검색 탭 -->
+  <div style="display:flex;justify-content:center;gap:4px;margin-bottom:14px;animation:fadeUp .5s .18s ease both;">
+    <button id="tabNormal" onclick="switchTab('normal')"
+            style="padding:8px 20px;border-radius:100px;font-size:.875rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;background:var(--surface);border:2px solid var(--accent);color:var(--accent);">
+        일반 검색
+    </button>
+    <button id="tabAI" onclick="switchTab('ai')"
+            style="padding:8px 20px;border-radius:100px;font-size:.875rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;background:transparent;border:2px solid var(--border);color:var(--text2);">
+        AI 검색
+    </button>
+  </div>
+
+  <div class="hero-search">
+    <!-- 일반 검색 폼 -->
+    <div id="formNormal">
+      <form method="GET" action="/restaurants/" class="search-box">
+        <input type="text" name="q" id="heroQ" placeholder="식당 이름, 메뉴, 지역으로 검색…" autocomplete="off">
+        <input type="hidden" name="category" id="heroCat">
+        <button type="submit" class="search-box-btn">검색하기</button>
+      </form>
     </div>
-    <div class="hero-search">
-      <div class="search-card">
-        <h3>🔍 음식점 검색</h3>
-        <form method="GET" action="/restaurants/">
-          <div class="search-input-wrap">
-            <span class="search-icon">🏪</span>
-            <input type="text" name="q" placeholder="음식점 이름이나 카테고리..." autocomplete="off">
-          </div>
-          <div class="filter-row" id="filterChips">
-            <span class="filter-chip active" data-val="">전체</span>
-            <span class="filter-chip" data-val="한식">한식</span>
-            <span class="filter-chip" data-val="일식">일식</span>
-            <span class="filter-chip" data-val="양식">양식</span>
-            <span class="filter-chip" data-val="중식">중식</span>
-            <span class="filter-chip" data-val="카페">카페</span>
-          </div>
-          <input type="hidden" name="category" id="categoryInput">
-          <button type="submit" class="search-btn">검색하기 →</button>
-        </form>
+
+    <!-- AI 검색 폼 -->
+    <div id="formAI" style="display:none;">
+      <form method="GET" action="/ai-search/" class="search-box" style="border-color:var(--accent);box-shadow:0 4px 24px rgba(212,98,42,.15);">
+        <input type="text" name="q" id="heroAIQ" placeholder="원하는 걸 자연어로 적어보세요…" autocomplete="off">
+        <button type="submit" class="search-box-btn" style="background:linear-gradient(135deg,#D4622A,#E8853A);">AI 검색</button>
+      </form>
+      <!-- AI 추천 쿼리 -->
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px;">
+        {% for sug in ai_suggestions %}
+          <span onclick="document.getElementById('heroAIQ').value='{{ sug }}';document.getElementById('formAI').querySelector('form').submit();"
+                style="padding:6px 14px;background:rgba(212,98,42,.1);border:1px solid rgba(212,98,42,.25);
+                       border-radius:100px;font-size:.8rem;font-weight:600;color:var(--accent);cursor:pointer;
+                       transition:all .2s;"
+                onmouseover="this.style.background='rgba(212,98,42,.2)'"
+                onmouseout="this.style.background='rgba(212,98,42,.1)'">
+            {{ sug }}
+          </span>
+        {% endfor %}
       </div>
     </div>
   </div>
+
+  <div class="hero-cats" id="heroCats">
+    <span class="hero-cat active" data-val="">전체</span>
+    <span class="hero-cat" data-val="한식">🍚 한식</span>
+    <span class="hero-cat" data-val="일식">🍣 일식</span>
+    <span class="hero-cat" data-val="양식">🍝 양식</span>
+    <span class="hero-cat" data-val="중식">🥟 중식</span>
+    <span class="hero-cat" data-val="카페">☕ 카페</span>
+    <span class="hero-cat" data-val="분식">🥚 분식</span>
+    <span class="hero-cat" data-val="디저트">🍰 디저트</span>
+  </div>
 </section>
 
-<!-- STATS -->
+<!-- ── STATS ── -->
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat"><span class="stat-num">{{ restaurant_count|default:"128" }}+</span><div class="stat-label">등록된 음식점</div></div>
@@ -260,100 +309,224 @@
   </div>
 </div>
 
-<!-- FEATURED -->
-<section class="section">
-  <div class="section-header">
-    <h2 class="section-title">이번 주 인기 맛집</h2>
-    <a href="/restaurants/" class="section-link">전체 보기 →</a>
+<!-- ── FEATURED RESTAURANTS ── -->
+<div class="section">
+  <div class="section-head">
+    <h2 class="section-title"> 이번 주 인기 맛집</h2>
+    <a href="/restaurants/" class="section-more">전체 보기 →</a>
   </div>
   <div class="cards-grid">
     {% for restaurant in featured_restaurants %}
-    <a href="/restaurants/{{ restaurant.pk }}/" class="restaurant-card" style="animation-delay: {{ forloop.counter0 }}00ms">
-      <div class="card-img">
-        {% if restaurant.image %}<img src="{{ restaurant.image.url }}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">{% else %}🍽️{% endif %}
-        <div class="card-img-overlay"></div>
-        {% if forloop.first %}<span class="card-badge">🔥 인기</span>{% endif %}
+    <a href="/restaurants/{{ restaurant.pk }}/" class="r-card fade-up" style="animation-delay:{{ forloop.counter0 }}0ms">
+      <div class="r-card-img">
+        {% if restaurant.thumbnail %}
+          <img src="{{ restaurant.thumbnail.url }}" alt="{{ restaurant.name }}">
+        {% elif restaurant.image %}
+          <img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}">
+        {% else %}
+          🍽️
+        {% endif %}
+        <div class="r-card-img-overlay"></div>
+        {% if forloop.first %}<span class="r-card-badge">🔥 인기</span>{% endif %}
+        <span class="r-card-cat">{{ restaurant.category.name|default:"음식점" }}</span>
       </div>
-      <div class="card-body">
-        <div class="card-name">{{ restaurant.name }}</div>
-        <div class="card-meta">{{ restaurant.category }} &nbsp;·&nbsp; {{ restaurant.address|truncatechars:20 }}</div>
-        <div class="card-stars">
-          <div class="stars">
-            {% for i in "12345" %}
-              {% if forloop.counter <= restaurant.avg_rating|default:0 %}
-                <span class="on">★</span>
-              {% else %}
-                <span class="off">★</span>
-              {% endif %}
-            {% endfor %}
-          </div>
-          <span class="card-count">{{ restaurant.avg_rating|default:"—" }} ({{ restaurant.review_count|default:0 }}개)</span>
+      <div class="r-card-body">
+        <div class="r-card-name">{{ restaurant.name }}</div>
+        <div class="r-card-addr">{{ restaurant.address|truncatechars:28 }}</div>
+        <div class="r-card-rating">
+          <span class="r-rating-num">★ {{ restaurant.avg_rating|floatformat:1|default:"—" }}</span>
+          <span class="r-review-cnt">({{ restaurant.review_count|default:0 }}개 리뷰)</span>
         </div>
       </div>
     </a>
     {% empty %}
-    <!-- 더미 카드 (데이터 없을 때) -->
     {% for i in "123456" %}
-    <a href="/restaurants/" class="restaurant-card" style="animation-delay: {{ forloop.counter0 }}00ms">
-      <div class="card-img">
+    <a href="/restaurants/" class="r-card fade-up" style="animation-delay:{{ forloop.counter0 }}0ms">
+      <div class="r-card-img">
         <span>{% if forloop.counter == 1 %}🍜{% elif forloop.counter == 2 %}🍣{% elif forloop.counter == 3 %}🍔{% elif forloop.counter == 4 %}🥘{% elif forloop.counter == 5 %}☕{% else %}🍕{% endif %}</span>
-        <div class="card-img-overlay"></div>
-        {% if forloop.first %}<span class="card-badge">🔥 인기</span>{% endif %}
+        <div class="r-card-img-overlay"></div>
+        {% if forloop.first %}<span class="r-card-badge">🔥 인기</span>{% endif %}
+        <span class="r-card-cat">음식점</span>
       </div>
-      <div class="card-body">
-        <div class="card-name">음식점 이름</div>
-        <div class="card-meta">카테고리 &nbsp;·&nbsp; 주소</div>
-        <div class="card-stars">
-          <div class="stars">
-            <span class="on">★</span><span class="on">★</span><span class="on">★</span><span class="on">★</span><span class="off">★</span>
-          </div>
-          <span class="card-count">4.0 (12개)</span>
+      <div class="r-card-body">
+        <div class="r-card-name">음식점 이름</div>
+        <div class="r-card-addr">서울특별시 어딘가</div>
+        <div class="r-card-rating">
+          <span class="r-rating-num">★ 4.5</span>
+          <span class="r-review-cnt">(12개 리뷰)</span>
         </div>
       </div>
     </a>
     {% endfor %}
     {% endfor %}
   </div>
-</section>
+</div>
 
-<!-- CATEGORIES -->
-{% comment %} <div style="background: var(--bg2)">
-  <section class="section">
-    <div class="section-header">
-      <h2 class="section-title">카테고리별 탐색</h2>
-    </div>
-    <div class="categories">
-      <a href="/restaurants/?category=한식" class="cat-item"><span class="cat-icon">🍚</span><span class="cat-name">한식</span></a>
-      <a href="/restaurants/?category=일식" class="cat-item"><span class="cat-icon">🍣</span><span class="cat-name">일식</span></a>
-      <a href="/restaurants/?category=양식" class="cat-item"><span class="cat-icon">🍝</span><span class="cat-name">양식</span></a>
-      <a href="/restaurants/?category=중식" class="cat-item"><span class="cat-icon">🥟</span><span class="cat-name">중식</span></a>
-      <a href="/restaurants/?category=카페" class="cat-item"><span class="cat-icon">☕</span><span class="cat-name">카페</span></a>
-      <a href="/restaurants/?category=패스트푸드" class="cat-item"><span class="cat-icon">🍔</span><span class="cat-name">패스트푸드</span></a>
-      <a href="/restaurants/?category=분식" class="cat-item"><span class="cat-icon">🥚</span><span class="cat-name">분식</span></a>
-      <a href="/restaurants/?category=디저트" class="cat-item"><span class="cat-icon">🍰</span><span class="cat-name">디저트</span></a>
-    </div>
-  </section>
-</div> {% endcomment %}
+<!-- ── 푸드스토리 / 기사 ── -->
+{% if food_stories %}
+<div class="section">
+  <div class="section-head">
+    <h2 class="section-title">📰 푸드스토리</h2>
+    <span style="font-size:.875rem;color:var(--text3);">맛집 트렌드 &amp; 음식 이야기</span>
+  </div>
+  <!-- 가로 스크롤 카드 열 -->
+  <div style="display:flex;gap:16px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-ms-overflow-style:none;">
+    {% for story in food_stories %}
+    <a href="{{ story.external_url|default:'#' }}"
+       {% if story.external_url %}target="_blank" rel="noopener"{% endif %}
+       style="flex:0 0 260px;background:var(--surface);border:1px solid var(--border);
+              border-radius:16px;overflow:hidden;text-decoration:none;
+              transition:transform .2s,box-shadow .2s;display:block;"
+       onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow)'"
+       onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="height:160px;background:var(--surface2);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;font-size:3rem;">
+        {% if story.thumbnail %}
+          <img src="{{ story.thumbnail.url }}" alt="{{ story.title }}" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          📰
+        {% endif %}
+        {% if story.badge %}
+          <span style="position:absolute;top:10px;left:10px;background:var(--accent);color:#fff;
+                       font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:100px;letter-spacing:.04em;">
+            {{ story.badge }}
+          </span>
+        {% endif %}
+      </div>
+      <div style="padding:14px 16px 16px;">
+        {% if story.subtitle %}
+          <div style="font-size:.75rem;color:var(--accent);font-weight:700;margin-bottom:5px;">{{ story.subtitle }}</div>
+        {% endif %}
+        <div style="font-size:.9375rem;font-weight:800;color:var(--text);line-height:1.4;
+                    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          {{ story.title }}
+        </div>
+        <div style="font-size:.775rem;color:var(--text3);margin-top:8px;">{{ story.created_at|date:"Y.m.d" }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 
-<!-- CTA -->
+<!-- ── 테마 큐레이션 ── -->
+{% if theme_sections %}
+<div class="section" style="background:var(--surface2);padding-top:48px;padding-bottom:48px;margin:0;">
+  <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
+    <h2 class="section-title" style="margin-bottom:8px;">테마별 맛집 모음</h2>
+    <p style="font-size:.9rem;color:var(--text3);margin-bottom:32px;">상황에 맞는 맛집을 골라드려요</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;">
+      {% for theme in theme_sections %}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-sm);">
+        <div style="padding:20px 20px 16px;">
+          <div style="font-size:1.0625rem;font-weight:900;color:var(--text);margin-bottom:4px;">{{ theme.label }}</div>
+          <div style="font-size:.825rem;color:var(--text3);">{{ theme.desc }}</div>
+        </div>
+        <div style="padding:0 20px 16px;display:flex;flex-direction:column;gap:8px;">
+          {% for r in theme.restaurants %}
+          <a href="/restaurants/{{ r.pk }}/" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:8px;border-radius:10px;transition:background .2s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+            {% if r.thumbnail %}<img src="{{ r.thumbnail.url }}" alt="" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+            {% else %}<div style="width:40px;height:40px;border-radius:8px;background:var(--surface2);flex-shrink:0;"></div>{% endif %}
+            <div style="min-width:0;">
+              <div style="font-size:.9rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.name }}</div>
+              <div style="font-size:.775rem;color:var(--text3);">★ {{ r.avg_rating|floatformat:1 }} · {{ r.category.name|default:"음식점" }}</div>
+            </div>
+          </a>
+          {% empty %}
+          <p style="font-size:.85rem;color:var(--text3);padding:8px;">아직 등록된 맛집이 없어요</p>
+          {% endfor %}
+        </div>
+        <div style="padding:0 20px 20px;">
+          <a href="{{ theme.link }}" style="display:block;text-align:center;padding:10px;background:var(--accent-lt);color:var(--accent);border-radius:10px;font-size:.85rem;font-weight:700;text-decoration:none;">더 보기 →</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── 최신 리뷰 피드 ── -->
+{% if recent_reviews %}
+<div class="section">
+  <div class="section-head">
+    <h2 class="section-title">생생한 최신 리뷰</h2>
+    <a href="/reviews/" class="section-more">전체 보기 →</a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+    {% for review in recent_reviews %}
+    <a href="/restaurants/{{ review.restaurant.pk }}/" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;text-decoration:none;display:block;transition:all .2s;box-shadow:var(--shadow-sm);" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='var(--shadow)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow-sm)'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        {% if review.restaurant.thumbnail %}<img src="{{ review.restaurant.thumbnail.url }}" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+        {% else %}<div style="width:36px;height:36px;border-radius:8px;background:var(--surface2);flex-shrink:0;"></div>{% endif %}
+        <div style="min-width:0;">
+          <div style="font-size:.875rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ review.restaurant.name }}</div>
+          <div style="font-size:.75rem;color:var(--text3);">{{ review.author.username }} · {{ review.created_at|date:"m/d" }}</div>
+        </div>
+        <div style="margin-left:auto;color:var(--gold);font-size:.875rem;font-weight:700;flex-shrink:0;">★ {{ review.rating }}</div>
+      </div>
+      {% if review.image %}
+      <img src="{{ review.image.url }}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:10px;margin-bottom:10px;border:1px solid var(--border);">
+      {% endif %}
+      <p style="font-size:.875rem;line-height:1.6;color:var(--text2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ review.content }}</p>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── CTA ── -->
 <section class="cta-section">
   <div class="cta-inner">
+    <div class="cta-badge">✍️ 리뷰 커뮤니티</div>
     <h2 class="cta-title">당신의 경험을<br>나눠주세요</h2>
-    <p class="cta-desc">방문한 맛집의 솔직한 리뷰로<br>다른 사람들이 더 좋은 선택을 할 수 있도록 도와주세요.</p>
-    <a href="{% if user.is_authenticated %}/restaurants/{% else %}/users/login/{% endif %}" class="cta-btn">리뷰 쓰러 가기 →</a>
+    <p class="cta-desc">솔직한 리뷰 한 줄이<br>누군가의 오늘 점심을 바꿀 수 있어요.</p>
+    <a href="{% if user.is_authenticated %}/restaurants/{% else %}/users/login/{% endif %}" class="cta-btn">
+      리뷰 쓰러 가기 →
+    </a>
   </div>
 </section>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  // Filter chips
-  document.querySelectorAll('.filter-chip').forEach(chip => {
+  /* Hero category chip */
+  document.querySelectorAll('.hero-cat').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.hero-cat').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
-      document.getElementById('categoryInput').value = chip.dataset.val;
+      document.getElementById('heroCat').value = chip.dataset.val;
     });
   });
+
+  /* AI / 일반 검색 탭 전환 */
+  function switchTab(type) {
+    const tabNormal = document.getElementById('tabNormal');
+    const tabAI     = document.getElementById('tabAI');
+    const formNormal= document.getElementById('formNormal');
+    const formAI    = document.getElementById('formAI');
+    const heroCats  = document.getElementById('heroCats');
+    if (type === 'ai') {
+      tabAI.style.background     = 'var(--accent)';
+      tabAI.style.color          = '#fff';
+      tabAI.style.borderColor    = 'var(--accent)';
+      tabNormal.style.background = 'transparent';
+      tabNormal.style.color      = 'var(--text2)';
+      tabNormal.style.borderColor= 'var(--border)';
+      formNormal.style.display   = 'none';
+      formAI.style.display       = 'block';
+      if (heroCats) heroCats.style.display = 'none';
+    } else {
+      tabNormal.style.background = 'var(--surface)';
+      tabNormal.style.color      = 'var(--accent)';
+      tabNormal.style.borderColor= 'var(--accent)';
+      tabAI.style.background     = 'transparent';
+      tabAI.style.color          = 'var(--text2)';
+      tabAI.style.borderColor    = 'var(--border)';
+      formNormal.style.display   = 'block';
+      formAI.style.display       = 'none';
+      if (heroCats) heroCats.style.display = 'flex';
+    }
+  }
 </script>
 {% endblock %}

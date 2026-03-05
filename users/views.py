@@ -402,6 +402,18 @@ def mypage_view(request):
                 .order_by("-created_at")
             )
 
+    # 카테고리 통계 (내가 리뷰한 식당 카테고리 분포)
+    from django.db.models import Count as DjCount, Avg as DjAvg
+    category_stats = list(
+        Review.objects
+        .filter(author=request.user)
+        .values('restaurant__category__name')
+        .annotate(cnt=DjCount('id'), avg_r=DjAvg('rating'))
+        .order_by('-cnt')[:6]
+    )
+    total_review_count = reviews.count()
+    avg_my_rating = reviews.aggregate(avg=DjAvg('rating'))['avg'] or 0
+
     context = {
         "active_tab": tab,
         "favorites": favorites,
@@ -415,8 +427,12 @@ def mypage_view(request):
         "history_min_rating": history_min_rating,
 
         "owner_reservations": owner_reservations,
-        "owner_reservations_all": owner_reservations_all,  # ✅ 추가
+        "owner_reservations_all": owner_reservations_all,
         "reservations": reservations,
+
+        "category_stats": category_stats,
+        "total_review_count": total_review_count,
+        "avg_my_rating": avg_my_rating,
     }
     return render(request, "users/mypage.html", context)
 

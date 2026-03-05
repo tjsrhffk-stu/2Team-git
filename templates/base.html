@@ -3,320 +3,831 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Local Eats{% endblock %}</title>
+  <title>{% block title %}LocalEats{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
   <style>
-    /* ── Design Tokens ─────────────────────────────── */
+    /* ── Design Tokens ── */
     :root {
-      --bg:       #F9F7F4;
-      --surface:  #FFFFFF;
-      --surface2: #F2EFE9;
-      --border:   #E8E3DA;
-      --text:     #1A1714;
-      --text2:    #6B6560;
-      --accent:   #D4622A;
-      --accent2:  #F0A07A;
-      --gold:     #E8A820;
-      --success:  #2E7D5A;
-      --radius:   14px;
-      --shadow:   0 2px 12px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
-      --shadow-lg:0 8px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.06);
-      --trans:    0.22s cubic-bezier(.4,0,.2,1);
+      --bg:        #F7F7F7;
+      --surface:   #FFFFFF;
+      --surface2:  #F3F3F3;
+      --border:    #E8E8E8;
+      --text:      #1A1A1A;
+      --text2:     #767676;
+      --text3:     #AAAAAA;
+      --accent:    #D4622A;
+      --accent-lt: rgba(212,98,42,.09);
+      --accent-hv: #B8431A;
+      --gold:      #F59E0B;
+      --success:   #10B981;
+      --radius:    12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.06);
+      --shadow:    0 2px 12px rgba(0,0,0,.08);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+      --trans:     0.2s ease;
     }
     [data-theme="dark"] {
-      --bg:       #111009;
-      --surface:  #1C1A17;
-      --surface2: #252320;
-      --border:   #333028;
-      --text:     #F2EDE6;
-      --text2:    #9A9389;
-      --shadow:   0 2px 12px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.2);
-      --shadow-lg:0 8px 40px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+      --bg:       #111111;
+      --surface:  #1C1C1C;
+      --surface2: #252525;
+      --border:   #333333;
+      --text:     #F0F0F0;
+      --text2:    #9A9A9A;
+      --text3:    #555555;
+      --shadow:   0 2px 12px rgba(0,0,0,.35);
+      --shadow-lg:0 8px 32px rgba(0,0,0,.55);
     }
 
-    /* ── Reset ─────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    
-    /* ✅ 폰트 상속 문제 해결: 모든 주요 요소에 DM Sans 강제 적용 */
-    body, input, button, select, textarea, a {
-      font-family: 'DM Sans', sans-serif;
-      line-height: 1.6;
+    /* ── Reset ── */
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+    body,input,button,select,textarea,a {
+      font-family:'Noto Sans KR','DM Sans',sans-serif;
+      line-height:1.6;
     }
-
     body {
-      background: var(--bg);
-      color: var(--text);
-      transition: background var(--trans), color var(--trans);
-      min-height: 100vh;
-      overflow-x: hidden;
+      background:var(--bg); color:var(--text);
+      transition:background var(--trans),color var(--trans);
+      min-height:100vh; overflow-x:hidden;
     }
-    a { color: inherit; text-decoration: none; }
-    img { display: block; max-width: 100%; }
-    button { cursor: pointer; border: none; background: none; }
+    a { color:inherit; text-decoration:none; }
+    img { display:block; max-width:100%; }
+    button { cursor:pointer; border:none; background:none; font-family:inherit; }
 
-    /* ── Navbar ─────────────────────────────────────── */
+    /* ── Navbar ── */
     .navbar {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(249,247,244,.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      transition: background var(--trans), border-color var(--trans);
+      position:sticky; top:0; z-index:100;
+      background:var(--surface);
+      border-bottom:1px solid var(--border);
+      transition:background var(--trans),border-color var(--trans);
     }
-    [data-theme="dark"] .navbar { background: rgba(17,16,9,.85); }
     .navbar-inner {
-      max-width: 1200px; margin: 0 auto;
-      padding: 0 24px;
-      height: 64px;
-      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      max-width:1280px; margin:0 auto; padding:0 24px;
+      height:62px;
+      display:flex; align-items:center; gap:16px;
     }
     .logo {
-      font-family: 'Instrument Serif', serif;
-      font-size: 1.5rem;
-      letter-spacing: -0.02em;
-      color: var(--accent);
-      display: flex; align-items: center; gap: 8px;
+      font-size:1.25rem; font-weight:900; color:var(--accent);
+      display:flex; align-items:center; gap:6px;
+      white-space:nowrap; flex-shrink:0; letter-spacing:-.03em;
     }
-    .logo span { color: var(--text); }
-    
-    /* ✅ 네비게이션 정렬 최적화: 메뉴가 많아져도 줄바꿈 방지 */
-    .nav-links {
-      display: flex; align-items: center; gap: 4px;
-      list-style: none;
-      flex-shrink: 0;
+    .logo-txt { color:var(--text); }
+
+    /* Navbar search */
+    .navbar-search {
+      flex:1; max-width:500px; position:relative;
     }
-    .nav-links a, .nav-links button {
-      display: flex; align-items: center; gap: 6px;
-      padding: 8px 12px; border-radius: 8px;
-      font-size: .875rem; font-weight: 500;
-      color: var(--text2);
-      transition: background var(--trans), color var(--trans);
-      white-space: nowrap;
+    .navbar-search form { display:flex; }
+    .navbar-search input {
+      width:100%; padding:9px 16px 9px 40px;
+      background:var(--surface2); border:1.5px solid var(--border);
+      border-radius:24px; font-size:14px; color:var(--text);
+      outline:none; transition:all var(--trans);
     }
-    .nav-links a:hover, .nav-links button:hover { background: var(--surface2); color: var(--text); }
-    .nav-links .btn-accent {
-      background: var(--accent); color: #fff; padding: 8px 18px;
+    .navbar-search input::placeholder { color:var(--text3); }
+    .navbar-search input:focus {
+      border-color:var(--accent); background:var(--surface);
+      box-shadow:0 0 0 3px var(--accent-lt);
     }
-    .nav-links .btn-accent:hover { opacity: .88; color: #fff; }
+    .navbar-search .s-ico {
+      position:absolute; left:12px; top:50%; transform:translateY(-50%);
+      font-size:16px; pointer-events:none;
+    }
+
+    /* Nav right */
+    .nav-right {
+      display:flex; align-items:center; gap:10px; margin-left:auto; flex-shrink:0;
+    }
+    .nav-btn {
+      padding:8px 14px; border-radius:8px;
+      font-size:.875rem; font-weight:600; color:var(--text2);
+      transition:background var(--trans),color var(--trans);
+      white-space:nowrap;
+    }
+    .nav-btn:hover { background:var(--surface2); color:var(--text); }
+    .nav-btn-accent {
+      background:var(--accent); color:#fff !important;
+      padding:8px 18px; border-radius:8px;
+    }
+    .nav-btn-accent:hover { background:var(--accent-hv) !important; }
+
+    /* User avatar + dropdown */
+    .user-menu { position:relative; }
+    .u-avatar {
+      width:34px; height:34px; border-radius:50%;
+      background:var(--accent-lt); border:2px solid var(--accent);
+      display:flex; align-items:center; justify-content:center;
+      font-size:.8125rem; font-weight:700; color:var(--accent);
+      cursor:pointer; transition:all var(--trans); flex-shrink:0;
+    }
+    .u-avatar:hover { background:var(--accent); color:#fff; }
+
+    /* 알림 벨 버튼 */
+    .noti-bell-btn {
+      position:relative;
+      width:38px; height:38px; border-radius:50%;
+      background:var(--surface); border:1.5px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--text2); cursor:pointer;
+      transition:all var(--trans); flex-shrink:0;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+    .noti-bell-btn:hover {
+      background:var(--accent-lt); border-color:var(--accent);
+      color:var(--accent);
+      box-shadow:0 2px 10px rgba(212,98,42,.15);
+    }
+    .noti-bell-btn svg { display:block; }
+    .noti-badge {
+      position:absolute; top:-3px; right:-3px;
+      background:#EF4444; color:#fff;
+      font-size:.5rem; font-weight:800;
+      padding:2px 4px; border-radius:100px;
+      line-height:1.3; min-width:15px; text-align:center;
+      border:1.5px solid var(--bg);
+    }
+    .u-dropdown {
+      position:absolute; right:0; top:calc(100% + 8px);
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); box-shadow:var(--shadow-lg);
+      min-width:188px; padding:6px; display:none; z-index:200;
+    }
+    .u-dropdown.open { display:block; animation:dropIn .15s ease; }
+    @keyframes dropIn { from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);} }
+    .dd-item {
+      display:flex; align-items:center; gap:10px;
+      padding:9px 12px; border-radius:8px;
+      font-size:.875rem; font-weight:500; color:var(--text);
+      transition:background var(--trans);
+    }
+    .dd-item:hover { background:var(--surface2); }
+    .dd-div { height:1px; background:var(--border); margin:4px 0; }
+    .dd-danger { color:#EF4444; }
+
+    /* Language toggle */
+    .lang-menu { position:relative; }
+    .lang-btn {
+      display:flex; align-items:center; gap:5px;
+      height:36px; padding:0 10px; border-radius:8px;
+      background:var(--surface2); border:1.5px solid var(--border);
+      font-size:.8125rem; font-weight:700; color:var(--text2);
+      cursor:pointer; transition:all var(--trans); white-space:nowrap; flex-shrink:0;
+    }
+    .lang-btn:hover { background:var(--border); color:var(--text); }
+    .lang-label { font-size:.75rem; }
+    .lang-dropdown {
+      position:absolute; right:0; top:calc(100% + 8px);
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); box-shadow:var(--shadow-lg);
+      min-width:130px; padding:6px; display:none; z-index:200;
+    }
+    .lang-dropdown.open { display:block; animation:dropIn .15s ease; }
+    .lang-option {
+      display:flex; align-items:center; gap:8px;
+      width:100%; padding:9px 12px; border-radius:8px;
+      font-size:.875rem; font-weight:500; color:var(--text);
+      background:none; border:none; cursor:pointer; font-family:inherit;
+      transition:background var(--trans); text-align:left;
+    }
+    .lang-option:hover { background:var(--surface2); }
+    .lang-option.active { color:var(--accent); font-weight:700; }
+    @media(max-width:480px) { .lang-label { display:none; } }
 
     /* Theme toggle */
     .theme-toggle {
-      width: 40px; height: 40px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--surface2); color: var(--text2);
-      transition: background var(--trans), color var(--trans);
-      font-size: 1.1rem;
+      width:36px; height:36px; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--surface2); color:var(--text2);
+      font-size:1rem; transition:all var(--trans); flex-shrink:0;
     }
-    .theme-toggle:hover { background: var(--border); color: var(--text); }
+    .theme-toggle:hover { background:var(--border); color:var(--text); }
 
-    /* ── Page wrapper ───────────────────────────────── */
-    .page { max-width: 1200px; margin: 0 auto; padding: 48px 24px 80px; }
-
-    /* ── Messages ───────────────────────────────────── */
-    .messages { list-style: none; margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
-    .messages li {
-      padding: 12px 18px; border-radius: var(--radius);
-      font-size: .875rem; font-weight: 500;
-      animation: slideDown .3s ease;
+    /* Hamburger (mobile) */
+    .hamburger {
+      display:none; align-items:center; justify-content:center;
+      width:36px; height:36px; border-radius:8px;
+      background:var(--surface2); font-size:1.15rem; flex-shrink:0;
+      transition:background var(--trans);
     }
-    .messages .success { background: #DCF0E7; color: #1E5C3A; }
-    .messages .error   { background: #FDECEA; color: #922; }
-    @keyframes slideDown { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: none; } }
+    .hamburger:hover { background:var(--border); }
 
-    /* ── Stars ──────────────────────────────────────── */
-    .stars { display: inline-flex; gap: 2px; }
-    .stars .star { color: #DDD; font-size: 1rem; transition: color var(--trans); }
-    .stars .star.filled { color: var(--gold); }
-
-    /* ── Star Rating Input ──────────────────────────── */
-    .star-rating { display: flex; flex-direction: row-reverse; gap: 4px; }
-    .star-rating input { display: none; }
-    .star-rating label {
-      font-size: 1.8rem; color: #DDD; cursor: pointer;
-      transition: color var(--trans), transform var(--trans);
+    /* Mobile nav overlay */
+    .m-nav {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.5); z-index:300;
     }
-    .star-rating input:checked ~ label,
-    .star-rating label:hover,
-    .star-rating label:hover ~ label { color: var(--gold); }
-    .star-rating label:hover { transform: scale(1.15); }
-
-    /* ── Card ───────────────────────────────────────── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      transition: transform var(--trans), box-shadow var(--trans), border-color var(--trans);
+    .m-nav.open { display:block; }
+    .m-panel {
+      position:absolute; right:0; top:0; bottom:0;
+      width:min(300px,88vw); background:var(--surface);
+      padding:20px; display:flex; flex-direction:column; gap:4px;
+      overflow-y:auto;
     }
-    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .m-close {
+      position:absolute; top:16px; right:18px;
+      font-size:1.3rem; color:var(--text2); background:none; border:none;
+    }
+    .m-logo { font-size:1.1rem; font-weight:900; color:var(--accent); margin-bottom:14px; margin-top:4px; }
+    .m-link {
+      display:block; padding:11px 14px; border-radius:8px;
+      font-size:.9375rem; font-weight:600; color:var(--text);
+      transition:background var(--trans);
+    }
+    .m-link:hover { background:var(--surface2); }
+    .m-div { height:1px; background:var(--border); margin:6px 0; }
 
-    /* ── Buttons ────────────────────────────────────── */
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 20px; border-radius: 10px;
+    /* Page wrapper */
+    .page { max-width:1280px; margin:0 auto; padding:40px 24px 80px; }
+
+    /* Messages */
+    /* ── Toast Notifications ── */
+    .toast-container {
+      position: fixed; bottom: 28px; right: 28px;
+      display: flex; flex-direction: column; gap: 10px;
+      z-index: 9999; pointer-events: none;
+    }
+    .toast {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; border-radius: 14px;
       font-size: .875rem; font-weight: 600;
-      transition: all var(--trans);
-    }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
-    .btn-outline {
-      border: 1.5px solid var(--border); color: var(--text2);
       background: var(--surface);
+      box-shadow: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.08);
+      border: 1px solid var(--border);
+      pointer-events: auto;
+      animation: toastIn .35s cubic-bezier(.34,1.56,.64,1) both;
+      max-width: 340px; min-width: 220px;
+      position: relative; overflow: hidden;
     }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .toast::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 4px; border-radius: 14px 0 0 14px;
+    }
+    .toast.success::before { background: #10B981; }
+    .toast.error::before   { background: #EF4444; }
+    .toast.warning::before { background: #F59E0B; }
+    .toast.info::before    { background: var(--accent); }
+    .toast-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 15px;
+    }
+    .toast.success .toast-icon { background: #D1FAE5; }
+    .toast.error   .toast-icon { background: #FEE2E2; }
+    .toast.warning .toast-icon { background: #FEF3C7; }
+    .toast.info    .toast-icon { background: var(--accent-lt); }
+    .toast-text { flex: 1; color: var(--text); line-height: 1.4; }
+    .toast-close {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--bg); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text3); font-size: 12px; flex-shrink: 0;
+      transition: background .15s;
+    }
+    .toast-close:hover { background: var(--border); }
+    .toast.hiding {
+      animation: toastOut .3s ease forwards;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(24px) scale(.96); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateX(0) scale(1); }
+      to   { opacity: 0; transform: translateX(24px) scale(.96); }
+    }
+    /* progress bar */
+    .toast-progress {
+      position: absolute; bottom: 0; left: 0; height: 3px;
+      border-radius: 0 0 14px 14px;
+      animation: toastProgress 3.5s linear forwards;
+    }
+    .toast.success .toast-progress { background: #10B981; }
+    .toast.error   .toast-progress { background: #EF4444; }
+    .toast.warning .toast-progress { background: #F59E0B; }
+    .toast.info    .toast-progress { background: var(--accent); }
+    @keyframes toastProgress {
+      from { width: 100%; } to { width: 0%; }
+    }
 
-    /* ── Form ───────────────────────────────────────── */
-    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
-    .form-group label { font-size: .85rem; font-weight: 600; color: var(--text2); letter-spacing: .03em; text-transform: uppercase; }
+    /* Card */
+    .card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); overflow:hidden;
+      box-shadow:var(--shadow-sm);
+      transition:transform var(--trans),box-shadow var(--trans),border-color var(--trans);
+    }
+    .card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+
+    /* Buttons */
+    .btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:10px 20px; border-radius:8px;
+      font-size:.875rem; font-weight:600; transition:all var(--trans);
+    }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-primary:hover { background:var(--accent-hv); transform:translateY(-1px); }
+    .btn-outline {
+      border:1.5px solid var(--border); color:var(--text2); background:var(--surface);
+    }
+    .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+    .btn-ghost {
+      border:1.5px solid var(--border); color:var(--text2); background:transparent;
+      border-radius:8px;
+    }
+    .btn-ghost:hover { background:var(--surface2); color:var(--text); }
+
+    /* Form */
+    .form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
+    .form-group label { font-size:.8rem; font-weight:700; color:var(--text2); letter-spacing:.03em; text-transform:uppercase; }
     .form-group input,
     .form-group textarea,
     .form-group select {
-      background: var(--surface2);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 11px 14px;
-      font-size: .9375rem; font-family: inherit;
-      color: var(--text);
-      transition: border-color var(--trans), box-shadow var(--trans), background var(--trans);
-      outline: none;
+      background:var(--surface2); border:1.5px solid var(--border);
+      border-radius:var(--radius); padding:11px 14px;
+      font-size:.9375rem; font-family:inherit; color:var(--text);
+      transition:border-color var(--trans),box-shadow var(--trans),background var(--trans);
+      outline:none;
     }
     .form-group input:focus,
     .form-group textarea:focus,
     .form-group select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(212,98,42,.12);
-      background: var(--surface);
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px var(--accent-lt);
+      background:var(--surface);
     }
-    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-group textarea { resize:vertical; min-height:120px; }
 
-    /* ── Footer ─────────────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 24px;
-      text-align: center;
-      font-size: .8125rem;
-      color: var(--text2);
-      transition: border-color var(--trans), color var(--trans);
+    /* Stars */
+    .stars { display:inline-flex; gap:2px; }
+    .star { font-size:13px; color:#DDD; }
+    .star.on { color:var(--gold); }
+
+    /* Star rating input */
+    .star-rating { display:flex; flex-direction:row-reverse; gap:4px; }
+    .star-rating input { display:none; }
+    .star-rating label {
+      font-size:1.8rem; color:#DDD; cursor:pointer;
+      transition:color var(--trans),transform var(--trans);
     }
+    .star-rating input:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label { color:var(--gold); }
+    .star-rating label:hover { transform:scale(1.15); }
 
-    /* ── Animations ─────────────────────────────────── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: none; }
+    /* Filter chips */
+    .filter-bar {
+      display:flex; align-items:center; gap:8px;
+      overflow-x:auto; flex-wrap:nowrap; padding-bottom:2px;
+      scrollbar-width:none;
     }
-    .fade-up { animation: fadeUp .5s ease both; }
-    .delay-1 { animation-delay: .08s; }
-    .delay-2 { animation-delay: .16s; }
-    .delay-3 { animation-delay: .24s; }
-    .delay-4 { animation-delay: .32s; }
+    .filter-bar::-webkit-scrollbar { display:none; }
+    .f-chip {
+      padding:7px 16px; border-radius:100px;
+      font-size:.8125rem; font-weight:600;
+      background:var(--surface); color:var(--text2);
+      border:1.5px solid var(--border);
+      white-space:nowrap; cursor:pointer; flex-shrink:0;
+      transition:all var(--trans);
+    }
+    .f-chip:hover { border-color:var(--text); color:var(--text); }
+    .f-chip.active { background:var(--text); color:var(--surface); border-color:var(--text); }
 
-/* ── Sort Filter Bar ──────────────── */
+    /* Sort filter bar */
     .sort-filter-bar {
-      display: flex !important; /* 무조건 가로로 강제 */
-      align-items: center;
-      gap: 16px;
-      padding: 12px 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 24px;
-      box-shadow: var(--shadow);
+      display:flex; align-items:center; gap:12px;
+      padding:12px 18px; background:var(--surface);
+      border:1px solid var(--border); border-radius:var(--radius);
+      margin-bottom:24px; box-shadow:var(--shadow-sm);
     }
-    .sort-buttons { display: flex !important; gap: 8px; flex-direction: row !important; }
+    .sort-buttons { display:flex; gap:8px; }
     .sort-btn {
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      background: var(--surface2);
-      color: var(--text2);
-      border: 1px solid transparent;
-      transition: all var(--trans);
-      white-space: nowrap;
+      padding:6px 14px; border-radius:20px; font-size:.8125rem;
+      font-weight:600; background:var(--surface2); color:var(--text2);
+      border:1px solid transparent; transition:all var(--trans); white-space:nowrap;
     }
-    .sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .sort-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .sort-btn:hover:not(.active) { background:var(--border); color:var(--text); }
 
+    /* Footer */
+    footer {
+      border-top:1px solid var(--border); color:var(--text2);
+      transition:border-color var(--trans),color var(--trans);
+    }
+    .footer-inner { max-width:1280px; margin:0 auto; padding:48px 24px 32px; }
+    .footer-grid { display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:40px; margin-bottom:36px; }
+    .footer-brand { font-size:1.15rem; font-weight:900; color:var(--accent); margin-bottom:10px; }
+    .footer-desc { font-size:.8125rem; line-height:1.7; color:var(--text2); }
+    .footer-col-title { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-bottom:14px; color:var(--text); }
+    .footer-links { display:flex; flex-direction:column; gap:10px; }
+    .footer-links a { font-size:.8125rem; color:var(--text2); transition:color var(--trans); }
+    .footer-links a:hover { color:var(--accent); }
+    .footer-bottom {
+      padding-top:24px; border-top:1px solid var(--border);
+      font-size:.8125rem; display:flex; justify-content:space-between;
+      align-items:center; gap:16px; flex-wrap:wrap;
+    }
 
-    /* ── Responsive ─────────────────────────────────── */
-    @media (max-width: 640px) {
-      .navbar-inner { padding: 0 16px; }
-      .page { padding: 32px 16px 60px; }
+    /* Animations */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+    .fade-up { animation:fadeUp .4s ease both; }
+    .d1 { animation-delay:.07s; }
+    .d2 { animation-delay:.14s; }
+    .d3 { animation-delay:.21s; }
+    .d4 { animation-delay:.28s; }
+
+    /* Responsive */
+    @media (max-width:900px) {
+      .navbar-search { max-width:300px; }
+    }
+    @media (max-width:720px) {
+      .navbar-search { display:none; }
+      .hamburger { display:flex; }
+      .page { padding:24px 16px 60px; }
+      .footer-grid { grid-template-columns:1fr; gap:24px; }
+    }
+    @media (max-width:480px) {
+      .navbar-inner { padding:0 14px; gap:10px; }
+      .nav-btn { display:none; }
     }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 
+<!-- ── Navbar ── -->
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="/" class="logo">🍽️ Local<span>Eats</span></a>
-    <ul class="nav-links">
-      <li><a href="/restaurants/">맛집 찾기</a></li>
+    <a href="/" class="logo">Local<span class="logo-txt">Eats</span></a>
+
+    <div class="navbar-search" style="position:relative;">
+      <form method="GET" action="/restaurants/" id="navSearchForm">
+        <span class="s-ico">🔍</span>
+        <input type="text" name="q" id="navSearchInput" placeholder="식당, 메뉴, 지역 검색..." autocomplete="off" data-i18n="nav.search">
+      </form>
+      <div id="navAcDrop" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;box-shadow:var(--shadow);z-index:9999;overflow:hidden;"></div>
+    </div>
+
+    <div class="nav-right">
+      <a href="/restaurants/" class="nav-btn" data-i18n="nav.find">맛집 찾기</a>
+      <a href="/restaurants/ranking/" class="nav-btn">랭킹</a>
+      <a href="/map" class="nav-btn" data-i18n="nav.map">지도</a>
+
       {% if user.is_authenticated %}
-        {# ✅ 사장(OWNER)일 때만 보이는 메뉴 #}
-        {% if is_owner %}
-          <li><a href="/restaurants/create/">식당 등록</a></li>
-        {% endif %}
-        <li><a href="/favorites/">즐겨찾기</a></li>
-        <li><a href="/favorites/recent/">최근 본 맛집</a></li>
-        <li><a href="/reviews/mine/">내가 쓴 리뷰</a></li>
-        <li><a href="/users/logout/">로그아웃</a></li>
-        <li><a href="/users/mypage/" class="btn-accent">{{ user.username }}</a></li>
+        <!-- 알림 벨 -->
+        <div class="user-menu" style="position:relative;">
+          <button class="noti-bell-btn" id="notiBtn" title="알림">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            {% if unread_notification_count > 0 %}<span id="notiBadge" class="noti-badge">{{ unread_notification_count }}</span>{% endif %}
+          </button>
+          <div class="u-dropdown" id="notiDropdown" style="min-width:280px;">
+            <div class="dd-item" style="font-weight:800;pointer-events:none;">알림</div>
+            <div class="dd-div"></div>
+            {% for notif in recent_notifications %}
+            <a href="{{ notif.url|default:'#' }}" class="dd-item" onclick="markRead({{ notif.pk }})" style="{% if not notif.is_read %}background:var(--accent-lt);{% endif %}font-size:.8125rem;flex-direction:column;align-items:flex-start;gap:2px;">
+              <span style="line-height:1.4;">{{ notif.message }}</span>
+              <span style="font-size:.7rem;color:var(--text3);">{{ notif.created_at|date:"m.d H:i" }}</span>
+            </a>
+            {% empty %}
+            <div class="dd-item" style="color:var(--text3);font-size:.8125rem;pointer-events:none;">새 알림이 없어요</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="user-menu">
+          <div class="u-avatar" id="userAvatar">{{ user.username|slice:":1"|upper }}</div>
+          <div class="u-dropdown" id="userDropdown">
+            <div class="dd-item" style="font-weight:700; pointer-events:none;">
+              <span>👤</span> {{ user.username }}
+            </div>
+            <div class="dd-div"></div>
+            <a href="/users/mypage/" class="dd-item">🏠 <span data-i18n="nav.mypage">마이페이지</span></a>
+            <a href="/favorites/" class="dd-item">❤️ <span data-i18n="nav.fav">즐겨찾기</span></a>
+            <a href="/favorites/recent/" class="dd-item">🕐 <span data-i18n="nav.recent">최근 본 맛집</span></a>
+            <a href="/reviews/mine/" class="dd-item">✏️ <span data-i18n="nav.review">내가 쓴 리뷰</span></a>
+            {% if is_owner %}
+              <div class="dd-div"></div>
+              <a href="/restaurants/create/" class="dd-item">🏪 식당 등록</a>
+            {% endif %}
+            <div class="dd-div"></div>
+            <a href="/users/logout/" class="dd-item dd-danger">🚪 <span data-i18n="nav.logout">로그아웃</span></a>
+          </div>
+        </div>
       {% else %}
-        <li><a href="/users/login/">로그인</a></li>
-        <li><a href="/users/signup/" class="btn-accent">시작하기</a></li>
+        <a href="/users/login/" class="nav-btn" data-i18n="nav.login">로그인</a>
       {% endif %}
-      <li>
-        <button class="theme-toggle" id="themeToggle" title="테마 변경">🌙</button>
-      </li>
-    </ul>
+
+      <!-- 언어 토글 -->
+      <div class="lang-menu" id="langMenu">
+        <button class="lang-btn" id="langToggleBtn" title="언어 선택">
+          <span class="lang-label" id="langLabel">한국어</span>
+        </button>
+        <div class="lang-dropdown" id="langDropdown">
+          <button class="lang-option" data-lang="ko" data-label="한국어">한국어</button>
+          <button class="lang-option" data-lang="en" data-label="English">English</button>
+          <button class="lang-option" data-lang="ja" data-label="日本語">日本語</button>
+        </div>
+      </div>
+
+      <button class="theme-toggle" id="themeToggle" title="테마 변경">🌙</button>
+      <button class="hamburger" id="hamburgerBtn" aria-label="메뉴">☰</button>
+    </div>
   </div>
 </nav>
 
-{% if messages %}
-<div style="max-width:1200px;margin:16px auto;padding:0 24px;">
-  <ul class="messages">
-    {% for msg in messages %}
-      <li class="{{ msg.tags }}">{{ msg }}</li>
-    {% endfor %}
-  </ul>
+<!-- ── Mobile Nav ── -->
+<div class="m-nav" id="mobileNav">
+  <div class="m-panel">
+    <button class="m-close" id="mobileClose">✕</button>
+    <div class="m-logo">🍽️ LocalEats</div>
+    <a href="/restaurants/" class="m-link">🔍 맛집 찾기</a>
+    <a href="/map" class="m-link">🗺️ 지도에서 찾기</a>
+    {% if user.is_authenticated %}
+      <div class="m-div"></div>
+      <a href="/users/mypage/" class="m-link">🏠 마이페이지</a>
+      <a href="/favorites/" class="m-link">❤️ 즐겨찾기</a>
+      <a href="/favorites/recent/" class="m-link">🕐 최근 본 맛집</a>
+      <a href="/reviews/mine/" class="m-link">✏️ 내가 쓴 리뷰</a>
+      {% if is_owner %}
+        <a href="/restaurants/create/" class="m-link">🏪 식당 등록</a>
+      {% endif %}
+      <div class="m-div"></div>
+      <a href="/users/logout/" class="m-link" style="color:#EF4444;">🚪 로그아웃</a>
+    {% else %}
+      <div class="m-div"></div>
+      <a href="/users/login/" class="m-link">🔐 로그인</a>
+      <a href="/users/signup/" class="m-link" style="background:var(--accent);color:#fff;text-align:center;">✍️ 회원가입</a>
+    {% endif %}
+  </div>
 </div>
+
+{% if messages %}
+<div class="toast-container" id="toastContainer">
+  {% for msg in messages %}
+    <div class="toast {% if 'error' in msg.tags %}error{% elif 'warning' in msg.tags %}warning{% elif 'success' in msg.tags %}success{% else %}info{% endif %}"
+         id="toast{{ forloop.counter }}">
+      <div class="toast-icon">
+        {% if 'error' in msg.tags %}✕
+        {% elif 'warning' in msg.tags %}!
+        {% elif 'success' in msg.tags %}✓
+        {% else %}i{% endif %}
+      </div>
+      <span class="toast-text">{{ msg }}</span>
+      <button class="toast-close" onclick="dismissToast('toast{{ forloop.counter }}')">✕</button>
+      <div class="toast-progress"></div>
+    </div>
+  {% endfor %}
+</div>
+<script>
+  function dismissToast(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('hiding');
+    el.addEventListener('animationend', () => el.remove());
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.toast').forEach(t => {
+      setTimeout(() => dismissToast(t.id), 3500);
+    });
+  });
+</script>
 {% endif %}
 
 {% block content %}{% endblock %}
 
+<!-- ── Footer ── -->
 <footer>
-  © 2026 LocalEats · 당신 주변의 숨겨진 맛집을 발견하세요
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">🍽️ LocalEats</div>
+        <p class="footer-desc">당신 주변의 숨겨진 맛집을 발견하세요.<br>이웃들의 솔직한 리뷰로 더 좋은 선택을.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">서비스</div>
+        <div class="footer-links">
+          <a href="/restaurants/">맛집 찾기</a>
+          <a href="/map">지도에서 찾기</a>
+          <a href="/restaurants/ranking/">베스트 랭킹</a>
+          <a href="/restaurants/?sort=rating">인기 맛집</a>
+          <a href="/favorites/">즐겨찾기</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">계정</div>
+        <div class="footer-links">
+          {% if user.is_authenticated %}
+            <a href="/users/mypage/">마이페이지</a>
+            <a href="/users/logout/">로그아웃</a>
+          {% else %}
+            <a href="/users/login/">로그인</a>
+            <a href="/users/signup/">회원가입</a>
+          {% endif %}
+          {% if is_owner %}
+            <a href="/restaurants/create/">식당 등록</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 LocalEats · All rights reserved.</span>
+      <span style="color:var(--text3);">당신의 맛있는 하루를 응원합니다 🍽️</span>
+    </div>
+  </div>
 </footer>
 
 <script>
-  // ── Theme Toggle ────────────────────────────────
+  /* ── Theme ── */
   const html = document.documentElement;
-  const btn  = document.getElementById('themeToggle');
+  const themeBtn = document.getElementById('themeToggle');
   const saved = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', saved);
-  btn.textContent = saved === 'dark' ? '☀️' : '🌙';
-
-  btn.addEventListener('click', () => {
+  themeBtn.textContent = saved === 'dark' ? '☀️' : '🌙';
+  themeBtn.addEventListener('click', () => {
     const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
-    btn.textContent = next === 'dark' ? '☀️' : '🌙';
+    themeBtn.textContent = next === 'dark' ? '☀️' : '🌙';
   });
 
-  // ── Star render helper ──────────────────────────
+  /* ── Notification dropdown ── */
+  const notiBtn = document.getElementById('notiBtn');
+  const notiDrop = document.getElementById('notiDropdown');
+  if (notiBtn && notiDrop) {
+    notiBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      notiDrop.classList.toggle('open');
+      if (notiDrop.classList.contains('open')) {
+        // 드롭다운 열 때 배지 숨기기
+        const badge = document.getElementById('notiBadge');
+        if (badge) badge.style.display = 'none';
+      }
+    });
+    document.addEventListener('click', () => notiDrop.classList.remove('open'));
+  }
+
+  function markRead(id) {
+    fetch(`/core/notifications/${id}/read/`, {
+      method: 'POST',
+      headers: {'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''},
+    }).catch(() => {});
+  }
+
+  /* ── User dropdown ── */
+  const avatar = document.getElementById('userAvatar');
+  const dropdown = document.getElementById('userDropdown');
+  if (avatar && dropdown) {
+    avatar.addEventListener('click', e => {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => dropdown.classList.remove('open'));
+  }
+
+  /* ── Mobile nav ── */
+  const hamburger = document.getElementById('hamburgerBtn');
+  const mobileNav = document.getElementById('mobileNav');
+  const mobileClose = document.getElementById('mobileClose');
+  if (hamburger) hamburger.addEventListener('click', () => mobileNav.classList.add('open'));
+  if (mobileClose) mobileClose.addEventListener('click', () => mobileNav.classList.remove('open'));
+  if (mobileNav) mobileNav.addEventListener('click', e => {
+    if (e.target === mobileNav) mobileNav.classList.remove('open');
+  });
+
+  /* ── Stars render ── */
   function renderStars(el) {
-    const rating = parseFloat(el.dataset.rating || 0);
-    let html = '';
-    for (let i = 1; i <= 5; i++) {
-      html += `<span class="star${i <= rating ? ' filled' : ''}">★</span>`;
-    }
-    el.innerHTML = html;
+    const r = parseFloat(el.dataset.rating || 0);
+    el.innerHTML = [1,2,3,4,5].map(i => `<span class="star${i<=r?' on':''}"">★</span>`).join('');
   }
   document.querySelectorAll('.stars[data-rating]').forEach(renderStars);
+
+  /* ── Language Toggle ── */
+  const TRANSLATIONS = {
+    ko: {
+      'nav.find':    '맛집 찾기',
+      'nav.map':     '지도',
+      'nav.mypage':  '마이페이지',
+      'nav.fav':     '즐겨찾기',
+      'nav.recent':  '최근 본 맛집',
+      'nav.review':  '내가 쓴 리뷰',
+      'nav.register':'식당 등록',
+      'nav.logout':  '로그아웃',
+      'nav.login':   '로그인',
+      'nav.signup':  '시작하기',
+      'nav.search':  '식당, 메뉴, 지역 검색...',
+    },
+    en: {
+      'nav.find':    'Find Restaurants',
+      'nav.map':     'Map',
+      'nav.mypage':  'My Page',
+      'nav.fav':     'Favorites',
+      'nav.recent':  'Recently Viewed',
+      'nav.review':  'My Reviews',
+      'nav.register':'Register Restaurant',
+      'nav.logout':  'Logout',
+      'nav.login':   'Login',
+      'nav.signup':  'Get Started',
+      'nav.search':  'Search restaurants, menus, areas...',
+    },
+    ja: {
+      'nav.find':    'レストランを探す',
+      'nav.map':     '地図',
+      'nav.mypage':  'マイページ',
+      'nav.fav':     'お気に入り',
+      'nav.recent':  '最近見たお店',
+      'nav.review':  '投稿したレビュー',
+      'nav.register':'お店を登録',
+      'nav.logout':  'ログアウト',
+      'nav.login':   'ログイン',
+      'nav.signup':  'はじめる',
+      'nav.search':  'レストラン・メニュー・エリアで検索...',
+    },
+  };
+
+  function applyLang(lang) {
+    const t = TRANSLATIONS[lang] || TRANSLATIONS['ko'];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (t[key]) {
+        if (el.tagName === 'INPUT') el.placeholder = t[key];
+        else el.textContent = t[key];
+      }
+    });
+    localStorage.setItem('lang', lang);
+  }
+
+  // 언어 드롭다운
+  const langToggleBtn = document.getElementById('langToggleBtn');
+  const langDropdown  = document.getElementById('langDropdown');
+  const langLabel     = document.getElementById('langLabel');
+
+  if (langToggleBtn && langDropdown) {
+    langToggleBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      langDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => langDropdown.classList.remove('open'));
+
+    document.querySelectorAll('.lang-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lang = btn.dataset.lang;
+        langLabel.textContent = btn.dataset.label;
+        document.querySelectorAll('.lang-option').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        langDropdown.classList.remove('open');
+        applyLang(lang);
+      });
+    });
+
+    // 저장된 언어 복원
+    const savedLang = localStorage.getItem('lang') || 'ko';
+    const savedBtn  = document.querySelector(`.lang-option[data-lang="${savedLang}"]`);
+    if (savedBtn) {
+      langLabel.textContent = savedBtn.dataset.label;
+      savedBtn.classList.add('active');
+      applyLang(savedLang);
+    }
+  }
+
+  /* ── 검색 자동완성 ── */
+  (function(){
+    const inp = document.getElementById('navSearchInput');
+    const drop = document.getElementById('navAcDrop');
+    if (!inp || !drop) return;
+
+    let timer;
+    inp.addEventListener('input', function(){
+      clearTimeout(timer);
+      const q = this.value.trim();
+      if (q.length < 1) { drop.style.display = 'none'; return; }
+      timer = setTimeout(() => {
+        fetch(`/restaurants/autocomplete/?q=${encodeURIComponent(q)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (!data.results || data.results.length === 0) { drop.style.display = 'none'; return; }
+            drop.innerHTML = data.results.map(r =>
+              `<a href="/restaurants/${r.id}/" style="display:flex;align-items:center;gap:10px;padding:10px 14px;text-decoration:none;color:var(--text);transition:background .15s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+                <span style="font-size:.8rem;background:var(--accent-lt);color:var(--accent);padding:2px 7px;border-radius:100px;white-space:nowrap;font-weight:700;">${r.category}</span>
+                <span style="font-weight:700;font-size:.9rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.name}</span>
+                <span style="font-size:.75rem;color:var(--text3);white-space:nowrap;">${r.address}</span>
+              </a>`
+            ).join('');
+            drop.style.display = 'block';
+          });
+      }, 200);
+    });
+
+    document.addEventListener('click', e => {
+      if (!inp.contains(e.target) && !drop.contains(e.target)) drop.style.display = 'none';
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Escape') drop.style.display = 'none';
+    });
+  })();
 </script>
 {% block extra_js %}{% endblock %}
 </body>

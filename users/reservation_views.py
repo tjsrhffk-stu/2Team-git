@@ -219,3 +219,53 @@ def reservation_cancel_by_owner(request, reservation_id):
 @require_POST
 def reservation_owner_cancel(request, reservation_id):
     return reservation_cancel_by_owner(request, reservation_id)
+
+
+# -----------------------------
+# 사장 기능: 예약 확정 (REQUESTED → CONFIRMED)
+# -----------------------------
+@login_required
+@require_POST
+def reservation_confirm(request, reservation_id):
+    if not _require_owner(request):
+        return HttpResponseForbidden("사장만 접근할 수 있어요.")
+
+    reservation = get_object_or_404(
+        Reservation.objects.select_related("restaurant"),
+        id=reservation_id,
+        restaurant__owner=request.user,
+    )
+
+    if reservation.status != Reservation.Status.REQUESTED:
+        messages.error(request, "신청 상태의 예약만 확정할 수 있어요.")
+        return redirect("users:reservation_owner_list")
+
+    reservation.status = Reservation.Status.CONFIRMED
+    reservation.save(update_fields=["status"])
+    messages.success(request, "예약을 확정했어요! ✅")
+    return redirect("users:reservation_owner_list")
+
+
+# -----------------------------
+# 사장 기능: 예약 거절 (REQUESTED/CONFIRMED → REJECTED)
+# -----------------------------
+@login_required
+@require_POST
+def reservation_reject(request, reservation_id):
+    if not _require_owner(request):
+        return HttpResponseForbidden("사장만 접근할 수 있어요.")
+
+    reservation = get_object_or_404(
+        Reservation.objects.select_related("restaurant"),
+        id=reservation_id,
+        restaurant__owner=request.user,
+    )
+
+    if reservation.status == Reservation.Status.CANCELED:
+        messages.error(request, "이미 취소된 예약이에요.")
+        return redirect("users:reservation_owner_list")
+
+    reservation.status = Reservation.Status.REJECTED
+    reservation.save(update_fields=["status"])
+    messages.success(request, "예약을 거절했어요.")
+    return redirect("users:reservation_owner_list")
