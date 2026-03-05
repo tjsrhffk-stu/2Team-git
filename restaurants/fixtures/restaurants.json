@@ -1,0 +1,56 @@
+[
+{
+  "model": "restaurants.category",
+  "pk": 1,
+  "fields": {
+    "name": "한식"
+  }
+},
+{
+  "model": "restaurants.category",
+  "pk": 2,
+  "fields": {
+    "name": "중식"
+  }
+},
+{
+  "model": "restaurants.category",
+  "pk": 3,
+  "fields": {
+    "name": "일식"
+  }
+},
+{
+  "model": "restaurants.category",
+  "pk": 4,
+  "fields": {
+    "name": "양식"
+  }
+},
+{
+  "model": "restaurants.category",
+  "pk": 5,
+  "fields": {
+    "name": "카페"
+  }
+},
+{
+  "model": "restaurants.category",
+  "pk": 6,
+  "fields": {
+    "name": "패스트푸드"
+  }
+},
+{
+  "model": "restaurants.category",
+  "pk": 7,
+  "fields": {
+    "name": "기타"
+  }
+},
+{
+  "model": "restaurants.tag",
+  "pk": 1,
+  "fields": {
+    "name": "데이트",
+    "emoji": 
