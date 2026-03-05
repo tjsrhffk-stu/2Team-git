@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block title %}AI 검색: {{ query }} — LocalEats{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── 전체 레이아웃 ── */
+  .ai-result-wrap { max-width:1280px; margin:0 auto; padding:40px 24px 80px; }
+
+  /* ── 쿼리 배너 ── */
+  .ai-query-bar {
+    background: linear-gradient(135deg, #fff8f4, #fff);
+    border: 2px solid var(--accent);
+    border-radius: 20px; padding: 28px 32px; margin-bottom: 36px;
+    box-shadow: 0 4px 24px rgba(212,98,42,.1);
+  }
+  .ai-query-label { font-size:.75rem; font-weight:700; color:var(--accent); letter-spacing:.06em; margin-bottom:8px; }
+  .ai-query-text  { font-size:1.5rem; font-weight:900; color:var(--text); margin-bottom:14px; }
+  .ai-tags        { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .ai-tag { display:inline-flex; align-items:center; gap:5px; padding:5px 14px;
+    border-radius:100px; font-size:.8125rem; font-weight:700; }
+  .ai-tag-cat   { background:#FEF3C7; color:#92400E; }
+  .ai-tag-mood  { background:var(--accent-lt); color:var(--accent); }
+  .ai-tag-hint  { background:#EDE9FE; color:#5B21B6; }
+
+  /* 결과 수 & 폴백 안내 */
+  .ai-recom { font-size:.875rem; color:var(--text3); margin-bottom:16px; }
+  .ai-fallback-notice {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 14px; border-radius:100px;
+    background:#FFF3CD; color:#856404; font-size:.8rem; font-weight:600;
+    margin-left:8px;
+  }
+
+  /* 재검색 폼 */
+  .ai-search-form { display:flex; gap:10px; }
+  .ai-search-form input {
+    flex:1; padding:11px 18px;
+    border:1.5px solid var(--border); border-radius:12px;
+    font-size:.9375rem; font-family:inherit; color:var(--text);
+    background:var(--surface); outline:none;
+    transition:border-color .2s;
+  }
+  .ai-search-form input:focus { border-color:var(--accent); }
+  .ai-search-form button {
+    padding:11px 22px; background:var(--accent); color:#fff;
+    border:none; border-radius:12px; font-size:.9375rem;
+    font-weight:700; font-family:inherit; cursor:pointer;
+    transition:opacity .15s;
+  }
+  .ai-search-form button:hover { opacity:.88; }
+
+  /* ── 결과 그리드 ── */
+  .r-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; }
+  .r-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    overflow:hidden; text-decoration:none; display:block;
+    transition:transform .2s, box-shadow .2s; box-shadow:var(--shadow-sm);
+  }
+  .r-card:hover { transform:translateY(-4px); box-shadow:var(--shadow); }
+  .r-card-img {
+    height:180px; background:var(--surface2); display:flex;
+    align-items:center; justify-content:center; font-size:3rem;
+    overflow:hidden; position:relative;
+  }
+  .r-card-img img { width:100%; height:100%; object-fit:cover; }
+  .r-card-body { padding:16px; }
+  .r-card-name  { font-size:1rem; font-weight:800; color:var(--text); margin-bottom:4px; }
+  .r-card-cat   { font-size:.78rem; color:var(--accent); font-weight:600; margin-bottom:4px; }
+  .r-card-addr  { font-size:.8125rem; color:var(--text3); margin-bottom:8px;
+                  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .r-rating     { font-size:.875rem; font-weight:700; color:var(--gold); }
+  .r-rating span { color:var(--text3); font-weight:400; font-size:.8rem; }
+
+  /* ── 섹션 헤더 ── */
+  .result-section-head {
+    display:flex; align-items:center; gap:10px; margin-bottom:20px;
+  }
+  .result-section-head h2 { font-size:1.1rem; font-weight:800; color:var(--text); margin:0; }
+  .result-count-badge {
+    padding:3px 12px; background:var(--accent); color:#fff;
+    border-radius:100px; font-size:.8rem; font-weight:700;
+  }
+
+  /* ── 빈 결과 ── */
+  .empty-ai { text-align:center; padding:80px 0; color:var(--text3); }
+  .empty-ai .big { font-size:3rem; margin-bottom:16px; }
+  .empty-ai p { font-size:1rem; margin-bottom:20px; }
+  .empty-ai a {
+    padding:12px 28px; background:var(--accent); color:#fff;
+    border-radius:12px; font-weight:700; text-decoration:none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-result-wrap">
+
+  <!-- ── AI 검색 배너 ── -->
+  <div class="ai-query-bar">
+    <div class="ai-query-label">🤖 AI 검색 결과</div>
+    <div class="ai-query-text">"{{ query }}"</div>
+
+    <!-- 인식된 태그들 -->
+    <div class="ai-tags">
+      {% for cat in matched_categories %}
+        <span class="ai-tag ai-tag-cat">🍽️ {{ cat }}</span>
+      {% endfor %}
+      {% for tag in matched_tags %}
+        <span class="ai-tag ai-tag-mood">🏷️ {{ tag }}</span>
+      {% endfor %}
+      {% for hint in hint_keywords %}
+        <span class="ai-tag ai-tag-hint">✨ {{ hint }}</span>
+      {% endfor %}
+      {% if not matched_categories and not matched_tags and not hint_keywords %}
+        <span class="ai-tag ai-tag-hint">🔍 전체 검색</span>
+      {% endif %}
+    </div>
+
+    <!-- 결과 수 -->
+    <div class="ai-recom">
+      총 <b>{{ result_count }}</b>개의 맛집을 찾았어요
+      {% if is_fallback %}
+        <span class="ai-fallback-notice">💡 관련 결과가 없어 인기순으로 보여드려요</span>
+      {% endif %}
+    </div>
+
+    <!-- 재검색 폼 -->
+    <form action="/ai-search/" method="GET" class="ai-search-form">
+      <input name="q" value="{{ query }}" placeholder="다시 검색하기...">
+      <button type="submit">🔍 검색</button>
+    </form>
+  </div>
+
+  <!-- ── 결과 그리드 ── -->
+  {% if restaurants %}
+    <div class="result-section-head">
+      <h2>{% if is_fallback %}인기 맛집{% else %}검색 결과{% endif %}</h2>
+      <span class="result-count-badge">{{ result_count }}곳</span>
+    </div>
+
+    <div class="r-grid">
+      {% for r in restaurants %}
+      <a href="/restaurants/{{ r.pk }}/" class="r-card">
+        <div class="r-card-img">
+          {% if r.thumbnail %}
+            <img src="{{ r.thumbnail.url }}" alt="{{ r.name }}" loading="lazy">
+          {% else %}🍽️{% endif %}
+        </div>
+        <div class="r-card-body">
+          <div class="r-card-name">{{ r.name }}</div>
+          {% if r.category %}
+            <div class="r-card-cat">{{ r.category.name }}</div>
+          {% endif %}
+          <div class="r-card-addr">{{ r.address|truncatechars:32 }}</div>
+          <div class="r-rating">
+            ★ {{ r.avg_rating|floatformat:1|default:"—" }}
+            <span>({{ r.review_count }}개 리뷰)</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- ── 페이지네이션 ── -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:36px 0 56px;">
+      <nav style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;">
+        {% if page_obj.has_previous %}
+          <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}" style="display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:38px;padding:0 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.9375rem;font-weight:600;color:var(--text2);background:var(--surface);text-decoration:none;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">‹</a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:38px;padding:0 10px;border:1.5px solid var(--accent);border-radius:8px;font-size:.9375rem;font-weight:700;background:var(--accent);color:#fff;">{{ num }}</span>
+          {% elif num >= page_obj.number|add:"-4" and num <= page_obj.number|add:"4" %}
+            <a href="?q={{ query }}&page={{ num }}" style="display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:38px;padding:0 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.9375rem;font-weight:600;color:var(--text2);background:var(--surface);text-decoration:none;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?q={{ query }}&page={{ page_obj.next_page_number }}" style="display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:38px;padding:0 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.9375rem;font-weight:600;color:var(--text2);background:var(--surface);text-decoration:none;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">›</a>
+        {% endif %}
+      </nav>
+      <p style="font-size:.875rem;color:var(--text3);">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 페이지 · 총 {{ result_count }}곳</p>
+    </div>
+    {% endif %}
+
+  {% else %}
+    <div class="empty-ai">
+      <div class="big">🤔</div>
+      <p>"<b>{{ query }}</b>"에 맞는 맛집을 찾지 못했어요.</p>
+      <a href="/restaurants/">전체 맛집 보기 →</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

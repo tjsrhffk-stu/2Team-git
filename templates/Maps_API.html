@@ -3,221 +3,614 @@
 
 {% block extra_css %}
 <style>
-    /* 1. 레이아웃 보정: 부모 컨테이너들의 높이를 확보합니다. */
-    html, body { 
-        height: 100%; 
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-    }
-    
-    main { 
-        padding: 0 !important; 
-        max-width: none !important; 
-        width: 100vw;
-        height: calc(100vh - 70px); /* 헤더 높이에 맞게 조절 */
-        display: flex !important;
-    }
+  /* ── 전체 레이아웃 ── */
+  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
 
-    .map-container { 
-        display: flex; 
-        width: 100%; 
-        height: 100%; 
-        align-items: stretch;
-    }
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100vw;
+    height: calc(100vh - 64px);
+    display: flex !important;
+    overflow: hidden;
+  }
 
-    /* 사이드바 설정 */
-    .map-sidebar {
-        width: 320px; 
-        height: 100%; 
-        background: var(--surface);
-        border-right: 1px solid var(--border); 
-        display: flex; 
-        flex-direction: column; 
-        z-index: 10;
-    }
+  .map-wrap { display: flex; width: 100%; height: 100%; }
 
-    #map { 
-        flex: 1; 
-        height: 100% !important; 
-        min-height: 500px; 
-        background: #f8f9fa;
-    }
-    
-    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); background: var(--text); color: #fff; }
-    .sidebar-header h2 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 15px; }
-    .sidebar-header em { color: var(--accent); font-style: normal; }
+  /* ── 사이드바 ── */
+  .sidebar {
+    width: 360px;
+    min-width: 320px;
+    height: 100%;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    box-shadow: 2px 0 12px rgba(0,0,0,.06);
+  }
 
-    /* 검색창 스타일 */
-    .sidebar-search .search-input-wrap { position: relative; }
-    .sidebar-search input {
-        width: 100%; padding: 12px 14px 12px 40px;
-        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 10px; color: #F0EDE8; font-size: 14px; outline: none;
-    }
-    .sidebar-search .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
+  /* 사이드바 헤더 */
+  .sb-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
 
-    /* 맛집 리스트 */
-    .res-list { overflow-y: auto; flex: 1; }
-    .res-list-item {
-        padding: 20px; border-bottom: 1px solid var(--border);
-        transition: all 0.2s; cursor: pointer; text-decoration: none; color: inherit;
-    }
-    .res-list-item:hover { background: var(--accent-light); }
-    .res-list-item .res-name { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-    .res-list-item .res-meta { font-size: 13px; color: var(--text2); }
+  .sb-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sb-title span { color: var(--accent); }
 
-    /* 인포윈도우 스타일 */
-    .custom-iw {
-        padding: 15px; border-radius: 12px; border: 1px solid #ddd;
-        background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        font-family: 'DM Sans', sans-serif; min-width: 200px;
-    }
-    .iw-title { font-weight: 700; color: var(--accent); margin-bottom: 5px; display: block; }
-    .iw-addr { font-size: 12px; color: #666; }
-    .iw-link { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--text); text-decoration: underline; }
+  /* 검색창 */
+  .search-box {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0 12px;
+    gap: 8px;
+    transition: border-color .2s;
+  }
+  .search-box:focus-within { border-color: var(--accent); }
+  .search-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 10px 0;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+  }
+  .search-box input::placeholder { color: var(--text3); }
+  .search-box button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 16px;
+    padding: 0;
+    line-height: 1;
+  }
+  .search-box button:hover { color: var(--accent); }
 
-    @media (max-width: 768px) {
-        .map-container { flex-direction: column; }
-        .map-sidebar { width: 100%; height: 35%; }
-    }
+  /* 카테고리 필터 */
+  .cat-bar {
+    display: flex;
+    gap: 6px;
+    padding: 10px 20px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    scrollbar-width: none;
+  }
+  .cat-bar::-webkit-scrollbar { display: none; }
+
+  .cat-btn {
+    flex-shrink: 0;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .cat-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .cat-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* 결과 카운트 */
+  .result-count {
+    padding: 8px 20px;
+    font-size: 12px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .result-count strong { color: var(--accent); }
+
+  /* 맛집 리스트 */
+  .res-list {
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .res-list::-webkit-scrollbar { width: 4px; }
+  .res-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .res-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .15s;
+    align-items: flex-start;
+  }
+  .res-item:hover, .res-item.active { background: var(--accent-lt); }
+
+  .res-thumb {
+    width: 68px;
+    height: 68px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--surface2);
+  }
+  .res-thumb-placeholder {
+    width: 68px;
+    height: 68px;
+    border-radius: 10px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+
+  .res-info { flex: 1; min-width: 0; }
+  .res-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .res-cat {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .res-addr {
+    font-size: 12px;
+    color: var(--text2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 5px;
+  }
+  .res-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .res-rating .star { color: var(--gold); font-size: 13px; }
+  .res-rating strong { color: var(--text); font-weight: 600; }
+
+  /* 빈 상태 */
+  .empty-state {
+    padding: 48px 20px;
+    text-align: center;
+    color: var(--text2);
+  }
+  .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-state p { font-size: 14px; }
+
+  /* 로딩 */
+  .loading-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text2);
+  }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── 지도 영역 ── */
+  #map {
+    flex: 1;
+    height: 100% !important;
+    min-height: 400px;
+  }
+
+  /* ── 인포윈도우 ── */
+  .custom-iw {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.14);
+    padding: 14px 16px;
+    min-width: 210px;
+    max-width: 260px;
+    font-family: 'Noto Sans KR', sans-serif;
+    border: 1px solid #eee;
+  }
+  .iw-name { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  .iw-cat { font-size: 12px; color: #D4622A; font-weight: 500; margin-bottom: 4px; }
+  .iw-addr { font-size: 12px; color: #666; margin-bottom: 8px; }
+  .iw-rating { font-size: 12px; color: #999; margin-bottom: 10px; }
+  .iw-rating strong { color: #1a1a1a; }
+  .iw-link {
+    display: inline-block;
+    background: #D4622A;
+    color: #fff !important;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .iw-link:hover { background: #B8431A; }
+
+  /* ── 현 지역 재검색 버튼 ── */
+  #btn-search-here {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    padding: 9px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,.12);
+    display: none;
+    gap: 6px;
+    align-items: center;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  #btn-search-here:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  #btn-search-here.show { display: flex; }
+
+  /* 지도 래퍼 (버튼 position:absolute 기준) */
+  .map-area { flex: 1; position: relative; height: 100%; }
+
+  /* ── 반응형 ── */
+  @media (max-width: 768px) {
+    .map-wrap { flex-direction: column; }
+    .sidebar { width: 100%; min-width: unset; height: 42%; }
+    .map-area { height: 58%; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="map-container">
-    <div class="map-sidebar">
-        <div class="sidebar-header">
-            <h2>LocalEats <em>Map</em></h2>
-            <div class="sidebar-search">
-                <form method="GET" action="{% url 'restaurant_map' %}"> 
-                    <div class="search-input-wrap">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" name="q" placeholder="지도에서 맛집 검색..." value="{{ request.GET.q }}">
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <div class="res-list">
-            {% for res in restaurants %}
-            {% if res.lat and res.lng %}
-            <div class="res-list-item" onclick="panToMarker({{ res.lat }}, {{ res.lng }}, '{{ res.id }}')">
-                <div class="res-name">{{ res.name }}</div>
-                <div class="res-meta">{{ res.category }} · {{ res.address|truncatechars:25 }}</div>
-                <div style="margin-top: 8px; color: var(--accent); font-size: 12px; font-weight: 600;">
-                    ★ {{ res.avg_rating|default:"0.0" }}
-                </div>
-            </div>
-            {% endif %}
-            {% empty %}
-            <div style="padding: 40px; text-align: center; color: var(--text2);">등록된 맛집이 없습니다.</div>
-            {% endfor %}
-        </div>
+<div class="map-wrap">
+
+  <!-- ── 사이드바 ── -->
+  <aside class="sidebar">
+
+    <div class="sb-header">
+      <div class="sb-title">🍽 LocalEats <span>Map</span></div>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="맛집 이름, 카테고리 검색..." />
+        <button id="search-btn" title="검색">🔍</button>
+      </div>
     </div>
 
+    <!-- 카테고리 필터 -->
+    <div class="cat-bar">
+      <button class="cat-btn active" data-cat="">전체</button>
+      {% for cat in categories %}
+      <button class="cat-btn" data-cat="{{ cat.id }}">{{ cat.name }}</button>
+      {% endfor %}
+    </div>
+
+    <div class="result-count" id="result-count">지도를 불러오는 중…</div>
+
+    <!-- 맛집 목록 -->
+    <div class="res-list" id="res-list">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>지도를 불러오는 중…</p>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── 지도 영역 ── -->
+  <div class="map-area">
     <div id="map"></div>
+    <button id="btn-search-here">📍 이 지역 재검색</button>
+  </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=3z7t86u9wa&submodules=geocoding"></script>
-
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId={{ naver_client_id }}&submodules=geocoding"></script>
 <script>
-    var map;
-    var markers = {};
-    var infoWindows = {};
+(function () {
+  "use strict";
 
-    window.onload = function() {
-        var mapOptions = {
-            center: new naver.maps.LatLng(37.5665, 126.9780),
-            zoom: 13,
-            zoomControl: true,
-            zoomControlOptions: { position: naver.maps.Position.RIGHT_TOP }
-        };
+  /* ── 상태 ── */
+  var map;
+  var markers = {};
+  var infoWindows = {};
+  var activeItemId = null;
+  var searchTimer = null;
+  var mapMoved = false;
+  var currentQ = "";
+  var currentCat = "";
+  var API_URL = "{% url 'restaurants:map_api' %}";
 
-        map = new naver.maps.Map('map', mapOptions);
-        var bounds = new naver.maps.LatLngBounds();
+  /* ── 지도 초기화 ── */
+  window.addEventListener("load", function () {
+    map = new naver.maps.Map("map", {
+      center: new naver.maps.LatLng(37.5665, 126.9780),
+      zoom: 14,
+      zoomControl: true,
+      zoomControlOptions: { position: naver.maps.Position.RIGHT_TOP },
+    });
 
-        {% for res in restaurants %}
-        {% if res.lat and res.lng %}
-        (function() {
-            var pos = new naver.maps.LatLng({{ res.lat }}, {{ res.lng }});
-            
-            var marker = new naver.maps.Marker({
-                position: pos,
-                map: map,
-                icon: {
-                    content: '<div style="background:var(--accent); width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow:0 0 5px rgba(0,0,0,0.3);"></div>',
-                    anchor: new naver.maps.Point(7, 7)
-                }
-            });
+    /* 지도 이동/줌 완료 후 "이 지역 재검색" 버튼 표시 */
+    naver.maps.Event.addListener(map, "idle", function () {
+      if (mapMoved) {
+        document.getElementById("btn-search-here").classList.add("show");
+      }
+    });
+    naver.maps.Event.addListener(map, "dragstart", function () { mapMoved = true; });
+    naver.maps.Event.addListener(map, "zoom_changed", function () { mapMoved = true; });
 
-            var iwContent = [
-                '<div class="custom-iw">',
-                '   <span class="iw-title">{{ res.name }}</span>',
-                '   <span class="iw-addr">{{ res.address }}</span><br>',
-                '   <a href="/restaurants/{{ res.id }}/" class="iw-link">상세보기 →</a>',
-                '</div>'
-            ].join('');
+    /* 초기 데이터 로드 */
+    fetchRestaurants();
+  });
 
-            var infowindow = new naver.maps.InfoWindow({
-                content: iwContent,
-                backgroundColor: "transparent",
-                borderWidth: 0,
-                disableAnchor: true,
-                pixelOffset: new naver.maps.Point(0, -10)
-            });
+  /* ── AJAX 호출 ── */
+  function fetchRestaurants() {
+    mapMoved = false;
+    document.getElementById("btn-search-here").classList.remove("show");
+    setListLoading();
 
-            // 딕셔너리에 저장하여 외부 함수에서 접근 가능케 함
-            markers['{{ res.id }}'] = marker;
-            infoWindows['{{ res.id }}'] = infowindow;
+    var bounds = map.getBounds();
+    var sw = bounds.getSW();
+    var ne = bounds.getNE();
 
-            naver.maps.Event.addListener(marker, "click", function() {
-                // 클릭 시 다른 인포윈도우는 닫기
-                for (var key in infoWindows) { infoWindows[key].close(); }
-                infowindow.open(map, marker);
-            });
+    var params = new URLSearchParams({
+      sw_lat: sw.lat(),
+      sw_lng: sw.lng(),
+      ne_lat: ne.lat(),
+      ne_lng: ne.lng(),
+      q: currentQ,
+      category: currentCat,
+    });
 
-            bounds.extend(pos);
-        })();
-        {% endif %}
-        {% endfor %}
+    fetch(API_URL + "?" + params.toString())
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        renderList(data.restaurants);
+        renderMarkers(data.restaurants);
+      })
+      .catch(function () {
+        setListEmpty("데이터를 불러오지 못했습니다.");
+      });
+  }
 
-        if (!bounds.isEmpty()) {
-            map.fitBounds(bounds);
-        }
+  /* ── 사이드바 목록 렌더링 ── */
+  function renderList(restaurants) {
+    var list = document.getElementById("res-list");
+    var count = document.getElementById("result-count");
 
-        // 지도가 처음 로드될 때 레이아웃 깨짐 방지
-        setTimeout(function() {
-            window.dispatchEvent(new Event('resize'));
-        }, 100);
-    };
-
-    /**
-     * 사이드바 클릭 시 호출되는 함수
-     * morph를 사용하여 이동과 줌을 최적화했습니다.
-     */
-    function panToMarker(lat, lng, id) {
-        if (!map) return;
-
-        var pos = new naver.maps.LatLng(lat, lng);
-
-        // 1. 모든 인포윈도우 닫기
-        for (var key in infoWindows) {
-            infoWindows[key].close();
-        }
-
-        // 2. morph를 사용하여 좌표 이동과 줌 레벨 조정을 동시에 처리 (부드럽게 이동)
-        // 만약 애니메이션 없이 즉시 이동을 원하면 map.setCenter(pos); map.setZoom(16); 사용
-        map.morph(pos, 16);
-
-        // 3. 약간의 지연 후 인포윈도우 열기 (이동 애니메이션과 겹치지 않게 안정화)
-        setTimeout(function() {
-            if (infoWindows[id] && markers[id]) {
-                infoWindows[id].open(map, markers[id]);
-            }
-        }, 300);
+    if (!restaurants || restaurants.length === 0) {
+      count.textContent = "검색 결과가 없습니다.";
+      setListEmpty("이 지역에 등록된 맛집이 없어요.");
+      return;
     }
+
+    count.innerHTML = "맛집 <strong>" + restaurants.length + "곳</strong> 발견";
+
+    var html = "";
+    restaurants.forEach(function (r) {
+      var thumbHtml = r.thumbnail
+        ? '<img class="res-thumb" src="' + r.thumbnail + '" alt="' + escHtml(r.name) + '" loading="lazy">'
+        : '<div class="res-thumb-placeholder">🍴</div>';
+
+      var ratingHtml = r.avg_rating > 0
+        ? '<span class="star">★</span> <strong>' + r.avg_rating.toFixed(1) + '</strong> (' + r.review_count + '건)'
+        : '리뷰 없음';
+
+      html += '<div class="res-item" id="item-' + r.id + '" onclick="panToMarker(' + r.id + ')">'
+        + thumbHtml
+        + '<div class="res-info">'
+        + '<div class="res-name">' + escHtml(r.name) + '</div>'
+        + '<div class="res-cat">' + escHtml(r.category || "기타") + '</div>'
+        + '<div class="res-addr">' + escHtml(r.address) + '</div>'
+        + '<div class="res-rating">' + ratingHtml + '</div>'
+        + '</div>'
+        + '</div>';
+    });
+
+    list.innerHTML = html;
+  }
+
+  /* ── 마커 렌더링 ── */
+  function renderMarkers(restaurants) {
+    /* 기존 마커 제거 */
+    Object.values(markers).forEach(function (m) { m.setMap(null); });
+    Object.values(infoWindows).forEach(function (iw) { iw.close(); });
+    markers = {};
+    infoWindows = {};
+    activeItemId = null;
+
+    if (!restaurants || restaurants.length === 0) return;
+
+    restaurants.forEach(function (r) {
+      var pos = new naver.maps.LatLng(r.lat, r.lng);
+
+      var marker = new naver.maps.Marker({
+        position: pos,
+        map: map,
+        icon: makeMarkerIcon(false),
+        title: r.name,
+      });
+
+      var iw = new naver.maps.InfoWindow({
+        content: [
+          '<div class="custom-iw">',
+          '<div class="iw-name">' + escHtml(r.name) + '</div>',
+          '<div class="iw-cat">' + escHtml(r.category || "기타") + '</div>',
+          '<div class="iw-addr">' + escHtml(r.address) + '</div>',
+          '<div class="iw-rating"><span style="color:#F59E0B">★</span> <strong>'
+            + (r.avg_rating > 0 ? r.avg_rating.toFixed(1) : '-')
+            + '</strong> (' + r.review_count + '건)</div>',
+          '<a href="' + r.detail_url + '" class="iw-link">상세보기 →</a>',
+          '</div>',
+        ].join(""),
+        backgroundColor: "transparent",
+        borderWidth: 0,
+        disableAnchor: true,
+        pixelOffset: new naver.maps.Point(0, -8),
+      });
+
+      markers[r.id] = marker;
+      infoWindows[r.id] = iw;
+
+      /* 마커 클릭 → 사이드바 하이라이트 + 인포윈도우 */
+      naver.maps.Event.addListener(marker, "click", function () {
+        activateItem(r.id, false);
+        closeAllInfoWindows();
+        iw.open(map, marker);
+      });
+    });
+  }
+
+  /* ── 마커 아이콘 ── */
+  function makeMarkerIcon(active) {
+    var size = active ? 18 : 14;
+    var bg = active ? "#D4622A" : "#333";
+    return {
+      content: '<div style="background:' + bg + ';width:' + size + 'px;height:' + size + 'px;'
+        + 'border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);'
+        + 'transition:all .2s;"></div>',
+      anchor: new naver.maps.Point(size / 2, size / 2),
+    };
+  }
+
+  /* ── 아이템 활성화 ── */
+  function activateItem(id, panMap) {
+    if (activeItemId !== null) {
+      var prev = document.getElementById("item-" + activeItemId);
+      if (prev) prev.classList.remove("active");
+      if (markers[activeItemId]) markers[activeItemId].setIcon(makeMarkerIcon(false));
+    }
+
+    activeItemId = id;
+
+    var item = document.getElementById("item-" + id);
+    if (item) {
+      item.classList.add("active");
+      item.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    if (markers[id]) markers[id].setIcon(makeMarkerIcon(true));
+
+    if (panMap && markers[id]) {
+      closeAllInfoWindows();
+      map.morph(markers[id].getPosition(), 16);
+      setTimeout(function () {
+        if (infoWindows[id] && markers[id]) {
+          infoWindows[id].open(map, markers[id]);
+        }
+      }, 320);
+    }
+  }
+
+  /* ── 사이드바 클릭 핸들러 (전역) ── */
+  window.panToMarker = function (id) {
+    activateItem(id, true);
+  };
+
+  /* ── 인포윈도우 전체 닫기 ── */
+  function closeAllInfoWindows() {
+    Object.values(infoWindows).forEach(function (iw) { iw.close(); });
+  }
+
+  /* ── 로딩/빈 상태 ── */
+  function setListLoading() {
+    document.getElementById("res-list").innerHTML =
+      '<div class="loading-state"><div class="spinner"></div><p>불러오는 중…</p></div>';
+    document.getElementById("result-count").textContent = "검색 중…";
+  }
+
+  function setListEmpty(msg) {
+    document.getElementById("res-list").innerHTML =
+      '<div class="empty-state"><div class="icon">🔍</div><p>' + escHtml(msg) + '</p></div>';
+  }
+
+  /* ── 검색창 이벤트 ── */
+  document.getElementById("search-btn").addEventListener("click", function () {
+    currentQ = document.getElementById("search-input").value.trim();
+    fetchRestaurants();
+  });
+
+  document.getElementById("search-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      currentQ = this.value.trim();
+      fetchRestaurants();
+      return;
+    }
+    /* 실시간 검색 (디바운스 450ms) */
+    clearTimeout(searchTimer);
+    var self = this;
+    searchTimer = setTimeout(function () {
+      var val = self.value.trim();
+      if (val !== currentQ) {
+        currentQ = val;
+        fetchRestaurants();
+      }
+    }, 450);
+  });
+
+  /* ── 카테고리 필터 ── */
+  document.querySelectorAll(".cat-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".cat-btn").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      currentCat = btn.dataset.cat;
+      fetchRestaurants();
+    });
+  });
+
+  /* ── 현 지역 재검색 ── */
+  document.getElementById("btn-search-here").addEventListener("click", function () {
+    fetchRestaurants();
+  });
+
+  /* ── HTML 이스케이프 ── */
+  function escHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+})();
 </script>
 {% endblock %}
