@@ -97,19 +97,35 @@ if _db_engine == 'django.db.backends.sqlite3':
         }
     }
 else:
+    # 프록시 VIP를 통한 default(write) / readonly(read) 이중 DB 구성
+    # 실제 DB IP 대신 프록시 VIP로 접속하며, 포트로 write/read를 구분
     DATABASES = {
         'default': {
-            'ENGINE': _db_engine,
+            'ENGINE':   _db_engine,
             'NAME':     env('DB_NAME'),
             'USER':     env('DB_USER'),
             'PASSWORD': env('DB_PASSWORD'),
-            'HOST':     env('DB_HOST', default='localhost'),
-            'PORT':     env('DB_PORT', default='5432'),
+            'HOST':     env('DB_HOST', default='192.168.1.177'),   # 프록시 VIP
+            'PORT':     env('DB_PORT', default='5432'),             # write 포트
             'OPTIONS': {
                 'connect_timeout': 10,
             },
-        }
+        },
+        'readonly': {
+            'ENGINE':   _db_engine,
+            'NAME':     env('DB_NAME'),
+            'USER':     env('DB_READONLY_USER',     default=env('DB_USER')),
+            'PASSWORD': env('DB_READONLY_PASSWORD', default=env('DB_PASSWORD')),
+            'HOST':     env('DB_HOST', default='192.168.1.177'),   # 프록시 VIP (동일)
+            'PORT':     env('DB_READONLY_PORT', default='5433'),    # read 포트
+            'OPTIONS': {
+                'connect_timeout': 10,
+            },
+        },
     }
+
+# Router 등록: PostgreSQL 환경에서 read 쿼리를 'readonly' DB로 분기
+DATABASE_ROUTERS = ['config.db_router.ReadWriteRouter'] if _db_engine != 'django.db.backends.sqlite3' else []
 
 
 # Password validation
@@ -146,8 +162,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

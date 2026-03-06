@@ -225,10 +225,12 @@ def home(request):
 
     # 테마별 맛집: 카테고리 기반으로 각 테마마다 다른 식당 표시
     THEMES = [
-        {"label": "데이트 코스", "desc": "분위기 좋은 둘만의 장소",    "categories": ["카페", "양식"],  "start": 0, "order": "-view_count"},
-        {"label": "혼밥 맛집",   "desc": "혼자 편하게 즐기기 좋아요", "categories": ["한식", "일식"],  "start": 0, "order": "-view_count"},
-        {"label": "회식 장소",   "desc": "단체 모임에 딱 좋은 곳",    "categories": ["한식", "중식"],  "start": 4, "order": "-view_count"},
-        {"label": "뷰 맛집",     "desc": "맛도 경치도 두 배 행복",    "categories": ["카페", "기타"],  "start": 4, "order": "-id"},
+        {"label": "데이트 코스", "desc": "분위기 좋은 둘만의 장소",    "categories": ["카페", "양식"],        "start": 0, "order": "-view_count"},
+        {"label": "혼밥 맛집",   "desc": "혼자 편하게 즐기기 좋아요", "categories": ["한식", "일식"],        "start": 0, "order": "-view_count"},
+        {"label": "회식 장소",   "desc": "단체 모임에 딱 좋은 곳",    "categories": ["한식", "중식"],        "start": 4, "order": "-view_count"},
+        {"label": "뷰 맛집",     "desc": "맛도 경치도 두 배 행복",    "categories": ["카페", "기타"],        "start": 4, "order": "-id"},
+        {"label": "가족 모임",   "desc": "온 가족이 함께하기 좋은 곳", "categories": ["한식", "양식"],       "start": 4, "order": "-id"},
+        {"label": "가성비 맛집", "desc": "부담없이 즐기는 알짜 맛집",  "categories": ["분식", "패스트푸드"], "start": 0, "order": "-view_count"},
     ]
     theme_sections = []
     for t in THEMES:
@@ -250,7 +252,7 @@ def home(request):
                     review_count=Count('reviews', distinct=True),
                 )
                 .order_by('-view_count', '-id')
-                .select_related('category')[s:e]
+                .select_related('category')[0:4]
             )
         link = f"/restaurants/?category={cat_objs.first().pk}" if cat_objs.exists() else "/restaurants/"
         theme_sections.append({
