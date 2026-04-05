@@ -76,9 +76,9 @@
     border: none;
     cursor: pointer;
     color: var(--text2);
-    font-size: 16px;
     padding: 0;
-    line-height: 1;
+    display: flex; align-items: center;
+    transition: color .15s;
   }
   .search-box button:hover { color: var(--accent); }
 
@@ -307,10 +307,12 @@
   <aside class="sidebar">
 
     <div class="sb-header">
-      <div class="sb-title">🍽 LocalEats <span>Map</span></div>
+      <div class="sb-title">LocalEats <span>Map</span></div>
       <div class="search-box">
         <input type="text" id="search-input" placeholder="맛집 이름, 카테고리 검색..." />
-        <button id="search-btn" title="검색">🔍</button>
+        <button id="search-btn" title="검색">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
       </div>
     </div>
 

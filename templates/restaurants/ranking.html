@@ -77,10 +77,7 @@
 
       <!-- 순위 -->
       <div class="rank-num {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">
-        {% if forloop.counter == 1 %}🥇
-        {% elif forloop.counter == 2 %}🥈
-        {% elif forloop.counter == 3 %}🥉
-        {% else %}{{ forloop.counter }}{% endif %}
+        {{ forloop.counter }}
       </div>
 
       <!-- 썸네일 -->

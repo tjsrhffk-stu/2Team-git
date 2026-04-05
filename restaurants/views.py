@@ -68,7 +68,12 @@ def restaurant_list(request):
         )
 
     if category_id:
-        restaurants = restaurants.filter(category_id=category_id)
+        try:
+            # 숫자 ID로 온 경우 (restaurants/list.html 필터 칩)
+            restaurants = restaurants.filter(category_id=int(category_id))
+        except (ValueError, TypeError):
+            # 카테고리 이름으로 온 경우 (home.html 히어로 칩)
+            restaurants = restaurants.filter(category__name=category_id)
 
     if min_rating:
         try:

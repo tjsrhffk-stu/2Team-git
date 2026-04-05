@@ -20,7 +20,9 @@ def create_review(request, restaurant_id):
         return redirect("restaurants:detail", pk=restaurant.pk)
     # 1. 정렬 기준 가져오기 (기본값을 'rating_high'로 설정)
     sort = request.GET.get('sort', 'rating_high')
-    existing_reviews = Review.objects.filter(restaurant=restaurant).select_related('reply')
+    existing_reviews = Review.objects.filter(restaurant=restaurant)\
+        .select_related('author', 'reply')\
+        .prefetch_related('likes')
 
     # 2. 정렬 로직
     if sort == 'latest':
@@ -327,7 +329,8 @@ def report_review(request, review_id):
     if review.author == request.user:
         return JsonResponse({"ok": False, "msg": "본인 리뷰는 신고할 수 없어요."})
 
-    reason = request.POST.get("reason", "other")
+    reasons = request.POST.getlist("reason") or ["other"]
+    reason = ",".join(reasons)  # 여러 사유를 콤마로 저장
     _, created = ReviewReport.objects.get_or_create(
         review=review,
         reporter=request.user,

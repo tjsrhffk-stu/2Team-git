@@ -4,128 +4,132 @@
 {% block extra_css %}
 <style>
   .auth-wrap {
-    min-height: calc(100vh - 200px);
+    min-height: calc(100vh - 64px);
     display: flex; align-items: center; justify-content: center;
     padding: 40px 24px;
+    background: var(--bg);
   }
   .auth-card {
-    width: 100%; max-width: 440px;
+    width: 100%; max-width: 420px;
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 24px; padding: 48px 40px;
-    box-shadow: var(--shadow);
-    animation: fadeUp 0.5s ease;
+    border-radius: 20px; padding: 44px 40px;
+    box-shadow: 0 2px 24px rgba(0,0,0,.06);
+    animation: fadeUp 0.4s ease;
   }
-  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
   .auth-logo {
     text-align: center; margin-bottom: 32px;
   }
   .auth-logo-text {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px; font-weight: 700; color: var(--accent);
+    font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1;
   }
-  .auth-logo-text span { color: var(--text); }
-  .auth-title {
-    font-size: 22px; font-weight: 700; text-align: center;
-    margin-bottom: 6px; color: var(--text);
-  }
+  .auth-logo-text .local { color: var(--text); }
+  .auth-logo-text .eats  { color: var(--accent); }
+
   .auth-subtitle {
-    font-size: 14px; color: var(--text2); text-align: center; margin-bottom: 36px;
+    font-size: 13px; color: var(--text3); text-align: center; margin-bottom: 28px;
   }
 
-  .form-group { margin-bottom: 18px; }
+  .form-group { margin-bottom: 14px; }
   .form-group label {
-    display: block; font-size: 13px; font-weight: 600;
-    color: var(--text2); margin-bottom: 8px; letter-spacing: 0.3px;
+    display: block; font-size: 12px; font-weight: 700;
+    color: var(--text2); margin-bottom: 6px; letter-spacing: .3px;
+    text-transform: uppercase;
   }
   .input-wrap { position: relative; }
-  .input-wrap .icon {
+  .input-wrap .i-icon {
     position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-    font-size: 17px; pointer-events: none;
+    display: flex; align-items: center; color: var(--text3); pointer-events: none;
   }
   .input-wrap input {
-    width: 100%; padding: 13px 16px 13px 42px;
+    width: 100%; padding: 12px 16px 12px 40px;
     background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 12px; font-size: 15px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s;
+    border-radius: 10px; font-size: 14.5px; color: var(--text);
+    font-family: inherit; outline: none; transition: all 0.18s;
   }
   .input-wrap input:focus {
     border-color: var(--accent); background: var(--surface);
-    box-shadow: 0 0 0 3px rgba(212,82,26,0.08);
+    box-shadow: 0 0 0 3px rgba(212,98,42,0.08);
   }
   .input-wrap .toggle-pw {
-    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; font-size: 17px; color: var(--text2);
-    padding: 4px;
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--text3); padding: 4px; display: flex; align-items: center;
+    transition: color .15s;
   }
+  .input-wrap .toggle-pw:hover { color: var(--text2); }
 
   .form-options {
     display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 28px; margin-top: -8px;
+    margin: 10px 0 24px;
   }
-  .remember-me { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-  .remember-me input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; }
-  .remember-me span { font-size: 13px; color: var(--text2); }
-  .forgot-link { font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 500; }
-  .forgot-link:hover { text-decoration: underline; }
+  .remember-me { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+  .remember-me input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; }
+  .remember-me span { font-size: 12.5px; color: var(--text2); }
+  .form-links { display: flex; gap: 12px; }
+  .forgot-link {
+    font-size: 12.5px; color: var(--text2); text-decoration: none;
+    transition: color .15s;
+  }
+  .forgot-link:hover { color: var(--accent); }
 
   .btn-login {
-    width: 100%; padding: 15px;
+    width: 100%; padding: 13px;
     background: var(--accent); color: #fff;
-    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
-    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+    font-family: inherit; cursor: pointer; transition: all 0.18s;
+    letter-spacing: .01em;
   }
-  .btn-login:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,82,26,0.3); }
-  .btn-login:active { transform: translateY(0); }
+  .btn-login:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(212,98,42,0.28); }
+  .btn-login:active { transform: translateY(0); filter: none; }
 
   .divider {
     display: flex; align-items: center; gap: 12px;
-    margin: 24px 0; color: var(--text2); font-size: 13px;
+    margin: 20px 0; color: var(--text3); font-size: 12px;
   }
-  .divider::before, .divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .btn-social {
-    width: 100%; padding: 13px;
-    background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--text);
-    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    text-decoration: none;
+  .btn-signup {
+    width: 100%; padding: 12px;
+    background: transparent; border: 1.5px solid var(--border);
+    border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text2);
+    font-family: inherit; cursor: pointer; transition: all 0.18s;
+    text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;
   }
-  .btn-social:hover { border-color: var(--accent); background: var(--accent-light); }
+  .btn-signup:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt, #fdf3ef); }
+  .btn-signup strong { color: var(--accent); }
 
   .auth-footer {
-    text-align: center; margin-top: 28px;
-    font-size: 14px; color: var(--text2);
+    text-align: center; margin-top: 20px; font-size: 13px; color: var(--text3);
   }
-  .auth-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
-  .auth-footer a:hover { text-decoration: underline; }
+  .auth-footer a { color: var(--text3); text-decoration: none; transition: color .15s; }
+  .auth-footer a:hover { color: var(--accent); }
 
   .error-msg {
-    background: #FEE2E2; border: 1px solid #FECACA; color: #991B1B;
-    padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;
-    margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 8px;
+    background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C;
+    padding: 11px 14px; border-radius: 10px; font-size: 13px; font-weight: 500;
+    margin-bottom: 18px;
   }
-  [data-theme="dark"] .error-msg { background: #7F1D1D30; border-color: #991B1B; color: #FCA5A5; }
+  [data-theme="dark"] .error-msg { background: #7F1D1D22; border-color: #991B1B60; color: #FCA5A5; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="auth-wrap">
   <div class="auth-card">
+
     <div class="auth-logo">
-      <div class="auth-logo-text">Local<span>Eats</span></div>
+      <div class="auth-logo-text"><span class="local">Local</span><span class="eats">Eats</span></div>
     </div>
 
-    <h1 class="auth-title">다시 오셨군요! 👋</h1>
     <p class="auth-subtitle">맛집 탐험을 계속하려면 로그인하세요</p>
 
     {% if form.errors %}
     <div class="error-msg">
-      ⚠️ 아이디 또는 비밀번호가 올바르지 않아요
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      아이디 또는 비밀번호가 올바르지 않아요
     </div>
     {% endif %}
 
@@ -135,7 +139,9 @@
       <div class="form-group">
         <label for="id_username">아이디</label>
         <div class="input-wrap">
-          <span class="icon">👤</span>
+          <span class="i-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
           <input type="text" name="username" id="id_username"
             placeholder="아이디를 입력하세요"
             value="{{ form.username.value|default:'' }}"
@@ -146,11 +152,15 @@
       <div class="form-group">
         <label for="id_password">비밀번호</label>
         <div class="input-wrap">
-          <span class="icon">🔒</span>
+          <span class="i-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
           <input type="password" name="password" id="id_password"
             placeholder="비밀번호를 입력하세요"
             autocomplete="current-password" required>
-          <button type="button" class="toggle-pw" onclick="togglePw()" title="비밀번호 표시">👁️</button>
+          <button type="button" class="toggle-pw" id="togglePwBtn" onclick="togglePw()" title="비밀번호 표시">
+            <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
         </div>
       </div>
 
@@ -159,19 +169,19 @@
           <input type="checkbox" name="remember">
           <span>로그인 상태 유지</span>
         </label>
-        <a href="/users/find-id/" class="forgot-link">아이디 찾기</a>
-        <a href="/users/forgot-password/" class="forgot-link">비밀번호 찾기</a>
+        <div class="form-links">
+          <a href="/users/find-id/" class="forgot-link">아이디 찾기</a>
+          <a href="/users/forgot-password/" class="forgot-link">비밀번호 찾기</a>
+        </div>
       </div>
 
-      <button type="submit" class="btn-login">
-        🚀 로그인하기
-      </button>
+      <button type="submit" class="btn-login">로그인하기</button>
     </form>
 
     <div class="divider">또는</div>
 
-    <a href="/users/signup/" class="btn-social">
-      ✍️ 아직 계정이 없으신가요? <strong>회원가입</strong>
+    <a href="/users/signup/" class="btn-signup">
+      아직 계정이 없으신가요? <strong>회원가입</strong>
     </a>
 
     <div class="auth-footer">
@@ -185,14 +195,13 @@
 <script>
 function togglePw() {
   const input = document.getElementById('id_password');
-  const btn = document.querySelector('.toggle-pw');
-  if (input.type === 'password') {
-    input.type = 'text'; btn.textContent = '🙈';
-  } else {
-    input.type = 'password'; btn.textContent = '👁️';
-  }
+  const icon = document.getElementById('eyeIcon');
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  icon.innerHTML = show
+    ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+    : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
 }
-// Enter키로 로그인
 document.getElementById('id_username').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('id_password').focus();
 });

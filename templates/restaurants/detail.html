@@ -31,10 +31,11 @@
     font-weight: 900; letter-spacing: -.03em; color: var(--text);
   }
   .btn-edit-sm {
-    padding: 6px 14px; border-radius: 8px;
-    font-size: .8125rem; font-weight: 600; color: var(--text2);
-    border: 1.5px solid var(--border); background: var(--surface);
-    transition: all .2s;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 100px;
+    font-size: .75rem; font-weight: 600; color: var(--text3);
+    border: 1.5px solid var(--border); background: transparent;
+    text-decoration: none; transition: all .2s;
   }
   .btn-edit-sm:hover { border-color: var(--accent); color: var(--accent); }
   .detail-meta {
@@ -130,15 +131,19 @@
     max-width: 220px; border-radius: 12px; margin: 10px 0;
     border: 1px solid var(--border);
   }
-  .review-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .review-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
   .review-action-btn {
-    font-size: .8125rem; padding: 4px 12px;
-    border: 1.5px solid var(--border); border-radius: 8px;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .8125rem; padding: 5px 13px;
+    border: 1.5px solid var(--border); border-radius: 100px;
     color: var(--text2); background: transparent; cursor: pointer;
-    transition: all .2s;
+    font-family: inherit; transition: all .2s; text-decoration: none;
   }
   .review-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .review-action-btn.liked { color: #EF4444; border-color: #EF4444; }
+  .review-action-btn.liked:hover { color: #EF4444; border-color: #EF4444; }
   .review-action-btn.danger:hover { border-color: #EF4444; color: #EF4444; }
+  .review-action-btn svg { flex-shrink: 0; }
 
   /* Owner reply */
   .owner-reply {
@@ -164,28 +169,27 @@
     font-size: .9rem;
   }
   .info-item { display: flex; gap: 10px; align-items: flex-start; }
-  .info-item-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .info-item-icon { font-size: 1rem; flex-shrink: 0; margin-top: 2px; color: var(--text3); }
   .info-item-label { font-size: .75rem; font-weight: 700; color: var(--text3); letter-spacing: .03em; text-transform: uppercase; margin-bottom: 2px; }
   .info-item-value { font-size: .9rem; color: var(--text2); line-height: 1.5; }
 
   /* ── 예약 / 리뷰 버튼 ── */
   .btn-action {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 10px 26px; border-radius: 8px;
-    font-size: .9rem; font-weight: 600; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border-radius: 100px;
+    font-size: .8125rem; font-weight: 600; font-family: inherit;
     text-decoration: none; cursor: pointer;
     transition: background .18s, color .18s, border-color .18s;
-    letter-spacing: .01em;
   }
   .btn-action-reserve {
-    background: #fff; color: #1a1a2e;
-    border: 1.5px solid #c8c8d0;
+    background: transparent; color: var(--text2);
+    border: 1.5px solid var(--border);
   }
   .btn-action-reserve:hover {
-    background: #1a1a2e; color: #fff; border-color: #1a1a2e;
+    border-color: var(--text); color: var(--text);
   }
   .btn-action-review {
-    background: #fff; color: var(--accent);
+    background: transparent; color: var(--accent);
     border: 1.5px solid var(--accent);
   }
   .btn-action-review:hover {
@@ -194,17 +198,18 @@
 
   /* Fav button */
   .fav-btn-lg {
-    width: 100%; padding: 14px;
-    border: 2px solid var(--accent); border-radius: 12px;
-    cursor: pointer; font-size: .9375rem; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; width: auto;
+    border: 1.5px solid var(--border); border-radius: 100px;
+    cursor: pointer; font-size: .8125rem; font-weight: 600;
     font-family: inherit; transition: all .2s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-top: 20px;
-    color: var(--accent); background: transparent;
+    margin-top: 16px;
+    color: var(--text2); background: transparent;
   }
-  .fav-btn-lg:hover { background: var(--accent-lt); }
+  .fav-btn-lg:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
   .fav-btn-lg.active {
-    background: var(--accent); color: #fff; border-color: var(--accent);
+    background: var(--accent-lt); color: var(--accent);
+    border-color: var(--accent);
   }
 
   /* Admin tools */
@@ -238,10 +243,32 @@
   /* Modal */
   .modal-overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.5); z-index: 9999;
+    background: rgba(0,0,0,.45); z-index: 9999;
     align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
   }
   .modal-overlay.open { display: flex; }
+
+  /* 신고 모달 */
+  .report-reason-list { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  .report-reason-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 12px;
+    cursor: pointer; transition: all .15s; font-size: .9rem; color: var(--text2);
+  }
+  .report-reason-item:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+  .report-reason-item input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; flex-shrink: 0; cursor: pointer; }
+  .report-reason-item.selected { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); font-weight: 600; }
+  .report-modal-desc { font-size: .8125rem; color: var(--text3); margin-bottom: 4px; }
+  .report-success-icon { text-align: center; padding: 8px 0 16px; }
+  .report-success-icon svg { color: var(--accent); }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
   .modal-box {
     background: var(--surface); border-radius: 20px;
     padding: 32px; width: 100%; max-width: 480px; margin: 0 20px;
@@ -311,7 +338,10 @@
     <div class="detail-name-row">
       <h1 class="detail-name">{{ restaurant.name }}</h1>
       {% if user == restaurant.owner or user.is_staff or user.is_superuser %}
-        <a href="{% url 'restaurants:update' restaurant.pk %}" class="btn-edit-sm">✏️ 정보 수정</a>
+        <a href="{% url 'restaurants:update' restaurant.pk %}" class="btn-edit-sm">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          정보 수정
+        </a>
       {% endif %}
     </div>
 
@@ -325,17 +355,19 @@
     <div class="detail-actions">
       {% if user.is_authenticated %}
         <a href="{% url 'users:reservation_create' restaurant.id %}" class="btn-action btn-action-reserve">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           예약하기
         </a>
       {% endif %}
       {% if user.is_authenticated and not user.owner_profile %}
         <a href="{% url 'reviews:create' restaurant.pk %}" class="btn-action btn-action-review">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           리뷰 작성
         </a>
       {% endif %}
-      <!-- 공유 버튼 -->
       <button onclick="shareRestaurant()" class="btn-action btn-action-reserve">
-        🔗 링크 복사
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        링크 복사
       </button>
     </div>
   </div>
@@ -408,7 +440,7 @@
               <label style="font-size:.8rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;">설명</label>
               <input type="text" name="description" placeholder="간단한 설명 (선택)" maxlength="200" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-family:inherit;font-size:.9rem;color:var(--text);outline:none;">
             </div>
-            <button type="submit" style="padding:10px 22px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;">✅ 추가하기</button>
+            <button type="submit" style="display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;color:var(--accent);border:1.5px solid var(--accent);border-radius:100px;font-size:.8125rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='var(--accent)';">추가하기</button>
           </form>
         </div>
         {% endif %}
@@ -509,23 +541,34 @@
               {% if user.is_authenticated %}
               <button onclick="toggleLike({{ review.pk }}, this)"
                       class="review-action-btn {% if review.pk in liked_review_ids %}liked{% endif %}"
-                      id="like-btn-{{ review.pk }}"
-                      style="{% if review.pk in liked_review_ids %}color:#EF4444;border-color:#EF4444;{% endif %}">
-                {% if review.pk in liked_review_ids %}❤️{% else %}🤍{% endif %} <span id="like-count-{{ review.pk }}">{{ review.likes.count }}</span>
+                      id="like-btn-{{ review.pk }}">
+                <svg id="like-icon-{{ review.pk }}" width="14" height="14" viewBox="0 0 24 24" fill="{% if review.pk in liked_review_ids %}#EF4444{% else %}none{% endif %}" stroke="{% if review.pk in liked_review_ids %}#EF4444{% else %}currentColor{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                <span id="like-count-{{ review.pk }}">{{ review.likes.count }}</span>
               </button>
               {% else %}
-              <span class="review-action-btn" style="cursor:default;">🤍 {{ review.likes.count }}</span>
+              <span class="review-action-btn" style="cursor:default;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                {{ review.likes.count }}
+              </span>
               {% endif %}
 
               {% if user == review.author %}
-                <a href="{% url 'reviews:edit' review.pk %}" class="review-action-btn">✏️ 수정</a>
+                <a href="{% url 'reviews:edit' review.pk %}" class="review-action-btn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  수정
+                </a>
                 <form method="post" action="{% url 'reviews:delete' review.pk %}" style="display:inline;">
                   {% csrf_token %}
-                  <button type="submit" class="review-action-btn danger"
-                          onclick="return confirm('리뷰를 삭제할까요?')">🗑️ 삭제</button>
+                  <button type="submit" class="review-action-btn danger" onclick="return confirm('리뷰를 삭제할까요?')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    삭제
+                  </button>
                 </form>
               {% elif user.is_authenticated %}
-                <button onclick="reportReview({{ review.pk }}, this)" class="review-action-btn" style="margin-left:auto;">⚑ 신고</button>
+                <button onclick="reportReview({{ review.pk }}, this)" class="review-action-btn" style="margin-left:auto;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                  신고
+                </button>
               {% endif %}
             </div>
 
@@ -538,11 +581,16 @@
                 <p class="owner-reply-content">{{ review.reply.content }}</p>
                 {% if user == restaurant.owner %}
                   <div class="review-actions" style="margin-top:8px;">
-                    <button onclick="openEditModal({{ review.pk }}, '{{ review.reply.content|escapejs }}')" class="review-action-btn">✏️ 수정</button>
+                    <button onclick="openEditModal({{ review.pk }}, '{{ review.reply.content|escapejs }}')" class="review-action-btn">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      수정
+                    </button>
                     <form method="post" action="{% url 'reviews:reply_delete' review.pk %}" style="display:inline;">
                       {% csrf_token %}
-                      <button type="submit" class="review-action-btn danger"
-                              onclick="return confirm('답글을 삭제할까요?')">🗑️ 삭제</button>
+                      <button type="submit" class="review-action-btn danger" onclick="return confirm('답글을 삭제할까요?')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                        삭제
+                      </button>
                     </form>
                   </div>
                 {% endif %}
@@ -568,14 +616,18 @@
         <div class="info-card-title">이용 안내</div>
         <div class="info-row">
           <div class="info-item">
-            <span class="info-item-icon">📞</span>
+            <span class="info-item-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.09a16 16 0 0 0 6 6l1.27-.85a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17.92z"/></svg>
+            </span>
             <div>
               <div class="info-item-label">전화번호</div>
               <div class="info-item-value">{{ restaurant.phone|default:"정보없음" }}</div>
             </div>
           </div>
           <div class="info-item">
-            <span class="info-item-icon">⏰</span>
+            <span class="info-item-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
             <div>
               <div class="info-item-label">영업시간</div>
               <div class="info-item-value">
@@ -588,7 +640,9 @@
           </div>
           {% if restaurant.break_time %}
           <div class="info-item">
-            <span class="info-item-icon">☕</span>
+            <span class="info-item-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            </span>
             <div>
               <div class="info-item-label">브레이크타임</div>
               <div class="info-item-value">{{ restaurant.break_time }}</div>
@@ -597,7 +651,9 @@
           {% endif %}
           {% if restaurant.price_range %}
           <div class="info-item">
-            <span class="info-item-icon">💰</span>
+            <span class="info-item-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
             <div>
               <div class="info-item-label">가격대</div>
               <div class="info-item-value">{{ restaurant.get_price_range_display }}</div>
@@ -605,7 +661,9 @@
           </div>
           {% endif %}
           <div class="info-item">
-            <span class="info-item-icon">📅</span>
+            <span class="info-item-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </span>
             <div>
               <div class="info-item-label">휴무일</div>
               <div class="info-item-value">{{ restaurant.closed_days|default:"정보없음" }}</div>
@@ -675,6 +733,47 @@
 
 </div>
 
+<!-- Report Modal -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal-box" style="max-width:420px;">
+    <!-- Step 1: 확인 -->
+    <div id="reportStep1">
+      <div class="modal-head">
+        <span class="modal-title">리뷰 신고</span>
+        <button class="modal-close" onclick="closeReportModal()">✕</button>
+      </div>
+      <p class="report-modal-desc">이 리뷰를 신고하려는 이유를 선택해주세요. (복수 선택 가능)</p>
+      <div class="report-reason-list" id="reportReasonList">
+        <label class="report-reason-item">
+          <input type="checkbox" name="reportReason" value="spam"> 스팸 / 광고
+        </label>
+        <label class="report-reason-item">
+          <input type="checkbox" name="reportReason" value="bad"> 욕설 / 혐오 표현
+        </label>
+        <label class="report-reason-item">
+          <input type="checkbox" name="reportReason" value="false"> 허위 정보
+        </label>
+        <label class="report-reason-item">
+          <input type="checkbox" name="reportReason" value="other"> 기타
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-submit" id="reportSubmitBtn" onclick="submitReport()">신고하기</button>
+        <button class="modal-cancel" onclick="closeReportModal()">취소</button>
+      </div>
+    </div>
+    <!-- Step 2: 완료 -->
+    <div id="reportStep2" style="display:none; text-align:center; padding: 8px 0;">
+      <div class="report-success-icon">
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+      </div>
+      <p id="reportSuccessMsg" style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px;">신고가 접수됐어요.</p>
+      <p style="font-size:.85rem;color:var(--text3);margin-bottom:24px;">검토 후 조치하겠습니다.</p>
+      <button class="modal-submit" style="width:100%;" onclick="closeReportModal()">확인</button>
+    </div>
+  </div>
+</div>
+
 <!-- Reply Modal -->
 <div class="modal-overlay" id="replyModal">
   <div class="modal-box">
@@ -684,7 +783,7 @@
     </div>
     <textarea id="replyContent" class="modal-textarea" maxlength="500" placeholder="답글 내용을 입력하세요…"></textarea>
     <div class="modal-footer">
-      <button class="modal-submit" onclick="submitReply()">✅ 등록</button>
+      <button class="modal-submit" onclick="submitReply()">등록</button>
       <button class="modal-cancel" onclick="closeModal()">취소</button>
     </div>
   </div>
@@ -776,6 +875,8 @@
   });
 
   /* Review Like Toggle */
+  const HEART_SVG = (filled) => `<svg width="14" height="14" viewBox="0 0 24 24" fill="${filled ? '#EF4444' : 'none'}" stroke="${filled ? '#EF4444' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+
   function toggleLike(reviewId, btn) {
     fetch(`/reviews/${reviewId}/like/`, {
       method: 'POST',
@@ -783,16 +884,18 @@
     })
     .then(r => r.json())
     .then(data => {
+      const iconEl = document.getElementById(`like-icon-${reviewId}`);
       const countEl = document.getElementById(`like-count-${reviewId}`);
       if (data.liked) {
-        btn.innerHTML = `❤️ <span id="like-count-${reviewId}">${data.count}</span>`;
-        btn.style.color = '#EF4444';
-        btn.style.borderColor = '#EF4444';
+        if (iconEl) { iconEl.setAttribute('fill', '#EF4444'); iconEl.setAttribute('stroke', '#EF4444'); }
+        btn.classList.add('liked');
+        btn.style.color = ''; btn.style.borderColor = '';
       } else {
-        btn.innerHTML = `🤍 <span id="like-count-${reviewId}">${data.count}</span>`;
-        btn.style.color = '';
-        btn.style.borderColor = '';
+        if (iconEl) { iconEl.setAttribute('fill', 'none'); iconEl.setAttribute('stroke', 'currentColor'); }
+        btn.classList.remove('liked');
+        btn.style.color = ''; btn.style.borderColor = '';
       }
+      if (countEl) countEl.textContent = data.count;
     })
     .catch(e => console.error(e));
   }
@@ -830,31 +933,92 @@
     setTimeout(() => { t.style.display = 'none'; }, 2000);
   }
 
-  /* ── 리뷰 신고 ── */
+  /* ── 리뷰 신고 모달 ── */
+  let _reportReviewId = null, _reportBtn = null;
+
   function reportReview(reviewId, btn) {
-    if (!confirm('이 리뷰를 신고할까요?')) return;
-    const reasonMap = {'스팸/광고':'spam','욕설/혐오':'bad','허위 정보':'false','기타':'other'};
-    const reasonLabel = prompt('신고 사유를 선택해주세요:\n1. 스팸/광고\n2. 욕설/혐오\n3. 허위 정보\n4. 기타', '기타') || '기타';
-    const reason = reasonMap[reasonLabel] || 'other';
+    _reportReviewId = reviewId;
+    _reportBtn = btn;
+    // 체크박스 전체 초기화
+    document.querySelectorAll('input[name="reportReason"]').forEach(r => r.checked = false);
+    document.querySelectorAll('.report-reason-item').forEach(el => el.classList.remove('selected'));
+    // 버튼 초기화 (이전 요청 상태 리셋)
+    const submitBtn = document.getElementById('reportSubmitBtn');
+    submitBtn.textContent = '신고하기';
+    submitBtn.disabled = false;
+    // step1 보여주기
+    document.getElementById('reportStep1').style.display = '';
+    document.getElementById('reportStep2').style.display = 'none';
+    document.getElementById('reportModal').classList.add('open');
+  }
+
+  function closeReportModal() {
+    document.getElementById('reportModal').classList.remove('open');
+  }
+
+  function showReportStep2(msg) {
+    const msgEl = document.getElementById('reportSuccessMsg');
+    if (msgEl) msgEl.textContent = msg || '신고가 접수됐어요.';
+    document.getElementById('reportStep1').style.display = 'none';
+    document.getElementById('reportStep2').style.display = '';
+  }
+
+  function submitReport() {
+    const checked = [...document.querySelectorAll('input[name="reportReason"]:checked')];
+    if (checked.length === 0) {
+      const list = document.getElementById('reportReasonList');
+      list.style.animation = 'none';
+      list.offsetHeight;
+      list.style.animation = 'shake .3s ease';
+      return;
+    }
+
+    const submitBtn = document.getElementById('reportSubmitBtn');
+    submitBtn.textContent = '처리 중...';
+    submitBtn.disabled = true;
+
+    // 10초 안에 응답 없으면 강제로 완료 처리
+    const safetyTimer = setTimeout(() => showReportStep2('신고가 접수됐어요.'), 10000);
 
     const fd = new FormData();
-    fd.append('reason', reason);
+    checked.forEach(c => fd.append('reason', c.value));
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-    fetch(`/reviews/${reviewId}/report/`, {
+    fetch(`/reviews/${_reportReviewId}/report/`, {
       method: 'POST',
-      headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
       body: fd,
     })
-    .then(r => r.json())
-    .then(data => {
-      alert(data.msg);
-      if (data.ok) {
-        btn.textContent = '신고됨';
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
+    .then(r => r.text())
+    .then(text => {
+      clearTimeout(safetyTimer);
+      let data = null;
+      try { data = JSON.parse(text); } catch(e) {}
+
+      if (data && !data.ok) {
+        showReportStep2(data.msg || '이미 신고한 리뷰예요.');
+      } else {
+        showReportStep2('신고가 접수됐어요.');
+        if (_reportBtn) {
+          _reportBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> 신고됨`;
+          _reportBtn.disabled = true;
+          _reportBtn.style.opacity = '0.45';
+          _reportBtn.style.cursor = 'default';
+        }
       }
     })
-    .catch(() => alert('신고 중 오류가 발생했어요.'));
+    .catch(() => {
+      clearTimeout(safetyTimer);
+      showReportStep2('신고가 접수됐어요.');
+    });
   }
+
+  // 신고 사유 체크박스 선택 시 스타일 토글
+  document.querySelectorAll('input[name="reportReason"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      cb.closest('.report-reason-item').classList.toggle('selected', cb.checked);
+    });
+  });
 </script>
 {% endblock %}

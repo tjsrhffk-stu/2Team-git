@@ -203,7 +203,7 @@ def home(request):
                 output_field=FloatField()
             )
         )
-        .order_by('-pop_score', '-review_count', '-id')[:6]
+        .order_by('-pop_score', '-review_count', '-id')[:8]
     )
 
     # 식당별 최신 리뷰 1개씩 (중복 식당 방지)

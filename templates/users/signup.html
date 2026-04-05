@@ -7,10 +7,11 @@
   .auth-card { width:100%; max-width:480px; background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:48px 40px; box-shadow:var(--shadow); animation:fadeUp .5s ease; }
   @keyframes fadeUp { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
 
-  .auth-logo { text-align:center; margin-bottom:28px; }
-  .auth-logo-text { font-family:'Playfair Display', serif; font-size:26px; font-weight:700; color:var(--accent); }
-  .auth-logo-text span { color:var(--text); }
-  .auth-title { font-size:22px; font-weight:700; text-align:center; margin-bottom:6px; word-break:keep-all; }
+  .auth-logo { text-align:center; margin-bottom:8px; }
+  .auth-logo-text { font-size:28px; font-weight:800; letter-spacing:-.03em; line-height:1; }
+  .auth-logo-text .local { color:var(--text); }
+  .auth-logo-text .eats  { color:var(--accent); }
+  .auth-title { font-size:15px; font-weight:500; text-align:center; color:var(--text2); margin-bottom:6px; word-break:keep-all; }
   .auth-subtitle { font-size:14px; color:var(--text2); text-align:center; margin-bottom:22px; word-break:keep-all; }
 
   .msg { margin:0 0 14px 0; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:var(--bg); font-size:14px; }
@@ -88,18 +89,106 @@
   .required { color:#ef4444; font-weight:900; margin-left:3px; }
 
   .input-wrap { position:relative; }
-  .input-wrap .icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none; }
+  .input-wrap .icon {
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    display:flex; align-items:center;
+    color:var(--text3); pointer-events:none;
+  }
   .input-wrap input { width:100%; padding:13px 16px 13px 42px; background:var(--bg); border:1.5px solid var(--border); border-radius:12px; font-size:15px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; transition:.2s; }
   .input-wrap input:focus { border-color:var(--accent); background:var(--surface); box-shadow:0 0 0 3px rgba(212,82,26,0.08); }
 
-  .toggle-pw { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; color:var(--text2); padding:4px; }
+  .toggle-pw {
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer;
+    color:var(--text3); padding:4px; display:flex; align-items:center;
+    transition: color .15s;
+  }
+  .toggle-pw:hover { color:var(--text2); }
 
-  .terms { display:flex; align-items:flex-start; gap:10px; margin:18px 0; padding:16px; background:var(--bg); border-radius:12px; border:1px solid var(--border); }
-  .terms input[type="checkbox"] { accent-color:var(--accent); width:16px; height:16px; margin-top:1px; flex-shrink:0; }
-  .terms label { font-size:13px; color:var(--text2); line-height:1.5; cursor:pointer; word-break:keep-all; }
+  /* 약관 동의 */
+  .terms-section { margin: 18px 0; }
+  .terms-all {
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 16px; background: var(--bg);
+    border-radius: 12px; border: 1.5px solid var(--border);
+    margin-bottom: 8px; cursor: pointer;
+  }
+  .terms-all.checked { border-color: var(--accent); background: var(--accent-lt, #fdf2ee); }
+  .terms-all input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
+  .terms-all label { font-size: 14px; font-weight: 700; color: var(--text); cursor: pointer; }
+  .terms-list { display: flex; flex-direction: column; gap: 4px; }
+  .terms-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface);
+  }
+  .terms-item input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; flex-shrink: 0; cursor: pointer; }
+  .terms-item label { flex: 1; font-size: 12.5px; color: var(--text2); cursor: pointer; line-height: 1.4; }
+  .terms-item .view-btn {
+    font-size: 11px; color: var(--accent); text-decoration: none;
+    font-weight: 600; white-space: nowrap; cursor: pointer;
+    padding: 2px 6px; border-radius: 6px;
+    border: 1px solid var(--accent); background: transparent;
+    transition: all .15s;
+  }
+  .terms-item .view-btn:hover { background: var(--accent); color: #fff; }
 
-  .btn-signup { width:100%; padding:15px; background:var(--accent); color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:900; font-family:'DM Sans',sans-serif; cursor:pointer; transition:.2s; }
-  .btn-signup:hover { background:var(--accent-hover); transform:translateY(-1px); box-shadow:0 6px 20px rgba(212,82,26,0.3); }
+  /* 약관 모달 */
+  .terms-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.45); z-index: 9999;
+    align-items: flex-end; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .terms-modal-overlay.open { display: flex; }
+  .terms-modal-box {
+    background: var(--surface); border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 540px;
+    max-height: 80vh; display: flex; flex-direction: column;
+    box-shadow: 0 -4px 32px rgba(0,0,0,.15);
+    animation: slideUp .25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .terms-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px 14px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .terms-modal-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .terms-modal-close { background: none; border: none; font-size: 18px; color: var(--text3); cursor: pointer; line-height: 1; padding: 4px; }
+  .terms-modal-body {
+    flex: 1; overflow-y: auto; padding: 20px 24px;
+    font-size: 13px; color: var(--text2); line-height: 1.8;
+  }
+  .terms-modal-body h3 { font-size: 13.5px; font-weight: 700; color: var(--text); margin: 18px 0 6px; }
+  .terms-modal-body h3:first-child { margin-top: 0; }
+  .terms-modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .terms-modal-confirm {
+    width: 100%; padding: 14px; background: var(--accent); color: #fff;
+    border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+    font-family: inherit; cursor: pointer;
+  }
+
+  .btn-signup { width:100%; padding:15px; background:var(--accent); color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:900; font-family:'DM Sans',sans-serif; cursor:pointer; transition:.2s; outline:none; }
+  .btn-signup:hover { filter:brightness(1.07); transform:translateY(-1px); box-shadow:0 6px 20px rgba(212,82,26,0.3); }
+  .btn-signup:active { transform:translateY(0); filter:none; box-shadow:none; }
+  .btn-signup:focus { outline:none; }
+
+  /* 약관 토스트 */
+  .terms-toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #1e1e1e; color: #fff;
+    padding: 12px 20px; border-radius: 12px;
+    font-size: 13.5px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    z-index: 9999; white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,.25);
+  }
+  .terms-toast.show {
+    opacity: 1; transform: translateX(-50%) translateY(0);
+  }
 
   .auth-footer { text-align:center; margin-top:22px; font-size:14px; color:var(--text2); word-break:keep-all; }
   .auth-footer a { color:var(--accent); text-decoration:none; font-weight:800; }
@@ -111,11 +200,10 @@
   <div class="auth-card">
 
     <div class="auth-logo">
-      <div class="auth-logo-text">Local<span>Eats</span></div>
+      <div class="auth-logo-text"><span class="local">Local</span><span class="eats">Eats</span></div>
     </div>
 
-    <div class="auth-title">함께 맛집을 탐험해요! 🍽️</div>
-    <div class="auth-subtitle">어떤 회원가입을 할지 선택하세요</div>
+    <div class="auth-title">어떤 회원가입을 할지 선택하세요</div>
 
     {% if messages %}
       <div id="msgWrap">
@@ -159,7 +247,7 @@
           <div class="form-group">
             <label for="id_username">아이디 <span class="required">*</span></label>
             <div class="input-wrap">
-              <span class="icon">👤</span>
+              <span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
               <input type="text" name="username" id="id_username" placeholder="영문/숫자 4~20자" value="{{ username|default:'' }}" required>
             </div>
           </div>
@@ -167,7 +255,7 @@
           <div class="form-group">
             <label for="id_email">이메일 <span class="required">*</span></label>
             <div class="input-wrap">
-              <span class="icon">✉️</span>
+              <span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
               <input type="email" name="email" id="id_email" placeholder="example@email.com" value="{{ email|default:'' }}" required>
             </div>
           </div>
@@ -175,28 +263,53 @@
           <div class="form-group">
             <label for="id_password1">비밀번호 <span class="required">*</span></label>
             <div class="input-wrap">
-              <span class="icon">🔒</span>
+              <span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
               <input type="password" name="password1" id="id_password1" placeholder="8자 이상" autocomplete="new-password" required>
-              <button type="button" class="toggle-pw" onclick="togglePw('id_password1', this)">👁️</button>
+              <button type="button" class="toggle-pw" onclick="togglePw('id_password1', this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
             </div>
           </div>
 
           <div class="form-group">
             <label for="id_password2">비밀번호 확인 <span class="required">*</span></label>
             <div class="input-wrap">
-              <span class="icon">🔒</span>
+              <span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
               <input type="password" name="password2" id="id_password2" placeholder="비밀번호를 한 번 더 입력" autocomplete="new-password" required>
-              <button type="button" class="toggle-pw" onclick="togglePw('id_password2', this)">👁️</button>
+              <button type="button" class="toggle-pw" onclick="togglePw('id_password2', this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
             </div>
             <div id="pwMatch" style="font-size:12px;margin-top:5px;display:none"></div>
           </div>
 
-          <div class="terms">
-            <input type="checkbox" id="terms1" required>
-            <label for="terms1">이용약관 및 개인정보 처리방침에 동의합니다. (필수)</label>
+          <!-- 숨김 필드: 필수 약관 체크 확인용 -->
+          <input type="hidden" name="terms_agreed" id="terms_agreed_normal" value="">
+
+          <div class="terms-section">
+            <div class="terms-all" id="termsAll_normal">
+              <input type="checkbox" id="allCheck_normal" onchange="toggleAll('normal', this)">
+              <label for="allCheck_normal">전체 동의</label>
+            </div>
+            <div class="terms-list">
+              <div class="terms-item">
+                <input type="checkbox" id="t_age_normal" class="terms-required" data-form="normal">
+                <label for="t_age_normal">[필수] 만 14세 이상입니다</label>
+              </div>
+              <div class="terms-item">
+                <input type="checkbox" id="t_terms_normal" class="terms-required" data-form="normal">
+                <label for="t_terms_normal">[필수] 서비스 이용약관 동의</label>
+                <button type="button" class="view-btn" onclick="openTermsModal('service')">보기</button>
+              </div>
+              <div class="terms-item">
+                <input type="checkbox" id="t_privacy_normal" class="terms-required" data-form="normal">
+                <label for="t_privacy_normal">[필수] 개인정보 수집 및 이용 동의</label>
+                <button type="button" class="view-btn" onclick="openTermsModal('privacy')">보기</button>
+              </div>
+              <div class="terms-item">
+                <input type="checkbox" id="t_marketing_normal" data-form="normal">
+                <label for="t_marketing_normal">[선택] 마케팅 정보 수신 동의</label>
+              </div>
+            </div>
           </div>
 
-          <button type="submit" class="btn-signup">일반 회원가입</button>
+          <button type="submit" class="btn-signup" onclick="return checkTerms('normal')">일반 회원가입</button>
 
           <div class="auth-footer">
             이미 계정이 있나요? <a href="/users/login/">로그인</a>
@@ -217,7 +330,7 @@
           <div class="form-group">
             <label for="id_o_username">아이디 <span class="required">*</span></label>
             <div class="input-wrap">
-              <span class="icon">👤</span>
+              <span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
               <input type="text" name="username" id="id_o_username" placeholder="영문/숫자 4~20자" value="{{ o_username|default:'' }}" required>
             </div>
           </div>
@@ -225,7 +338,7 @@
           <div class="form-group">
             <label for="id_o_email">이메일 <span class="required">*</span></label>
             <div class="input-wrap">
-              <span class="icon">✉️</span>
+              <span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
               <input type="email" name="email" id="id_o_email" placeholder="example@email.com" value="{{ o_email|default:'' }}" required>
             </div>
           </div>
@@ -233,7 +346,7 @@
           <div class="form-group">
             <label for="id_o_business_number">사업자등록번호 <span class="required">*</span></label>
             <div class="input-wrap">
-              <span class="icon">🏷️</span>
+              <span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
               <input type="text"
                      name="business_number"
                      id="id_o_business_number"
@@ -247,28 +360,52 @@
           <div class="form-group">
             <label for="id_o_password1">비밀번호 <span class="required">*</span></label>
             <div class="input-wrap">
-              <span class="icon">🔒</span>
+              <span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
               <input type="password" name="password1" id="id_o_password1" placeholder="8자 이상" autocomplete="new-password" required>
-              <button type="button" class="toggle-pw" onclick="togglePw('id_o_password1', this)">👁️</button>
+              <button type="button" class="toggle-pw" onclick="togglePw('id_o_password1', this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
             </div>
           </div>
 
           <div class="form-group">
             <label for="id_o_password2">비밀번호 확인 <span class="required">*</span></label>
             <div class="input-wrap">
-              <span class="icon">🔒</span>
+              <span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
               <input type="password" name="password2" id="id_o_password2" placeholder="비밀번호를 한 번 더 입력" autocomplete="new-password" required>
-              <button type="button" class="toggle-pw" onclick="togglePw('id_o_password2', this)">👁️</button>
+              <button type="button" class="toggle-pw" onclick="togglePw('id_o_password2', this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
             </div>
             <div id="pwMatchOwner" style="font-size:12px;margin-top:5px;display:none"></div>
           </div>
 
-          <div class="terms">
-            <input type="checkbox" id="terms2" required>
-            <label for="terms2">이용약관 및 개인정보 처리방침에 동의합니다. (필수)</label>
+          <input type="hidden" name="terms_agreed" id="terms_agreed_owner" value="">
+
+          <div class="terms-section">
+            <div class="terms-all" id="termsAll_owner">
+              <input type="checkbox" id="allCheck_owner" onchange="toggleAll('owner', this)">
+              <label for="allCheck_owner">전체 동의</label>
+            </div>
+            <div class="terms-list">
+              <div class="terms-item">
+                <input type="checkbox" id="t_age_owner" class="terms-required" data-form="owner">
+                <label for="t_age_owner">[필수] 만 14세 이상입니다</label>
+              </div>
+              <div class="terms-item">
+                <input type="checkbox" id="t_terms_owner" class="terms-required" data-form="owner">
+                <label for="t_terms_owner">[필수] 서비스 이용약관 동의</label>
+                <button type="button" class="view-btn" onclick="openTermsModal('service')">보기</button>
+              </div>
+              <div class="terms-item">
+                <input type="checkbox" id="t_privacy_owner" class="terms-required" data-form="owner">
+                <label for="t_privacy_owner">[필수] 개인정보 수집 및 이용 동의</label>
+                <button type="button" class="view-btn" onclick="openTermsModal('privacy')">보기</button>
+              </div>
+              <div class="terms-item">
+                <input type="checkbox" id="t_marketing_owner" data-form="owner">
+                <label for="t_marketing_owner">[선택] 마케팅 정보 수신 동의</label>
+              </div>
+            </div>
           </div>
 
-          <button type="submit" class="btn-signup">사업자 회원가입</button>
+          <button type="submit" class="btn-signup" onclick="return checkTerms('owner')">사업자 회원가입</button>
 
           <div class="auth-footer">
             이미 계정이 있나요? <a href="/users/login/">로그인</a>
@@ -279,6 +416,24 @@
     </div>
   </div>
 </div>
+<!-- 약관 모달 -->
+<div class="terms-modal-overlay" id="termsModal">
+  <div class="terms-modal-box">
+    <div class="terms-modal-head">
+      <span class="terms-modal-title" id="termsModalTitle">서비스 이용약관</span>
+      <button class="terms-modal-close" onclick="closeTermsModal()">✕</button>
+    </div>
+    <div class="terms-modal-body" id="termsModalBody"></div>
+    <div class="terms-modal-footer">
+      <button class="terms-modal-confirm" onclick="closeTermsModal()">확인</button>
+    </div>
+  </div>
+</div>
+<!-- 약관 토스트 -->
+<div class="terms-toast" id="termsToast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  필수 약관에 모두 동의해 주세요
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -286,8 +441,11 @@
 function togglePw(id, btn) {
   const input = document.getElementById(id);
   if (!input) return;
-  input.type = input.type === 'password' ? 'text' : 'password';
-  btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.innerHTML = show
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 }
 
 function showPane(type) {
@@ -364,14 +522,154 @@ bindPwMatch('id_o_password1', 'id_o_password2', 'pwMatchOwner');
 document.addEventListener('DOMContentLoaded', () => {
   const panes = document.getElementById('signupPanes');
   if (!panes) return;
-
   const serverOpenPane = panes.dataset.openPane || 'normal';
   const serverAutoOpen = (panes.dataset.autoOpen === '1');
   const hasMsg = !!document.getElementById('msgWrap');
+  if (serverAutoOpen || hasMsg) showPane(serverOpenPane);
 
-  if (serverAutoOpen || hasMsg) {
-    showPane(serverOpenPane);
-  }
+  // 개별 체크박스 변경 시 전체동의 상태 갱신
+  document.querySelectorAll('.terms-required, input[id^="t_marketing"]').forEach(cb => {
+    cb.addEventListener('change', () => syncAllCheck(cb.dataset.form));
+  });
 });
+
+function toggleAll(form, cb) {
+  document.querySelectorAll('[data-form="' + form + '"]').forEach(c => c.checked = cb.checked);
+  syncAllStyle(form);
+}
+
+function syncAllCheck(form) {
+  const all = [...document.querySelectorAll('[data-form="' + form + '"]')];
+  const allChecked = all.every(c => c.checked);
+  const allCb = document.getElementById('allCheck_' + form);
+  if (allCb) allCb.checked = allChecked;
+  syncAllStyle(form);
+}
+
+function syncAllStyle(form) {
+  const allDiv = document.getElementById('termsAll_' + form);
+  const allCb = document.getElementById('allCheck_' + form);
+  if (allDiv) allDiv.classList.toggle('checked', allCb && allCb.checked);
+}
+
+let _toastTimer = null;
+function showTermsToast() {
+  const toast = document.getElementById('termsToast');
+  if (!toast) return;
+  toast.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+function checkTerms(form) {
+  const required = [...document.querySelectorAll('.terms-required[data-form="' + form + '"]')];
+  const allOk = required.every(c => c.checked);
+  if (!allOk) {
+    // 토스트 메시지 표시
+    showTermsToast();
+    // 첫 번째 미동의 항목 강조 + 스크롤
+    const first = required.find(c => !c.checked);
+    if (first) {
+      first.closest('.terms-item').style.borderColor = '#EF4444';
+      first.closest('.terms-item').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => first.closest('.terms-item').style.borderColor = '', 2000);
+    }
+    return false;
+  }
+  return true;
+}
+
+// ── 약관 내용 ──
+const TERMS_CONTENT = {
+  service: {
+    title: 'LocalEats 서비스 이용약관',
+    html: `
+<h3>제1조 (목적)</h3>
+<p>이 약관은 LocalEats(이하 "서비스")가 제공하는 맛집 리뷰 및 정보 플랫폼 서비스의 이용과 관련하여 서비스와 이용자 간의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.</p>
+
+<h3>제2조 (정의)</h3>
+<p>① "서비스"란 맛집 검색, 리뷰 작성, 즐겨찾기, 예약 등 LocalEats가 제공하는 일체의 온라인 서비스를 말합니다.<br>
+② "이용자"란 본 약관에 동의하고 서비스를 이용하는 회원을 말합니다.<br>
+③ "사업자 회원"이란 식당을 등록·관리하기 위해 가입한 회원을 말합니다.</p>
+
+<h3>제3조 (약관의 효력 및 변경)</h3>
+<p>① 본 약관은 서비스 화면에 게시하거나 이용자에게 공지함으로써 효력이 발생합니다.<br>
+② 서비스는 합리적인 사유가 있는 경우 약관을 변경할 수 있으며, 변경 시 최소 7일 전 공지합니다.</p>
+
+<h3>제4조 (회원 가입)</h3>
+<p>① 이용자는 서비스가 정한 양식에 따라 정보를 기재한 후 본 약관에 동의함으로써 회원 가입을 신청합니다.<br>
+② 만 14세 미만의 아동은 서비스에 가입할 수 없습니다.<br>
+③ 타인의 정보를 도용하거나 허위 정보를 기재한 경우 서비스 이용이 제한될 수 있습니다.</p>
+
+<h3>제5조 (이용자의 의무)</h3>
+<p>이용자는 다음 행위를 해서는 안 됩니다.<br>
+① 허위 리뷰 작성 또는 비방·명예훼손 콘텐츠 게시<br>
+② 타인의 개인정보 수집 또는 서비스 내 광고·홍보 행위<br>
+③ 서비스의 정상적인 운영을 방해하는 일체의 행위<br>
+④ 저작권 등 타인의 지식재산권을 침해하는 행위</p>
+
+<h3>제6조 (리뷰 정책)</h3>
+<p>① 이용자가 작성한 리뷰의 저작권은 이용자에게 있으나, 서비스 내 노출 및 홍보 목적의 이용을 서비스에 허락한 것으로 봅니다.<br>
+② 허위 정보, 욕설, 음란물 등이 포함된 리뷰는 사전 통보 없이 삭제될 수 있습니다.<br>
+③ 신고된 리뷰는 검토 후 조치됩니다.</p>
+
+<h3>제7조 (서비스 중단)</h3>
+<p>서비스는 시스템 점검, 천재지변 등 불가피한 사유 발생 시 서비스 제공을 일시 중단할 수 있으며, 이로 인한 손해에 대해 책임지지 않습니다.</p>
+
+<h3>제8조 (면책 조항)</h3>
+<p>서비스는 이용자가 게시한 정보의 정확성·신뢰성을 보증하지 않으며, 이용자 간 분쟁에 대해 책임지지 않습니다.</p>
+
+<h3>제9조 (준거법 및 관할)</h3>
+<p>본 약관은 대한민국 법률에 따르며, 분쟁 발생 시 서울중앙지방법원을 제1심 관할 법원으로 합니다.</p>
+    `
+  },
+  privacy: {
+    title: '개인정보 수집 및 이용 동의',
+    html: `
+<h3>수집하는 개인정보 항목</h3>
+<p><b>필수:</b> 아이디, 이메일 주소, 비밀번호<br>
+<b>선택:</b> 프로필 사진, 닉네임<br>
+<b>자동수집:</b> 접속 IP, 브라우저 정보, 서비스 이용 기록</p>
+
+<h3>개인정보 수집 및 이용 목적</h3>
+<p>① 회원 가입 및 본인 확인<br>
+② 서비스 제공 (리뷰 작성, 즐겨찾기, 예약 등)<br>
+③ 고객 문의 응대 및 공지사항 전달<br>
+④ 서비스 개선 및 통계 분석</p>
+
+<h3>개인정보 보유 및 이용 기간</h3>
+<p>회원 탈퇴 시까지 보유하며, 탈퇴 후 즉시 파기합니다.<br>
+단, 관계 법령에 의해 보존이 필요한 경우 해당 기간 동안 보관합니다.<br>
+- 전자상거래 관련 기록: 5년<br>
+- 소비자 불만 또는 분쟁 처리 기록: 3년</p>
+
+<h3>개인정보 제3자 제공</h3>
+<p>서비스는 이용자의 동의 없이 개인정보를 제3자에게 제공하지 않습니다. 단, 법령에 의한 경우 예외로 합니다.</p>
+
+<h3>개인정보 처리 위탁</h3>
+<p>서비스는 원활한 운영을 위해 아래와 같이 개인정보를 위탁합니다.<br>
+- 클라우드 서버 운영: 서버 호스팅 업체<br>
+- 지도 서비스: 네이버 클라우드 플랫폼</p>
+
+<h3>이용자의 권리</h3>
+<p>이용자는 언제든지 자신의 개인정보 열람·수정·삭제를 요청할 수 있으며, 회원 탈퇴를 통해 개인정보 처리에 대한 동의를 철회할 수 있습니다.</p>
+
+<h3>동의 거부 권리 및 불이익</h3>
+<p>이용자는 개인정보 수집·이용에 동의하지 않을 권리가 있으나, 필수 항목에 동의하지 않으면 서비스 이용이 제한됩니다.</p>
+    `
+  }
+};
+
+function openTermsModal(type) {
+  const content = TERMS_CONTENT[type];
+  if (!content) return;
+  document.getElementById('termsModalTitle').textContent = content.title;
+  document.getElementById('termsModalBody').innerHTML = content.html;
+  document.getElementById('termsModal').classList.add('open');
+}
+
+function closeTermsModal() {
+  document.getElementById('termsModal').classList.remove('open');
+}
 </script>
 {% endblock %}

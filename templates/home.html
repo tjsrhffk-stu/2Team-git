@@ -192,31 +192,52 @@
 
   /* ── CTA SECTION ── */
   .cta-section {
-    padding: 72px 24px;
+    padding: 64px 24px;
     text-align: center;
     background: var(--surface);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
   }
-  .cta-inner { max-width: 480px; margin: 0 auto; }
+  .cta-inner { max-width: 520px; margin: 0 auto; }
   .cta-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: var(--accent-lt); border: 1.5px solid rgba(212,98,42,.2);
-    color: var(--accent); font-size: .75rem; font-weight: 700;
-    padding: 4px 14px; border-radius: 100px; margin-bottom: 18px;
+    display: inline-block;
+    background: transparent; border: 1.5px solid var(--border);
+    color: var(--text3); font-size: .72rem; font-weight: 600;
+    padding: 3px 12px; border-radius: 100px; margin-bottom: 16px;
+    letter-spacing: .04em; text-transform: uppercase;
   }
   .cta-title {
-    font-size: clamp(24px, 3.5vw, 36px); font-weight: 900;
+    font-size: clamp(22px, 3vw, 32px); font-weight: 900;
     color: var(--text); margin-bottom: 12px; line-height: 1.25; letter-spacing: -.03em;
   }
-  .cta-desc { color: var(--text2); font-size: .9375rem; margin-bottom: 28px; line-height: 1.7; }
-  .cta-btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 13px 32px; background: var(--accent); color: #fff;
-    border-radius: 10px; font-size: .9375rem; font-weight: 700;
-    transition: all .2s;
+  .cta-desc { color: var(--text3); font-size: .9rem; margin-bottom: 28px; line-height: 1.7; }
+
+  /* 통계 */
+  .cta-stats {
+    display: flex; justify-content: center; gap: 0;
+    margin-bottom: 32px;
   }
-  .cta-btn:hover { background: var(--accent-hv); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,98,42,.3); }
+  .cta-stat {
+    padding: 0 28px;
+    border-right: 1px solid var(--border);
+  }
+  .cta-stat:last-child { border-right: none; }
+  .cta-stat-num {
+    font-size: 1.5rem; font-weight: 900; color: var(--accent);
+    letter-spacing: -.02em; line-height: 1;
+  }
+  .cta-stat-label {
+    font-size: .75rem; color: var(--text3); margin-top: 4px;
+  }
+
+  .cta-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 12px 28px; background: var(--accent); color: #fff;
+    border-radius: 10px; font-size: .9rem; font-weight: 700;
+    transition: all .18s; text-decoration: none;
+  }
+  .cta-btn:hover { filter: brightness(1.07); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,98,42,.28); }
+  .cta-btn:active { transform: translateY(0); filter: none; box-shadow: none; }
 
   /* ── 테마 그리드 ── */
   .theme-grid {
@@ -349,7 +370,7 @@
       </div>
     </a>
     {% empty %}
-    {% for i in "123456" %}
+    {% for i in "12345678" %}
     <a href="/restaurants/" class="r-card fade-up" style="animation-delay:{{ forloop.counter0 }}0ms">
       <div class="r-card-img">
         <span>{% if forloop.counter == 1 %}🍜{% elif forloop.counter == 2 %}🍣{% elif forloop.counter == 3 %}🍔{% elif forloop.counter == 4 %}🥘{% elif forloop.counter == 5 %}☕{% else %}🍕{% endif %}</span>
@@ -486,11 +507,28 @@
 <!-- ── CTA ── -->
 <section class="cta-section">
   <div class="cta-inner">
-    <div class="cta-badge">✍️ 리뷰 커뮤니티</div>
+    <div class="cta-badge">리뷰 커뮤니티</div>
     <h2 class="cta-title">당신의 경험을<br>나눠주세요</h2>
     <p class="cta-desc">솔직한 리뷰 한 줄이<br>누군가의 오늘 점심을 바꿀 수 있어요.</p>
+
+    <div class="cta-stats">
+      <div class="cta-stat">
+        <div class="cta-stat-num">{{ review_count|default:0 }}</div>
+        <div class="cta-stat-label">리뷰</div>
+      </div>
+      <div class="cta-stat">
+        <div class="cta-stat-num">{{ restaurant_count|default:0 }}</div>
+        <div class="cta-stat-label">맛집</div>
+      </div>
+      <div class="cta-stat">
+        <div class="cta-stat-num">{{ user_count|default:0 }}</div>
+        <div class="cta-stat-label">회원</div>
+      </div>
+    </div>
+
     <a href="{% if user.is_authenticated %}/restaurants/{% else %}/users/login/{% endif %}" class="cta-btn">
-      리뷰 쓰러 가기 →
+      리뷰 쓰러 가기
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </a>
   </div>
 </section>
@@ -499,12 +537,19 @@
 
 {% block extra_js %}
 <script>
-  /* Hero category chip */
+  /* Hero category chip — 검색어와 완전히 독립적으로 동작
+     카테고리 칩 클릭 시 검색어 무시하고 해당 카테고리 목록으로 이동 */
   document.querySelectorAll('.hero-cat').forEach(chip => {
     chip.addEventListener('click', () => {
       document.querySelectorAll('.hero-cat').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
-      document.getElementById('heroCat').value = chip.dataset.val;
+
+      const catVal = chip.dataset.val;
+      // 검색어와 무관하게 카테고리만으로 이동
+      const url = catVal
+        ? '/restaurants/?category=' + encodeURIComponent(catVal)
+        : '/restaurants/';
+      window.location.href = url;
     });
   });
 
