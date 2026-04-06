@@ -201,7 +201,8 @@
       width:36px; height:36px; border-radius:8px;
       display:flex; align-items:center; justify-content:center;
       background:var(--surface2); color:var(--text2);
-      font-size:1rem; transition:all var(--trans); flex-shrink:0;
+      transition:all var(--trans); flex-shrink:0;
+      border:none; cursor:pointer;
     }
     .theme-toggle:hover { background:var(--border); color:var(--text); }
 
@@ -506,16 +507,31 @@
               <span>👤</span> {{ user.username }}
             </div>
             <div class="dd-div"></div>
-            <a href="/users/mypage/" class="dd-item">🏠 <span data-i18n="nav.mypage">마이페이지</span></a>
-            <a href="/favorites/" class="dd-item">❤️ <span data-i18n="nav.fav">즐겨찾기</span></a>
-            <a href="/favorites/recent/" class="dd-item">🕐 <span data-i18n="nav.recent">최근 본 맛집</span></a>
-            <a href="/reviews/mine/" class="dd-item">✏️ <span data-i18n="nav.review">내가 쓴 리뷰</span></a>
+            <a href="/users/mypage/" class="dd-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span data-i18n="nav.mypage">마이페이지</span>
+            </a>
+            <a href="/favorites/" class="dd-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span data-i18n="nav.fav">즐겨찾기</span>
+            </a>
+            <a href="/favorites/recent/" class="dd-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span data-i18n="nav.recent">최근 본 맛집</span>
+            </a>
+            <a href="/reviews/mine/" class="dd-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span data-i18n="nav.review">내가 쓴 리뷰</span>
+            </a>
             {% if is_owner %}
               <div class="dd-div"></div>
               <a href="/restaurants/create/" class="dd-item">🏪 식당 등록</a>
             {% endif %}
             <div class="dd-div"></div>
-            <a href="/users/logout/" class="dd-item dd-danger">🚪 <span data-i18n="nav.logout">로그아웃</span></a>
+            <a href="/users/logout/" class="dd-item dd-danger">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span data-i18n="nav.logout">로그아웃</span>
+            </a>
           </div>
         </div>
       {% else %}
@@ -534,7 +550,11 @@
         </div>
       </div>
 
-      <button class="theme-toggle" id="themeToggle" title="테마 변경">🌙</button>
+      <button class="theme-toggle" id="themeToggle" title="테마 변경">
+        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
       <button class="hamburger" id="hamburgerBtn" aria-label="메뉴">☰</button>
     </div>
   </div>
@@ -549,15 +569,15 @@
     <a href="/map" class="m-link">🗺️ 지도에서 찾기</a>
     {% if user.is_authenticated %}
       <div class="m-div"></div>
-      <a href="/users/mypage/" class="m-link">🏠 마이페이지</a>
-      <a href="/favorites/" class="m-link">❤️ 즐겨찾기</a>
-      <a href="/favorites/recent/" class="m-link">🕐 최근 본 맛집</a>
-      <a href="/reviews/mine/" class="m-link">✏️ 내가 쓴 리뷰</a>
+      <a href="/users/mypage/" class="m-link">마이페이지</a>
+      <a href="/favorites/" class="m-link">즐겨찾기</a>
+      <a href="/favorites/recent/" class="m-link">최근 본 맛집</a>
+      <a href="/reviews/mine/" class="m-link">내가 쓴 리뷰</a>
       {% if is_owner %}
-        <a href="/restaurants/create/" class="m-link">🏪 식당 등록</a>
+        <a href="/restaurants/create/" class="m-link">식당 등록</a>
       {% endif %}
       <div class="m-div"></div>
-      <a href="/users/logout/" class="m-link" style="color:#EF4444;">🚪 로그아웃</a>
+      <a href="/users/logout/" class="m-link" style="color:#EF4444;">로그아웃</a>
     {% else %}
       <div class="m-div"></div>
       <a href="/users/login/" class="m-link">🔐 로그인</a>
@@ -645,14 +665,23 @@
   /* ── Theme ── */
   const html = document.documentElement;
   const themeBtn = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  const MOON_SVG = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  const SUN_SVG  = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+
+  function applyThemeIcon(theme) {
+    themeIcon.innerHTML = theme === 'dark' ? SUN_SVG : MOON_SVG;
+  }
+
   const saved = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', saved);
-  themeBtn.textContent = saved === 'dark' ? '☀️' : '🌙';
+  applyThemeIcon(saved);
+
   themeBtn.addEventListener('click', () => {
     const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
-    themeBtn.textContent = next === 'dark' ? '☀️' : '🌙';
+    applyThemeIcon(next);
   });
 
   /* ── Notification dropdown ── */

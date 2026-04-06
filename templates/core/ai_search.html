@@ -97,22 +97,22 @@
 
   <!-- ── AI 검색 배너 ── -->
   <div class="ai-query-bar">
-    <div class="ai-query-label">🤖 AI 검색 결과</div>
+    <div class="ai-query-label">AI 검색 결과</div>
     <div class="ai-query-text">"{{ query }}"</div>
 
     <!-- 인식된 태그들 -->
     <div class="ai-tags">
       {% for cat in matched_categories %}
-        <span class="ai-tag ai-tag-cat">🍽️ {{ cat }}</span>
+        <span class="ai-tag ai-tag-cat">{{ cat }}</span>
       {% endfor %}
       {% for tag in matched_tags %}
-        <span class="ai-tag ai-tag-mood">🏷️ {{ tag }}</span>
+        <span class="ai-tag ai-tag-mood">{{ tag }}</span>
       {% endfor %}
       {% for hint in hint_keywords %}
-        <span class="ai-tag ai-tag-hint">✨ {{ hint }}</span>
+        <span class="ai-tag ai-tag-hint">{{ hint }}</span>
       {% endfor %}
       {% if not matched_categories and not matched_tags and not hint_keywords %}
-        <span class="ai-tag ai-tag-hint">🔍 전체 검색</span>
+        <span class="ai-tag ai-tag-hint">전체 검색</span>
       {% endif %}
     </div>
 
@@ -120,14 +120,14 @@
     <div class="ai-recom">
       총 <b>{{ result_count }}</b>개의 맛집을 찾았어요
       {% if is_fallback %}
-        <span class="ai-fallback-notice">💡 관련 결과가 없어 인기순으로 보여드려요</span>
+        <span class="ai-fallback-notice">관련 결과가 없어 인기순으로 보여드려요</span>
       {% endif %}
     </div>
 
     <!-- 재검색 폼 -->
     <form action="/ai-search/" method="GET" class="ai-search-form">
       <input name="q" value="{{ query }}" placeholder="다시 검색하기...">
-      <button type="submit">🔍 검색</button>
+      <button type="submit">검색</button>
     </form>
   </div>
 
@@ -187,7 +187,7 @@
 
   {% else %}
     <div class="empty-ai">
-      <div class="big">🤔</div>
+      <div class="big"></div>
       <p>"<b>{{ query }}</b>"에 맞는 맛집을 찾지 못했어요.</p>
       <a href="/restaurants/">전체 맛집 보기 →</a>
     </div>
