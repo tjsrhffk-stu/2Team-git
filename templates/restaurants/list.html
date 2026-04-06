@@ -119,10 +119,12 @@
     position: absolute; top: 10px; right: 10px;
     width: 32px; height: 32px; border-radius: 50%;
     background: rgba(255,255,255,.92); border: none; cursor: pointer;
-    font-size: 15px; display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     transition: all .2s; backdrop-filter: blur(4px); z-index: 10;
+    color: #bbb;
   }
-  .fav-btn:hover { transform: scale(1.15); background: #fff; }
+  .fav-btn:hover { transform: scale(1.15); background: #fff; color: #EF4444; }
+  .fav-btn.active { color: #EF4444; }
 
   .card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 4px; }
   .card-name { font-size: 1rem; font-weight: 800; color: var(--text); }
@@ -281,8 +283,8 @@
         <span class="card-cat-tag">{{ restaurant.category.name|default:"기타" }}</span>
 
         {% if user.is_authenticated %}
-          <button class="fav-btn" onclick="event.preventDefault(); toggleFav({{ restaurant.pk }}, this)" title="즐겨찾기">
-            {% if restaurant.pk in user_favorites %}❤️{% else %}🤍{% endif %}
+          <button class="fav-btn {% if restaurant.pk in user_favorites %}active{% endif %}" onclick="event.preventDefault(); toggleFav({{ restaurant.pk }}, this)" title="즐겨찾기">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="{% if restaurant.pk in user_favorites %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </button>
         {% endif %}
       </div>
@@ -355,7 +357,11 @@ function toggleFav(restaurantId, btn) {
     return r.json();
   })
   .then(data => {
-    if (data) btn.innerHTML = data.is_favorite ? '❤️' : '🤍';
+    if (data) {
+      const filled = data.is_favorite;
+      btn.classList.toggle('active', filled);
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+    }
   })
   .catch(e => console.error(e));
 }
