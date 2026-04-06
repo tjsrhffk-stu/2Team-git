@@ -362,7 +362,7 @@
         {% else %}
           <div class="mp-card">
             <div class="empty-card" style="text-align:left;">
-              예약 내역, 방문한 맛집, 즐겨찾기, 리뷰 탭을 눌러 내 활동을 확인하세요 🙂
+              예약 내역, 방문한 맛집, 즐겨찾기, 리뷰 탭을 눌러 내 활동을 확인하세요.
             </div>
           </div>
         {% endif %}
@@ -427,7 +427,7 @@
       <!-- ── 예약 내역 탭 ── -->
       {% elif active_tab == 'reservations' %}
         <div class="mp-card">
-          <div class="mp-card-title">🗓️ 내 예약 내역</div>
+          <div class="mp-card-title">내 예약 내역</div>
           {% if is_owner %}
             <div class="empty-card">
               사장님은 <b>내 식당 예약현황</b>에서 최신 예약을 확인할 수 있어요.
@@ -471,9 +471,9 @@
       <!-- ── 방문한 맛집 탭 ── -->
       {% elif active_tab == 'history' %}
         <div class="mp-card">
-          <div class="mp-card-title">📍 방문한 맛집</div>
+          <div class="mp-card-title">방문한 맛집</div>
           <div class="empty-card" style="text-align:left;margin-bottom:16px;">
-            ⭐ <b>{{ history_min_rating }}점 이상</b> 리뷰를 남긴 식당만 표시돼요.
+            <b>{{ history_min_rating }}점 이상</b> 리뷰를 남긴 식당만 표시돼요.
             <span style="color:var(--text3);font-size:.8125rem;">(전체 리뷰는 '내 리뷰' 탭에서 확인)</span>
           </div>
           {% if history %}
@@ -502,7 +502,7 @@
       <!-- ── 즐겨찾기 탭 ── -->
       {% elif active_tab == 'favorites' %}
         <div class="mp-card">
-          <div class="mp-card-title">❤️ 즐겨찾기한 식당</div>
+          <div class="mp-card-title">즐겨찾기한 식당</div>
           {% if favorites %}
             <div class="item-list">
               {% for fav in favorites %}
@@ -529,7 +529,7 @@
       <!-- ── 내 리뷰 탭 ── -->
       {% elif active_tab == 'reviews' %}
         <div class="mp-card">
-          <div class="mp-card-title">✏️ 내가 쓴 리뷰</div>
+          <div class="mp-card-title">내가 쓴 리뷰</div>
           {% if reviews %}
             <div class="item-list">
               {% for rv in reviews %}
