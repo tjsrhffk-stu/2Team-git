@@ -339,7 +339,7 @@
   <!-- ── 지도 영역 ── -->
   <div class="map-area">
     <div id="map"></div>
-    <button id="btn-search-here">📍 이 지역 재검색</button>
+    <button id="btn-search-here">이 지역 재검색</button>
   </div>
 
 </div>
@@ -431,7 +431,7 @@
     restaurants.forEach(function (r) {
       var thumbHtml = r.thumbnail
         ? '<img class="res-thumb" src="' + r.thumbnail + '" alt="' + escHtml(r.name) + '" loading="lazy">'
-        : '<div class="res-thumb-placeholder">🍴</div>';
+        : '<div class="res-thumb-placeholder"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\'/><path d=\'M7 2v20\'/><path d=\'M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\'/></svg></div>';
 
       var ratingHtml = r.avg_rating > 0
         ? '<span class="star">★</span> <strong>' + r.avg_rating.toFixed(1) + '</strong> (' + r.review_count + '건)'
@@ -561,7 +561,7 @@
 
   function setListEmpty(msg) {
     document.getElementById("res-list").innerHTML =
-      '<div class="empty-state"><div class="icon">🔍</div><p>' + escHtml(msg) + '</p></div>';
+      '<div class="empty-state"><div class="icon"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'11\' cy=\'11\' r=\'8\'/><line x1=\'21\' y1=\'21\' x2=\'16.65\' y2=\'16.65\'/></svg></div><p>' + escHtml(msg) + '</p></div>';
   }
 
   /* ── 검색창 이벤트 ── */

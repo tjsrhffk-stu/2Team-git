@@ -13,10 +13,10 @@
 {% block content %}
 <div class="page-wrap">
   {% if mode == 'update' %}
-    <h1 class="page-title">정보 수정하기 🛠️</h1>
+    <h1 class="page-title">정보 수정하기</h1>
     <p class="page-subtitle">{{ restaurant.name }}의 최신 정보를 유지해주세요.</p>
   {% else %}
-    <h1 class="page-title">음식점 등록 🏪</h1>
+    <h1 class="page-title">음식점 등록</h1>
     <p class="page-subtitle">새로운 맛집의 정보를 정확하게 입력해주세요.</p>
   {% endif %}
 
@@ -24,14 +24,14 @@
     <form method="POST" enctype="multipart/form-data" id="restaurantForm">
       {% csrf_token %}
 
-      <div class="form-section-title">🍽️ 기본 정보</div>
+      <div class="form-section-title">기본 정보</div>
 
       <div class="form-group">
         <label>음식점 이름 <span class="required">*</span></label>
         <div class="input-wrap">
           <input type="text" name="name" class="form-input" placeholder="음식점 이름" required
                  value="{{ restaurant.name|default:form_data.name|default:'' }}" autocomplete="off">
-          <span class="icon">🏪</span>
+          <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
         </div>
       </div>
 
@@ -56,7 +56,7 @@
           <div class="input-wrap">
             <input type="tel" name="phone" class="form-input" placeholder="02-123-4567"
                    value="{{ restaurant.phone|default:form_data.phone|default:'' }}">
-            <span class="icon">📞</span>
+            <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.4 19.79 19.79 0 0 1 1.63 4.83 2 2 0 0 1 3.6 2.63h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 10.1a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.63 17.42z"/></svg></span>
           </div>
         </div>
       </div>
@@ -66,18 +66,18 @@
         <textarea name="description" class="form-textarea" placeholder="음식점 소개...">{{ restaurant.description|default:form_data.description|default:'' }}</textarea>
       </div>
 
-      <div class="form-section-title">📍 위치 정보</div>
+      <div class="form-section-title">위치 정보</div>
 
       <div class="form-group">
         <label>주소 <span class="required">*</span></label>
         <div class="input-wrap">
           <input type="text" name="address" class="form-input" placeholder="정확한 주소" required
                  value="{{ restaurant.address|default:form_data.address|default:'' }}">
-          <span class="icon">📍</span>
+          <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
         </div>
       </div>
 
-      <div class="form-section-title">🕒 운영 정보</div>
+      <div class="form-section-title">운영 정보</div>
 
       <div class="form-row">
         <div class="form-group">
@@ -85,7 +85,7 @@
           <div class="input-wrap">
             <input type="text" name="hours" class="form-input" placeholder="09:00 - 22:00"
                   value="{{ restaurant.hours|default:form_data.hours|default:'' }}">
-            <span class="icon">🕐</span>
+            <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
           </div>
         </div>
         <div class="form-group">
@@ -93,7 +93,7 @@
           <div class="input-wrap">
             <input type="text" name="break_time" class="form-input" placeholder="15:00 - 17:00"
                   value="{{ restaurant.break_time|default:form_data.break_time|default:'' }}">
-            <span class="icon">☕</span>
+            <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg></span>
           </div>
         </div>
         <div class="form-group">
@@ -101,7 +101,7 @@
           <div class="input-wrap">
             <input type="text" name="closed_days" class="form-input" placeholder="매주 월요일"
                   value="{{ restaurant.closed_days|default:form_data.closed_days|default:'' }}">
-            <span class="icon">📅</span>
+            <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@
         <div class="input-wrap">
           <input type="url" name="website" class="form-input" placeholder="https://..."
                  value="{{ restaurant.website|default:form_data.website|default:'' }}">
-          <span class="icon">🔗</span>
+          <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
         </div>
       </div>
 
@@ -125,11 +125,11 @@
             <option value="high"    {% if restaurant.price_range == 'high'    %}selected{% endif %}>2~3만원</option>
             <option value="premium" {% if restaurant.price_range == 'premium' %}selected{% endif %}>3만원 이상</option>
           </select>
-          <span class="icon">💰</span>
+          <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
         </div>
       </div>
 
-      <div class="form-section-title">📷 사진 관리</div>
+      <div class="form-section-title">사진 관리</div>
 
       <div class="form-group">
         <label>메인 대표 사진</label>
@@ -137,7 +137,7 @@
           <input type="file" name="thumbnail" accept="image/*" id="thumbInput"
                  style="position:absolute; width:100%; height:100%; top:0; left:0; opacity:0; cursor:pointer;">
           <div id="thumbText">
-            {% if mode == 'update' %}🖼️ 클릭하여 대표 사진 변경{% else %}🖼️ 클릭하여 대표 사진 업로드{% endif %}
+            {% if mode == 'update' %}클릭하여 대표 사진 변경{% else %}클릭하여 대표 사진 업로드{% endif %}
           </div>
           <div id="thumbPreviewBox" style="margin-top:10px; {% if not restaurant.thumbnail %}display:none;{% endif %}">
             <img id="thumbPreviewImg"
@@ -155,7 +155,7 @@
         <div class="upload-area">
           <input type="file" name="additional_images" accept="image/*" multiple id="multiInput"
                  style="position:absolute; width:100%; height:100%; top:0; left:0; opacity:0; cursor:pointer;">
-          <div>📸 사진 추가하기 (여러 번 선택하여 누적 가능)</div>
+          <div>사진 추가하기 (여러 번 선택하여 누적 가능)</div>
         </div>
         <div class="multiple-preview" id="multiPreview"></div>
       </div>
@@ -198,7 +198,7 @@
         const txt = document.getElementById('thumbText');
         if (img) img.src = ev.target.result;
         if (box) box.style.display = 'block';
-        if (txt) txt.innerText = "✅ 선택된 사진";
+        if (txt) txt.innerText = "선택된 사진";
       };
       reader.readAsDataURL(file);
     });
@@ -229,7 +229,7 @@
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.innerText = '✖';
+        removeBtn.innerText = '×';
         removeBtn.style.position = 'absolute';
         removeBtn.style.top = '-8px';
         removeBtn.style.right = '-8px';

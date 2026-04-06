@@ -277,7 +277,7 @@
         {% if restaurant.thumbnail %}
           <img src="{{ restaurant.thumbnail.url }}" alt="{{ restaurant.name }}">
         {% else %}
-          🍽️
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
         {% endif %}
         <div class="card-img-overlay"></div>
         <span class="card-cat-tag">{{ restaurant.category.name|default:"기타" }}</span>
@@ -297,13 +297,13 @@
             <span class="card-rating-num">★ {{ restaurant.avg_rating|floatformat:1|default:"—" }}</span>
             <span class="card-review-cnt">({{ restaurant.review_count|default:0 }}개)</span>
           </div>
-          <span class="card-views">👁 {{ restaurant.view_count|default:0 }}</span>
+          <span class="card-views"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>{{ restaurant.view_count|default:0 }}</span>
         </div>
       </div>
     </a>
   {% empty %}
     <div class="empty-state">
-      <div class="empty-state-icon">🍽️</div>
+      <div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
       <p class="empty-state-msg">검색 결과가 없어요. 다른 검색어를 입력해보세요.</p>
     </div>
   {% endfor %}

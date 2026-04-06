@@ -269,7 +269,7 @@
               <div class="restaurant-thumb">
                 {% if reply.review.restaurant.thumbnail %}
                   <img src="{{ reply.review.restaurant.thumbnail.url }}" alt="">
-                {% else %}🍽{% endif %}
+                {% else %}<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>{% endif %}
               </div>
               <div>
                 <div class="restaurant-name">{{ reply.review.restaurant.name }}</div>
@@ -295,7 +295,7 @@
           <div class="card-image">
             {% if reply.review.restaurant.thumbnail %}
               <img src="{{ reply.review.restaurant.thumbnail.url }}" alt="">
-            {% else %}<span class="no-img">🏪</span>{% endif %}
+            {% else %}<span class="no-img"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>{% endif %}
           </div>
         </div>
       </div>
@@ -319,7 +319,7 @@
             <div class="restaurant-thumb">
               {% if review.restaurant.thumbnail %}
                 <img src="{{ review.restaurant.thumbnail.url }}" alt="">
-              {% else %}🍽{% endif %}
+              {% else %}<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>{% endif %}
             </div>
             <div>
               <div class="restaurant-name">{{ review.restaurant.name }}</div>
@@ -360,7 +360,7 @@
         <div class="card-image">
           {% if review.image %}
             <img src="{{ review.image.url }}" alt="">
-          {% else %}<span class="no-img">📷</span>{% endif %}
+          {% else %}<span class="no-img"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>{% endif %}
         </div>
       </div>
       {% endfor %}
@@ -381,7 +381,7 @@
         <a href="{% url 'restaurants:detail' pk=r.pk %}" class="suggest-card">
           <div class="suggest-img">
             {% if r.thumbnail %}<img src="{{ r.thumbnail.url }}" alt="">
-            {% else %}🍽{% endif %}
+            {% else %}<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>{% endif %}
           </div>
           <div class="suggest-info">
             <div class="suggest-name">{{ r.name }}</div>

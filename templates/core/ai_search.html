@@ -144,7 +144,7 @@
         <div class="r-card-img">
           {% if r.thumbnail %}
             <img src="{{ r.thumbnail.url }}" alt="{{ r.name }}" loading="lazy">
-          {% else %}🍽️{% endif %}
+          {% else %}{% endif %}
         </div>
         <div class="r-card-body">
           <div class="r-card-name">{{ r.name }}</div>

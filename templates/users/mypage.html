@@ -192,7 +192,8 @@
           {% if is_owner %}
           <a href="{% url 'users:mypage' %}?tab=owner_reservations"
              class="mp-nav-item {% if active_tab == 'owner_reservations' %}active{% endif %}">
-            🏪 내 식당 예약현황 <span class="nav-arrow">›</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="nav-label">내 식당 예약현황</span><span class="nav-arrow">›</span>
           </a>
           {% endif %}
           <a href="{% url 'users:mypage' %}?tab=history"
@@ -276,7 +277,7 @@
           <!-- 사장 대시보드 -->
           <div class="mp-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
-              <div class="mp-card-title" style="margin-bottom:0;">🏪 사장님 대시보드</div>
+              <div class="mp-card-title" style="margin-bottom:0;">사장님 대시보드</div>
               <a href="{% url 'restaurants:create' %}" class="ia-btn primary">+ 식당 등록</a>
             </div>
             <p style="font-size:.875rem;color:var(--text2);margin-bottom:16px;">내가 등록한 식당을 추가·수정하고 바로 확인할 수 있어요.</p>
@@ -286,7 +287,7 @@
                   <div class="item-row">
                     <div class="item-thumb">
                       {% if r.thumbnail %}<img src="{{ r.thumbnail.url }}" alt="{{ r.name }}">
-                      {% else %}<div class="item-thumb-placeholder">🏪</div>{% endif %}
+                      {% else %}<div class="item-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>{% endif %}
                     </div>
                     <div class="item-meta">
                       <h3>{{ r.name }}</h3>
@@ -307,7 +308,7 @@
           <!-- 사장 최근 예약 현황 -->
           <div class="mp-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
-              <div class="mp-card-title" style="margin-bottom:0;">📋 최근 예약 현황</div>
+              <div class="mp-card-title" style="margin-bottom:0;">최근 예약 현황</div>
               <div class="mp-card-actions">
                 <a href="{% url 'users:reservation_owner_list' %}" class="ia-btn">전체 예약 보기</a>
               </div>
@@ -318,7 +319,7 @@
                   <div class="item-row">
                     <div class="item-thumb">
                       {% if r.restaurant.thumbnail %}<img src="{{ r.restaurant.thumbnail.url }}" alt="">
-                      {% else %}<div class="item-thumb-placeholder">🏪</div>{% endif %}
+                      {% else %}<div class="item-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>{% endif %}
                     </div>
                     <div class="item-meta">
                       <h3>{{ r.user.username }} · {{ r.restaurant.name }}</h3>
@@ -327,9 +328,9 @@
                         {% if r.request_note %} · {{ r.request_note }}{% endif %}
                       </div>
                       <div style="margin-top:4px;">
-                        {% if r.status == 'REQUESTED' %}<span style="background:#FEF3C7;color:#92400E;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">⏳ 신청중</span>
-                        {% elif r.status == 'CONFIRMED' %}<span style="background:#D1FAE5;color:#065F46;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">✅ 확정</span>
-                        {% elif r.status == 'REJECTED' %}<span style="background:#FEE2E2;color:#991B1B;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">❌ 거절됨</span>
+                        {% if r.status == 'REQUESTED' %}<span style="background:#FEF3C7;color:#92400E;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">신청중</span>
+                        {% elif r.status == 'CONFIRMED' %}<span style="background:#D1FAE5;color:#065F46;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">확정</span>
+                        {% elif r.status == 'REJECTED' %}<span style="background:#FEE2E2;color:#991B1B;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">거절됨</span>
                         {% endif %}
                       </div>
                     </div>
@@ -337,12 +338,12 @@
                       {% if r.status == 'REQUESTED' %}
                       <form method="post" action="{% url 'users:reservation_confirm' r.id %}" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="ia-btn" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7;">✅ 확정</button>
+                        <button type="submit" class="ia-btn" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7;">확정</button>
                       </form>
                       <form method="post" action="{% url 'users:reservation_reject' r.id %}"
                             onsubmit="return confirm('예약을 거절할까요?');" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="ia-btn danger">❌ 거절</button>
+                        <button type="submit" class="ia-btn danger">거절</button>
                       </form>
                       {% elif r.status == 'CONFIRMED' %}
                       <form method="post" action="{% url 'users:reservation_owner_cancel' r.id %}"
@@ -371,7 +372,7 @@
       {% elif active_tab == 'owner_reservations' %}
         <div class="mp-card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
-            <div class="mp-card-title" style="margin-bottom:0;">🏪 내 식당 전체 예약현황</div>
+            <div class="mp-card-title" style="margin-bottom:0;">내 식당 전체 예약현황</div>
             <a href="{% url 'users:reservation_owner_list' %}" class="ia-btn">전체 예약</a>
           </div>
           {% if not is_owner %}
@@ -382,7 +383,7 @@
                 <div class="item-row">
                   <div class="item-thumb">
                     {% if r.restaurant.thumbnail %}<img src="{{ r.restaurant.thumbnail.url }}" alt="">
-                    {% else %}<div class="item-thumb-placeholder">🏪</div>{% endif %}
+                    {% else %}<div class="item-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>{% endif %}
                   </div>
                   <div class="item-meta">
                     <h3>{{ r.restaurant.name }}</h3>
@@ -391,9 +392,9 @@
                       {% if r.request_note %} · {{ r.request_note }}{% endif %}
                     </div>
                     <div style="margin-top:4px;">
-                      {% if r.status == 'REQUESTED' %}<span style="background:#FEF3C7;color:#92400E;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">⏳ 신청중</span>
-                      {% elif r.status == 'CONFIRMED' %}<span style="background:#D1FAE5;color:#065F46;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">✅ 확정</span>
-                      {% elif r.status == 'REJECTED' %}<span style="background:#FEE2E2;color:#991B1B;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">❌ 거절됨</span>
+                      {% if r.status == 'REQUESTED' %}<span style="background:#FEF3C7;color:#92400E;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">신청중</span>
+                      {% elif r.status == 'CONFIRMED' %}<span style="background:#D1FAE5;color:#065F46;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">확정</span>
+                      {% elif r.status == 'REJECTED' %}<span style="background:#FEE2E2;color:#991B1B;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:100px;">거절됨</span>
                       {% endif %}
                     </div>
                   </div>
@@ -401,12 +402,12 @@
                     {% if r.status == 'REQUESTED' %}
                     <form method="post" action="{% url 'users:reservation_confirm' r.id %}" style="display:inline;">
                       {% csrf_token %}
-                      <button type="submit" class="ia-btn" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7;">✅ 확정</button>
+                      <button type="submit" class="ia-btn" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7;">확정</button>
                     </form>
                     <form method="post" action="{% url 'users:reservation_reject' r.id %}"
                           onsubmit="return confirm('예약을 거절할까요?');" style="display:inline;">
                       {% csrf_token %}
-                      <button type="submit" class="ia-btn danger">❌ 거절</button>
+                      <button type="submit" class="ia-btn danger">거절</button>
                     </form>
                     {% elif r.status == 'CONFIRMED' %}
                     <form method="post" action="{% url 'users:reservation_owner_cancel' r.id %}"
@@ -442,7 +443,7 @@
                   <div class="item-row">
                     <div class="item-thumb">
                       {% if res.restaurant.thumbnail %}<img src="{{ res.restaurant.thumbnail.url }}" alt="">
-                      {% else %}<div class="item-thumb-placeholder">🏪</div>{% endif %}
+                      {% else %}<div class="item-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>{% endif %}
                     </div>
                     <div class="item-meta">
                       <h3>{{ res.restaurant.name }}</h3>
@@ -482,7 +483,7 @@
                 <div class="item-row">
                   <div class="item-thumb">
                     {% if h.restaurant.thumbnail %}<img src="{{ h.restaurant.thumbnail.url }}" alt="">
-                    {% else %}<div class="item-thumb-placeholder">🍽️</div>{% endif %}
+                    {% else %}<div class="item-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>{% endif %}
                   </div>
                   <div class="item-meta">
                     <h3>{{ h.restaurant.name }}</h3>
@@ -509,7 +510,7 @@
                 <div class="item-row">
                   <div class="item-thumb">
                     {% if fav.restaurant.thumbnail %}<img src="{{ fav.restaurant.thumbnail.url }}" alt="">
-                    {% else %}<div class="item-thumb-placeholder">🍽️</div>{% endif %}
+                    {% else %}<div class="item-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>{% endif %}
                   </div>
                   <div class="item-meta">
                     <h3>{{ fav.restaurant.name }}</h3>
@@ -536,7 +537,7 @@
                 <div class="item-row">
                   <div class="item-thumb">
                     {% if rv.restaurant.thumbnail %}<img src="{{ rv.restaurant.thumbnail.url }}" alt="">
-                    {% else %}<div class="item-thumb-placeholder">🍽️</div>{% endif %}
+                    {% else %}<div class="item-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>{% endif %}
                   </div>
                   <div class="item-meta">
                     <h3>{{ rv.restaurant.name }}</h3>

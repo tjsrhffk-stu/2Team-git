@@ -3,7 +3,7 @@
 .page-wrap { max-width: 720px; margin: 0 auto; animation: fadeUp 0.5s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
-.page-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; margin-bottom: 8px; }
+.page-title { font-size: 30px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); margin-bottom: 8px; }
 .page-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 36px; }
 
 .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px; box-shadow: var(--shadow); }

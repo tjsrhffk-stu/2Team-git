@@ -18,7 +18,7 @@
   .msg.error{ border-color: rgba(239,68,68,0.35); }
   .msg.success{ border-color: rgba(16,185,129,0.35); }
 
-  /* ✅ 선택 카드 */
+  /* 선택 카드 */
   .choice-grid { display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin: 18px 0 18px 0; }
   .choice-card {
     border:1px solid var(--border);
@@ -27,7 +27,6 @@
     padding:18px 16px;
     transition:.2s;
 
-    /* ✅ 버튼 위치/카드 높이 통일 */
     display:flex;
     flex-direction:column;
     min-height: 190px; /* 필요하면 180~220 사이로 조절 */
@@ -40,15 +39,13 @@
     line-height:1.4;
     word-break:keep-all;
 
-    /* ✅ 문장 줄바꿈 차이로 버튼 흔들림 방지 */
     min-height: 36px;
   }
 
-  /* ✅ 버튼 규격 완전 동일 */
   .choice-btn{
     width:100%;
-    height:48px;                /* ✅ 높이 고정 */
-    padding:0 14px;             /* ✅ 세로패딩 제거 */
+    height:48px;
+    padding:0 14px;
     border-radius:12px;
     border:1.5px solid var(--border);
     background:var(--surface);
@@ -57,7 +54,7 @@
     cursor:pointer;
     transition:.2s;
 
-    margin-top:auto;            /* ✅ 카드 아래로 붙임 */
+    margin-top:auto;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -70,14 +67,12 @@
   }
   .choice-btn:hover { transform:translateY(-1px); }
 
-  /* ✅ 화살표는 CSS로 동일하게 */
   .choice-btn::after{
     content: ">";
     font-weight:900;
     line-height:1;
   }
 
-  /* ✅ 폼 영역 */
   .pane { display:none; margin-top:14px; }
   .pane.active { display:block; }
   .pane-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0 12px 0; }
@@ -213,7 +208,7 @@
       </div>
     {% endif %}
 
-    <!-- ✅ 선택카드 -->
+    <!-- 선택카드 -->
     <div class="choice-grid" id="signupChoice">
       <div class="choice-card">
         <h3>일반 회원가입</h3>
@@ -228,7 +223,7 @@
       </div>
     </div>
 
-    <!-- ✅ 폼 영역 -->
+    <!-- 폼 영역 -->
     <div id="signupPanes"
          data-open-pane="{{ open_pane|default:'normal' }}"
          data-auto-open="{{ auto_open|default:0 }}"
@@ -497,16 +492,16 @@ function bindPwMatch(pw1Id, pw2Id, matchId) {
     match.style.display = 'block';
 
     if (!a) {
-      match.textContent = '⚠️ 비밀번호를 먼저 입력하세요';
+      match.textContent = '비밀번호를 먼저 입력하세요';
       match.style.color = '#F59E0B';
       return;
     }
 
     if (a === b) {
-      match.textContent = '✅ 비밀번호가 일치해요';
+      match.textContent = '비밀번호가 일치해요';
       match.style.color = '#10B981';
     } else {
-      match.textContent = '❌ 비밀번호가 다릅니다';
+      match.textContent = '비밀번호가 다릅니다';
       match.style.color = '#EF4444';
     }
   }

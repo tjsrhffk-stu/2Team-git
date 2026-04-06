@@ -631,13 +631,13 @@
               data-review-id="{{ rev.pk }}"
               onclick="toggleLike(this, {{ rev.pk }})"
             >
-              <span class="like-heart">{% if user in rev.likes.all %}♥{% else %}♡{% endif %}</span>
+              <span class="like-heart">{% if user in rev.likes.all %}<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>{% else %}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>{% endif %}</span>
               <span class="like-count">{{ rev.likes.count }}</span>
               <span>도움돼요</span>
             </button>
             {% else %}
             <span class="like-btn" style="cursor:default; opacity:.7;">
-              <span class="like-heart">♡</span>
+              <span class="like-heart"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
               <span class="like-count">{{ rev.likes.count }}</span>
               <span>도움돼요</span>
             </span>
@@ -798,12 +798,14 @@ async function toggleLike(btn, reviewId) {
     const data = await res.json();
     const heart = btn.querySelector('.like-heart');
     const cntEl = btn.querySelector('.like-count');
+    const HEART_FILLED = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+    const HEART_EMPTY = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
     if (data.liked) {
       btn.classList.add('liked');
-      heart.textContent = '♥';
+      heart.innerHTML = HEART_FILLED;
     } else {
       btn.classList.remove('liked');
-      heart.textContent = '♡';
+      heart.innerHTML = HEART_EMPTY;
     }
     cntEl.textContent = data.count;
   } catch(e) {

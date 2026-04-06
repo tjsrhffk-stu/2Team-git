@@ -386,7 +386,7 @@
         {% if restaurant.thumbnail %}
           <img id="viewMain" src="{{ restaurant.thumbnail.url }}" alt="{{ restaurant.name }}">
         {% else %}
-          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;">🍽️</div>
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
         {% endif %}
       </div>
 
@@ -402,7 +402,7 @@
       <!-- ── 메뉴판 ── -->
       <div class="info-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
-          <div class="info-card-title" style="margin-bottom:0;">🍽️ 메뉴</div>
+          <div class="info-card-title" style="margin-bottom:0;"> 메뉴</div>
           {% if user == restaurant.owner or user.is_staff %}
             <button onclick="document.getElementById('menuAddForm').classList.toggle('hidden')" class="review-action-btn" style="color:var(--accent);border-color:var(--accent);">+ 메뉴 추가</button>
           {% endif %}
@@ -454,7 +454,7 @@
               {% if item.image %}
                 <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1px solid var(--border);">
               {% else %}
-                <div style="width:60px;height:60px;border-radius:10px;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;">🍽️</div>
+                <div style="width:60px;height:60px;border-radius:10px;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
               {% endif %}
               <div style="flex:1;min-width:0;">
                 <div style="font-weight:800;font-size:.9375rem;color:var(--text);">{{ item.name }}</div>
@@ -473,7 +473,7 @@
           {% endfor %}
         {% else %}
           <div style="text-align:center;padding:32px 0;color:var(--text3);">
-            <div style="font-size:2rem;margin-bottom:8px;">📋</div>
+            <div style="font-size:2rem;margin-bottom:8px;"></div>
             <p style="font-size:.9rem;">아직 등록된 메뉴가 없어요.</p>
           </div>
         {% endif %}
@@ -575,7 +575,7 @@
             {% if review.reply %}
               <div class="owner-reply">
                 <div class="owner-reply-head">
-                  <span class="owner-reply-label">🏪 사장님 답글</span>
+                  <span class="owner-reply-label">사장님 답글</span>
                   <span class="owner-reply-date">{{ review.reply.created_at|date:"Y.m.d" }}</span>
                 </div>
                 <p class="owner-reply-content">{{ review.reply.content }}</p>
@@ -603,7 +603,7 @@
           </div>
         {% empty %}
           <div style="text-align:center;padding:48px 0;color:var(--text3);">
-            <div style="font-size:2.5rem;margin-bottom:12px;">✍</div>
+            <div style="font-size:2.5rem;margin-bottom:12px;"></div>
             <p style="font-weight:600;">첫 번째 리뷰의 주인공이 되어보세요!</p>
           </div>
         {% endfor %}
@@ -675,7 +675,7 @@
         {% if user.is_authenticated %}
         <button class="fav-btn-lg {% if is_favorite %}active{% endif %}"
                 id="favBtn" onclick="toggleFav('{{ restaurant.pk }}', this)">
-          <span id="favIcon">{% if is_favorite %}♥{% else %}♡{% endif %}</span>
+          <span id="favIcon">{% if is_favorite %}<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>{% else %}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>{% endif %}</span>
           <span id="favText">{% if is_favorite %}즐겨찾기됨{% else %}즐겨찾기 추가{% endif %}</span>
         </button>
         {% endif %}
@@ -715,7 +715,7 @@
           {% if nr.thumbnail %}
             <img src="{{ nr.thumbnail.url }}" alt="{{ nr.name }}" style="width:100%;height:100%;object-fit:cover;">
           {% else %}
-            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;">🍽</div>
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
           {% endif %}
         </div>
         <div style="padding:10px 12px;">
@@ -813,13 +813,15 @@
     .then(data => {
       const txt = document.getElementById('favText');
       const ico = document.getElementById('favIcon');
+      const HEART_FILLED = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+      const HEART_EMPTY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
       if (data.is_favorite) {
         btn.classList.add('active');
-        if(ico) ico.textContent = '♥';
+        if(ico) ico.innerHTML = HEART_FILLED;
         txt.innerHTML = '즐겨찾기됨';
       } else {
         btn.classList.remove('active');
-        if(ico) ico.textContent = '♡';
+        if(ico) ico.innerHTML = HEART_EMPTY;
         txt.innerHTML = '즐겨찾기 추가';
       }
     })
@@ -1022,3 +1024,4 @@
   });
 </script>
 {% endblock %}
+                   

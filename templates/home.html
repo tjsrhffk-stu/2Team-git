@@ -360,10 +360,10 @@
         {% elif restaurant.image %}
           <img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}">
         {% else %}
-          🍽️
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
         {% endif %}
         <div class="r-card-img-overlay"></div>
-        {% if forloop.first %}<span class="r-card-badge">🔥 인기</span>{% endif %}
+        {% if forloop.first %}<span class="r-card-badge">인기</span>{% endif %}
         <span class="r-card-cat">{{ restaurant.category.name|default:"음식점" }}</span>
       </div>
       <div class="r-card-body">
@@ -379,9 +379,9 @@
     {% for i in "12345678" %}
     <a href="/restaurants/" class="r-card fade-up" style="animation-delay:{{ forloop.counter0 }}0ms">
       <div class="r-card-img">
-        <span>{% if forloop.counter == 1 %}🍜{% elif forloop.counter == 2 %}🍣{% elif forloop.counter == 3 %}🍔{% elif forloop.counter == 4 %}🥘{% elif forloop.counter == 5 %}☕{% else %}🍕{% endif %}</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
         <div class="r-card-img-overlay"></div>
-        {% if forloop.first %}<span class="r-card-badge">🔥 인기</span>{% endif %}
+        {% if forloop.first %}<span class="r-card-badge">인기</span>{% endif %}
         <span class="r-card-cat">음식점</span>
       </div>
       <div class="r-card-body">
@@ -402,7 +402,7 @@
 {% if food_stories %}
 <div class="section">
   <div class="section-head">
-    <h2 class="section-title">📰 푸드스토리</h2>
+    <h2 class="section-title">푸드스토리</h2>
     <span style="font-size:.875rem;color:var(--text3);">맛집 트렌드 &amp; 음식 이야기</span>
   </div>
   <!-- 가로 스크롤 카드 열 -->
@@ -419,7 +419,7 @@
         {% if story.thumbnail %}
           <img src="{{ story.thumbnail.url }}" alt="{{ story.title }}" style="width:100%;height:100%;object-fit:cover;">
         {% else %}
-          📰
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--border)"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
         {% endif %}
         {% if story.badge %}
           <span style="position:absolute;top:10px;left:10px;background:var(--accent);color:#fff;

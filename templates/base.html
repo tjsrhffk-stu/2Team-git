@@ -504,7 +504,7 @@
           <div class="u-avatar" id="userAvatar">{{ user.username|slice:":1"|upper }}</div>
           <div class="u-dropdown" id="userDropdown">
             <div class="dd-item" style="font-weight:700; pointer-events:none;">
-              <span>👤</span> {{ user.username }}
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> {{ user.username }}
             </div>
             <div class="dd-div"></div>
             <a href="/users/mypage/" class="dd-item">
@@ -525,7 +525,10 @@
             </a>
             {% if is_owner %}
               <div class="dd-div"></div>
-              <a href="/restaurants/create/" class="dd-item">🏪 식당 등록</a>
+              <a href="/restaurants/create/" class="dd-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                식당 등록
+              </a>
             {% endif %}
             <div class="dd-div"></div>
             <a href="/users/logout/" class="dd-item dd-danger">
@@ -564,9 +567,9 @@
 <div class="m-nav" id="mobileNav">
   <div class="m-panel">
     <button class="m-close" id="mobileClose">✕</button>
-    <div class="m-logo">🍽️ LocalEats</div>
-    <a href="/restaurants/" class="m-link">🔍 맛집 찾기</a>
-    <a href="/map" class="m-link">🗺️ 지도에서 찾기</a>
+    <div class="m-logo">LocalEats</div>
+    <a href="/restaurants/" class="m-link">맛집 찾기</a>
+    <a href="/map" class="m-link">지도에서 찾기</a>
     {% if user.is_authenticated %}
       <div class="m-div"></div>
       <a href="/users/mypage/" class="m-link">마이페이지</a>
@@ -580,8 +583,8 @@
       <a href="/users/logout/" class="m-link" style="color:#EF4444;">로그아웃</a>
     {% else %}
       <div class="m-div"></div>
-      <a href="/users/login/" class="m-link">🔐 로그인</a>
-      <a href="/users/signup/" class="m-link" style="background:var(--accent);color:#fff;text-align:center;">✍️ 회원가입</a>
+      <a href="/users/login/" class="m-link">로그인</a>
+      <a href="/users/signup/" class="m-link" style="background:var(--accent);color:#fff;text-align:center;">회원가입</a>
     {% endif %}
   </div>
 </div>
@@ -625,7 +628,7 @@
   <div class="footer-inner">
     <div class="footer-grid">
       <div>
-        <div class="footer-brand">🍽️ LocalEats</div>
+        <div class="footer-brand">LocalEats</div>
         <p class="footer-desc">당신 주변의 숨겨진 맛집을 발견하세요.<br>이웃들의 솔직한 리뷰로 더 좋은 선택을.</p>
       </div>
       <div>
@@ -656,7 +659,7 @@
     </div>
     <div class="footer-bottom">
       <span>© 2026 LocalEats · All rights reserved.</span>
-      <span style="color:var(--text3);">당신의 맛있는 하루를 응원합니다 🍽️</span>
+      <span style="color:var(--text3);">당신의 맛있는 하루를 응원합니다</span>
     </div>
   </div>
 </footer>
