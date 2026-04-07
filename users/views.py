@@ -296,7 +296,7 @@ def mypage_view(request):
     tab = request.GET.get("tab", "mypage").strip().lower()
 
     # ✅ (수정1) 사장 탭 추가
-    allowed_tabs = {"mypage", "reservations", "owner_reservations", "history", "visited", "favorites", "reviews"}
+    allowed_tabs = {"mypage", "reservations", "owner_reservations", "history", "visited", "favorites", "reviews", "restaurant_reviews"}
     if tab not in allowed_tabs:
         tab = "mypage"
 
@@ -402,6 +402,21 @@ def mypage_view(request):
                 .order_by("-created_at")
             )
 
+    # 일반회원 내 정보 탭용 최근 예약 3개 미리보기
+    recent_reservations = []
+    try:
+        from .reservation_models import Reservation as _Res
+        if not is_owner:
+            recent_reservations = list(
+                _Res.objects
+                .select_related("restaurant")
+                .filter(user=request.user)
+                .exclude(status=_Res.Status.CANCELED)
+                .order_by("-created_at")[:3]
+            )
+    except Exception:
+        pass
+
     # 카테고리 통계 (내가 리뷰한 식당 카테고리 분포)
     from django.db.models import Count as DjCount, Avg as DjAvg
     category_stats = list(
@@ -413,6 +428,27 @@ def mypage_view(request):
     )
     total_review_count = reviews.count()
     avg_my_rating = reviews.aggregate(avg=DjAvg('rating'))['avg'] or 0
+
+    # 사장님 식당 통계 & 식당 리뷰 목록
+    restaurant_review_count = 0
+    restaurant_favorite_count = 0
+    restaurant_avg_rating = 0
+    restaurant_reviews = []
+
+    if is_owner:
+        restaurant_review_count = Review.objects.filter(restaurant__owner=request.user).count()
+        restaurant_favorite_count = Favorite.objects.filter(restaurant__owner=request.user).count()
+        restaurant_avg_rating = (
+            Review.objects.filter(restaurant__owner=request.user)
+            .aggregate(avg=DjAvg('rating'))['avg'] or 0
+        )
+        if tab == "restaurant_reviews":
+            restaurant_reviews = (
+                Review.objects
+                .filter(restaurant__owner=request.user)
+                .select_related("restaurant", "author")
+                .order_by("-created_at")
+            )
 
     context = {
         "active_tab": tab,
@@ -433,6 +469,13 @@ def mypage_view(request):
         "category_stats": category_stats,
         "total_review_count": total_review_count,
         "avg_my_rating": avg_my_rating,
+
+        "restaurant_review_count": restaurant_review_count,
+        "restaurant_favorite_count": restaurant_favorite_count,
+        "restaurant_avg_rating": restaurant_avg_rating,
+        "restaurant_reviews": restaurant_reviews,
+
+        "recent_reservations": recent_reservations,
     }
     return render(request, "users/mypage.html", context)
 

@@ -12,10 +12,10 @@ class Reservation(models.Model):
     """
 
     class Status(models.TextChoices):
-        REQUESTED = "REQUESTED", "Requested"   # 신청
-        CONFIRMED = "CONFIRMED", "Confirmed"   # 확정(확장은 나중에)
-        CANCELED = "CANCELED", "Canceled"      # 취소(회원/사장)
-        REJECTED = "REJECTED", "Rejected"      # 거절(확장은 나중에)
+        REQUESTED = "REQUESTED", "Requested"
+        CONFIRMED = "CONFIRMED", "Confirmed"
+        CANCELED = "CANCELED", "Canceled"
+        REJECTED = "REJECTED", "Rejected"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
