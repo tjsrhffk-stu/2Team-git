@@ -1,0 +1,87 @@
+====================================================
+  LocalEats - 전체 URL 매핑
+====================================================
+
+----------------------------------------------------
+[ config/urls.py ]
+----------------------------------------------------
+/                                               홈 (core 포함)
+/admin/                                         관리자 페이지
+/map/                                           지도 (단축)
+
+----------------------------------------------------
+[ Core ]  core/urls.py
+----------------------------------------------------
+/                                               홈
+/ai-search/                                     AI 검색
+/core/notifications/<pk>/read/                  알림 읽음 처리
+
+----------------------------------------------------
+[ Restaurants ]  restaurants/urls.py
+----------------------------------------------------
+/restaurants/                                   식당 목록/검색
+/restaurants/autocomplete/                      검색 자동완성 (AJAX)
+/restaurants/ranking/                           베스트 랭킹
+/restaurants/map/                               지도
+/restaurants/map/api/                           지도 API (AJAX)
+/restaurants/create/                            식당 등록
+/restaurants/<pk>/                              식당 상세
+/restaurants/<pk>/update/                       식당 수정
+/restaurants/<pk>/edit/                         식당 수정 (별칭)
+/restaurants/<pk>/delete/                       식당 삭제
+/restaurants/<pk>/menu/add/                     메뉴 추가
+/restaurants/<pk>/menu/<item_pk>/update/        메뉴 수정
+/restaurants/<pk>/menu/<item_pk>/delete/        메뉴 삭제
+/restaurants/<pk>/tag/<tag_pk>/toggle/          태그 토글 (AJAX)
+
+----------------------------------------------------
+[ Reviews ]  reviews/urls.py
+----------------------------------------------------
+/reviews/                                       리뷰 목록
+/reviews/mine/                                  내 리뷰
+/reviews/create/<restaurant_id>/                리뷰 작성
+/reviews/<review_id>/edit/                      리뷰 수정
+/reviews/<review_id>/delete/                    리뷰 삭제
+/reviews/<review_id>/like/                      좋아요 토글 (AJAX)
+/reviews/<review_id>/report/                    리뷰 신고 (AJAX)
+/reviews/<review_id>/reply/                     댓글 작성
+/reviews/<review_id>/reply/edit/                댓글 수정
+/reviews/<review_id>/reply/delete/              댓글 삭제
+
+----------------------------------------------------
+[ Users - 계정 ]  users/urls.py
+----------------------------------------------------
+/users/login/                                   로그인
+/users/logout/                                  로그아웃
+/users/signup/                                  일반 회원가입
+/users/signup-owner/                            사업자 회원가입
+/users/mypage/                                  마이페이지
+/users/edit/                                    프로필 수정
+/users/delete-account/                          회원 탈퇴
+/users/find-id/                                 아이디 찾기
+/users/forgot-password/                         비밀번호 찾기
+/users/reset-password/<token>/                  비밀번호 재설정
+/users/verify-email/<token>/                    이메일 인증
+
+----------------------------------------------------
+[ Users - 예약 ]  users/urls.py
+----------------------------------------------------
+/users/reservations/new/<restaurant_id>/        예약 생성
+/users/reservations/my/                         내 예약 목록
+/users/reservations/<id>/edit/                  예약 수정
+/users/reservations/<id>/cancel/                예약 취소 (고객)
+/users/reservations/owner/                      사장 예약 현황
+/users/reservations/<id>/owner-cancel/          예약 취소 (사장)
+/users/reservations/<id>/confirm/               예약 확정
+/users/reservations/<id>/reject/                예약 거절
+
+----------------------------------------------------
+[ Favorites ]  favorites/urls.py
+----------------------------------------------------
+/favorites/                                     즐겨찾기 목록
+/favorites/recent/                              최근 본 맛집
+/favorites/toggle/<restaurant_id>/              즐겨찾기 토글 (AJAX)
+
+====================================================
+  총 42개 URL
+====================================================

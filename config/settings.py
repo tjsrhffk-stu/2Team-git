@@ -167,7 +167,8 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# 개발: 로컬 media 폴더 / 프로덕션: EFS 마운트 경로
+MEDIA_ROOT = env('MEDIA_ROOT', default=str(BASE_DIR / 'media'))
 
 # ── 이메일 ───────────────────────────────────────────────
 # DEBUG=True → 터미널 출력 / False → 실제 Gmail 발송
@@ -183,6 +184,17 @@ else:
     DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
 
 SITE_URL = env('SITE_URL', default='http://127.0.0.1:8000')
+
+# ── 프로덕션 HTTPS / ALB 보안 설정 ───────────────────────────
+# ALB가 SSL을 끊고 HTTP로 EC2에 전달하므로 X-Forwarded-Proto 헤더로 판단
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER  = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE    = True   # 쿠키를 HTTPS 전용으로
+    CSRF_COOKIE_SECURE       = True   # CSRF 토큰을 HTTPS 전용으로
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    # ALB 도메인 또는 실제 서비스 도메인을 CSRF 허용 출처로 등록
+    CSRF_TRUSTED_ORIGINS     = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 # ── 외부 API 키 ──────────────────────────────────────────
 NAVER_CLIENT_ID     = env('NAVER_CLIENT_ID', default='')
