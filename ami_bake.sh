@@ -22,7 +22,7 @@ echo "[1/9] 시스템 패키지 업데이트"
 dnf update -y
 dnf install -y gcc git curl wget unzip tar make \
     openssl-devel bzip2-devel libffi-devel \
-    postgresql15-devel
+    mysql-devel
 
 
 # ============================================================

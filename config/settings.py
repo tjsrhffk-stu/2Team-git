@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-# .env에 DB_ENGINE=django.db.backends.postgresql 설정 시 PostgreSQL 사용
+# .env에 DB_ENGINE=django.db.backends.mysql 설정 시 MySQL 사용
 # 미설정 시 SQLite (개발용) 사용
 
 _db_engine = env('DB_ENGINE', default='django.db.backends.sqlite3')
@@ -106,7 +106,7 @@ else:
             'USER':     env('DB_USER'),
             'PASSWORD': env('DB_PASSWORD'),
             'HOST':     env('DB_HOST', default='192.168.1.177'),   # 프록시 VIP
-            'PORT':     env('DB_PORT', default='5432'),             # write 포트
+            'PORT':     env('DB_PORT', default='3306'),             # write 포트
             'OPTIONS': {
                 'connect_timeout': 10,
             },
@@ -117,14 +117,14 @@ else:
             'USER':     env('DB_READONLY_USER',     default=env('DB_USER')),
             'PASSWORD': env('DB_READONLY_PASSWORD', default=env('DB_PASSWORD')),
             'HOST':     env('DB_HOST', default='192.168.1.177'),   # 프록시 VIP (동일)
-            'PORT':     env('DB_READONLY_PORT', default='5433'),    # read 포트
+            'PORT':     env('DB_READONLY_PORT', default='3307'),    # read 포트
             'OPTIONS': {
                 'connect_timeout': 10,
             },
         },
     }
 
-# Router 등록: PostgreSQL 환경에서 read 쿼리를 'readonly' DB로 분기
+# Router 등록: MySQL 환경에서 read 쿼리를 'readonly' DB로 분기
 DATABASE_ROUTERS = ['config.db_router.ReadWriteRouter'] if _db_engine != 'django.db.backends.sqlite3' else []
 
 

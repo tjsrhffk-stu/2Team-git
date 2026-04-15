@@ -54,10 +54,10 @@ DEBUG=False
 ALLOWED_HOSTS=${DOMAIN:-*}
 CSRF_TRUSTED_ORIGINS=https://${DOMAIN:-localhost}
 
-# ── Database (Aurora PostgreSQL) ─────────────────
-DB_ENGINE=django.db.backends.postgresql
+# ── Database (Aurora MySQL) ───────────────────────
+DB_ENGINE=django.db.backends.mysql
 DB_HOST=${DB_HOST}
-DB_PORT=5432
+DB_PORT=3306
 DB_NAME=${DB_NAME}
 DB_USER=${DB_USER}
 DB_PASSWORD=${DB_PASSWORD}

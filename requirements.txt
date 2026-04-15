@@ -2,7 +2,7 @@
 #  LocalEats - Production Requirements
 #  Python  : 3.11
 #  Django  : 5.2 LTS
-#  DB      : Aurora PostgreSQL 15.4
+#  DB      : MySQL 8.0
 #  Cache   : Redis 7.1
 # ============================================================
 
@@ -11,8 +11,8 @@ Django==5.2
 asgiref==3.8.1
 sqlparse==0.5.5
 
-# ── Database (Aurora PostgreSQL 15.4) ───────────────────────
-psycopg2-binary==2.9.10
+# ── Database (MySQL 8.0) ─────────────────────────────────────
+mysqlclient==2.2.4
 
 # ── Environment ─────────────────────────────────────────────
 django-environ==0.13.0
