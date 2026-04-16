@@ -11,25 +11,24 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-import os, environ
+import os
+import environ
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ── 환경변수 로드 (.env 파일) ─────────────────────────────
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ['127.0.0.1', 'localhost']),
+    CSRF_TRUSTED_ORIGINS=(list, []),
 )
+
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-0ru$&h^$z(_3nmnp-mq$tw2$&+09bkjypsw$9ogn3f+7uedrx-')
-
-# SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
-
-ALLOWED_HOSTS = env('ALLOWED_HOSTS')
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+SITE_URL = env('SITE_URL', default='')
 
 
 # Application definition
