@@ -20,19 +20,21 @@ echo "===== AMI 굽기 시작: $(date) ====="
 # ============================================================
 echo "[1/9] 시스템 패키지 업데이트"
 dnf update -y
-dnf install -y gcc git curl wget unzip tar make \
-    openssl-devel bzip2-devel libffi-devel \
-    mysql-devel
+dnf install -y --allowerasing gcc git curl wget unzip tar make \
+    openssl-devel bzip2-devel libffi-devel
 
 
 # ============================================================
 # 2. Python 3.11 설치
 # ============================================================
 echo "[2/9] Python 3.11 설치"
-dnf install -y python3.11 python3.11-pip python3.11-devel
-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-alternatives --set python3 /usr/bin/python3.11
-python3 --version
+dnf install -y python3.11 python3.11-devel
+# /usr/local/bin에 심링크 → dnf가 쓰는 /usr/bin/python3(3.9)는 건드리지 않음
+ln -sf /usr/bin/python3.11 /usr/local/bin/python3
+ln -sf /usr/bin/python3.11 /usr/local/bin/python3.11
+python3.11 --version
+# pip 업그레이드
+python3.11 -m ensurepip --upgrade 2>/dev/null || true
 
 
 # ============================================================
@@ -148,19 +150,13 @@ systemctl enable nginx
 # 4. Python 패키지 설치 (requirements.txt 기준)
 # ============================================================
 echo "[4/9] Python 패키지 설치"
-python3 -m pip install --upgrade pip
+python3.11 -m pip install --upgrade pip
 
-# requirements.txt 만 sparse-checkout으로 가져와서 설치
-git clone --depth 1 --filter=blob:none --sparse \
-    https://github.com/tjsrhffk-stu/2Team-git.git \
-    /tmp/localeats-src
-
-cd /tmp/localeats-src
-git sparse-checkout set requirements.txt
-python3 -m pip install -r requirements.txt
-
-cd /
-rm -rf /tmp/localeats-src
+# requirements.txt 직접 다운로드 후 설치 (sparse-checkout 대신)
+curl -fsSL -o /tmp/requirements.txt \
+    https://raw.githubusercontent.com/tjsrhffk-stu/2Team-git/main/requirements.txt
+python3.11 -m pip install -r /tmp/requirements.txt
+rm -f /tmp/requirements.txt
 
 
 # ============================================================
@@ -250,7 +246,7 @@ systemctl enable amazon-cloudwatch-agent
 echo "[7/9] X-Ray Daemon 설치"
 cd /tmp
 wget https://s3.ap-northeast-2.amazonaws.com/aws-xray-assets.ap-northeast-2/xray-daemon/aws-xray-daemon-3.x.rpm
-rpm -ivh aws-xray-daemon-3.x.rpm
+rpm -Uvh aws-xray-daemon-3.x.rpm
 systemctl enable xray
 
 
