@@ -207,7 +207,9 @@ def home(request):
     )
 
     # 식당별 최신 리뷰 1개씩 (중복 식당 방지)
-    latest_ids = (
+    # MySQL/MariaDB는 IN 절 안에 LIMIT이 있는 서브쿼리를 허용하지 않으므로
+    # list()로 먼저 평가해서 Python 리스트로 변환 후 IN에 전달
+    latest_ids = list(
         Review.objects
         .values('restaurant')
         .annotate(latest=Max('id'))

@@ -98,6 +98,7 @@ if _db_engine == 'django.db.backends.sqlite3':
 else:
     # 프록시 VIP를 통한 default(write) / readonly(read) 이중 DB 구성
     # 실제 DB IP 대신 프록시 VIP로 접속하며, 포트로 write/read를 구분
+    # MariaDB: django.db.backends.mysql 엔진 그대로 사용 가능 (MySQL 호환)
     DATABASES = {
         'default': {
             'ENGINE':   _db_engine,
@@ -108,6 +109,8 @@ else:
             'PORT':     env('DB_PORT', default='3306'),             # write 포트
             'OPTIONS': {
                 'connect_timeout': 10,
+                'charset': 'utf8mb4',                              # MariaDB: 이모지 등 4바이트 문자 지원
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",  # 엄격 모드 (데이터 무결성)
             },
         },
         'readonly': {
@@ -119,6 +122,8 @@ else:
             'PORT':     env('DB_READONLY_PORT', default='3307'),    # read 포트
             'OPTIONS': {
                 'connect_timeout': 10,
+                'charset': 'utf8mb4',
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             },
         },
     }
@@ -184,15 +189,17 @@ else:
 
 SITE_URL = env('SITE_URL', default='http://127.0.0.1:8000')
 
-# ── 프로덕션 HTTPS / ALB 보안 설정 ───────────────────────────
-# ALB가 SSL을 끊고 HTTP로 EC2에 전달하므로 X-Forwarded-Proto 헤더로 판단
+# ── 프로덕션 HTTPS / Apache 보안 설정 ────────────────────────
+# Apache mod_ssl 이 SSL을 직접 처리하므로 Django가 HTTPS 요청을 올바르게 인식하도록 설정
+# Apache VirtualHost 에서 반드시 아래 헤더를 추가해야 함:
+#   RequestHeader set X-Forwarded-Proto "https"   (mod_headers 필요)
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER  = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE    = True   # 쿠키를 HTTPS 전용으로
     CSRF_COOKIE_SECURE       = True   # CSRF 토큰을 HTTPS 전용으로
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    # ALB 도메인 또는 실제 서비스 도메인을 CSRF 허용 출처로 등록
+    # Apache 도메인 또는 실제 서비스 도메인을 CSRF 허용 출처로 등록
     CSRF_TRUSTED_ORIGINS     = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 # ── 외부 API 키 ──────────────────────────────────────────
