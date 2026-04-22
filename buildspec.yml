@@ -1,15 +1,24 @@
 version: 0.2
 
 phases:
-  install:
-    commands:
-      - echo "Install phase started on $(date)"
   build:
     commands:
-      - echo "Build phase started on $(date)"
-      - echo "Packaging source for CodeDeploy"
+      - echo "Packaging LocalEats deployment bundle"
+      - echo "Branch: ${CODEBUILD_SOURCE_VERSION:-unknown}"
 
 artifacts:
   files:
-    - '**/*'
+    - appspec.yml
+    - manage.py
+    - requirements.txt
+    - .env.example
+    - config/**/*
+    - core/**/*
+    - favorites/**/*
+    - restaurants/**/*
+    - reviews/**/*
+    - static/**/*
+    - templates/**/*
+    - users/**/*
+    - scripts/**/*
   discard-paths: no
