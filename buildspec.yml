@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Install phase started on $(date)"
+  build:
+    commands:
+      - echo "Build phase started on $(date)"
+      - echo "Packaging source for CodeDeploy"
+
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: no
