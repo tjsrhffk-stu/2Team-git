@@ -1,35 +1,28 @@
 #!/bin/bash
-set -e
+set -Eeuo pipefail
 
 APP_DIR="/home/ec2-user/localeats"
 VENV_DIR="$APP_DIR/venv"
+PYTHON_BIN="$VENV_DIR/bin/python"
 
 echo "[ApplicationStart] start"
 
 cd "$APP_DIR"
 
-if [ ! -f "$VENV_DIR/bin/activate" ]; then
-  if [ -f "/home/ec2-user/venv/bin/activate" ]; then
-    VENV_DIR="/home/ec2-user/venv"
-  else
-    echo "Virtualenv not found"
-    exit 1
-  fi
+if [ ! -x "$PYTHON_BIN" ]; then
+  echo "Virtualenv python not found: $PYTHON_BIN"
+  exit 1
 fi
 
-source "$VENV_DIR/bin/activate"
+"$PYTHON_BIN" --version
+"$PYTHON_BIN" -m pip --version
 
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+"$PYTHON_BIN" manage.py migrate --noinput
+"$PYTHON_BIN" manage.py collectstatic --noinput
 
-python manage.py migrate --noinput
-python manage.py collectstatic --noinput
-
-sudo systemctl daemon-reload
-
-if sudo systemctl list-unit-files | grep -q "^httpd.service"; then
-  sudo systemctl restart httpd
-  sudo systemctl enable httpd
+if systemctl list-unit-files | grep -q "^httpd.service"; then
+  systemctl restart httpd
+  systemctl enable httpd
 else
   echo "httpd service not found"
   exit 1
