@@ -20,12 +20,7 @@ fi
 "$PYTHON_BIN" manage.py migrate --noinput
 "$PYTHON_BIN" manage.py collectstatic --noinput
 
-if systemctl list-unit-files | grep -q "^httpd.service"; then
-  systemctl restart httpd
-  systemctl enable httpd
-else
-  echo "httpd service not found"
-  exit 1
-fi
+systemctl restart httpd
+systemctl enable httpd
 
 echo "[ApplicationStart] done"
