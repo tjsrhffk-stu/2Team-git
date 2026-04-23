@@ -4,14 +4,14 @@ phases:
   build:
     commands:
       - echo "Packaging LocalEats deployment bundle"
-      - echo "Branch: ${CODEBUILD_SOURCE_VERSION:-unknown}"
+      - echo "Build started"
 
 artifacts:
   files:
     - appspec.yml
+    - buildspec.yml
     - manage.py
     - requirements.txt
-    - .env.example
     - config/**/*
     - core/**/*
     - favorites/**/*
