@@ -27,19 +27,11 @@ python manage.py collectstatic --noinput
 
 sudo systemctl daemon-reload
 
-if sudo systemctl list-unit-files | grep -q "^gunicorn.service"; then
-  sudo systemctl restart gunicorn
-  sudo systemctl enable gunicorn
+if sudo systemctl list-unit-files | grep -q "^httpd.service"; then
+  sudo systemctl restart httpd
+  sudo systemctl enable httpd
 else
-  echo "gunicorn service not found"
-  exit 1
-fi
-
-if sudo systemctl list-unit-files | grep -q "^nginx.service"; then
-  sudo systemctl restart nginx
-  sudo systemctl enable nginx
-else
-  echo "nginx service not found"
+  echo "httpd service not found"
   exit 1
 fi
 
