@@ -15,13 +15,7 @@ permissions:
     mode: 755
     type:
       - directory
-  - object: /home/ec2-user/localeats
-    pattern: "**"
-    owner: ec2-user
-    group: ec2-user
-    mode: 644
-    type:
-      - file
+
   - object: /home/ec2-user/localeats/scripts
     pattern: "*.sh"
     owner: ec2-user
